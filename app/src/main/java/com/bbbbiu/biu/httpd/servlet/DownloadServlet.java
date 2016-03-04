@@ -24,8 +24,7 @@ public class DownloadServlet extends HttpServlet {
 
     public static void register(Context context, List<Uri> fileUris) {
         HttpServlet servlet = new DownloadServlet(context, fileUris);
-        HttpDaemon.clearServlet();
-        HttpDaemon.regServlet("/", servlet);
+        HttpDaemon.regServlet("/download", servlet);
         HttpDaemon.regServlet("/download/.*", servlet);
     }
 

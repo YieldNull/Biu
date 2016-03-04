@@ -10,6 +10,7 @@ import com.bbbbiu.biu.httpd.HttpServlet;
 import com.bbbbiu.biu.httpd.upload.FileItem;
 import com.bbbbiu.biu.httpd.upload.FileItemFactory;
 import com.bbbbiu.biu.httpd.upload.FileUpload;
+import com.bbbbiu.biu.httpd.util.HtmlReader;
 import com.bbbbiu.biu.util.StorageManager;
 
 import java.io.File;
@@ -25,19 +26,12 @@ public class UploadServlet extends HttpServlet {
 
     public static void register(Context context) {
         HttpServlet servlet = new UploadServlet(context);
-        HttpDaemon.clearServlet();
-        HttpDaemon.regServlet("/", servlet);
         HttpDaemon.regServlet("/upload", servlet);
     }
 
     @Override
     public HttpResponse doGet(HttpRequest request) {
-        String html = "<html charset=\"utf-8\">" +
-                "<body><form method=\"POST\"  enctype=\"multipart/form-data\" action=\"/upload\">\n" +
-                "  File to upload: <input type=\"file\" name=\"upfile\"><br/>\n" +
-                "  <input type=\"submit\" value=\"Press\"> to upload the file!\n" +
-                "</form></body></html>";
-
+        String html = HtmlReader.readAll(context, "upload.html");
         return HttpResponse.newResponse(html);
     }
 

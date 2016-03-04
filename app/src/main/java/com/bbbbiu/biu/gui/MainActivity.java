@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.ui;
+package com.bbbbiu.biu.gui;
 
 import android.app.Activity;
 import android.app.Service;
@@ -82,9 +82,9 @@ public class MainActivity extends AppCompatActivity
                 intent.setType("*/*");
 
 
-                startService(new Intent(MainActivity.this, HttpdService.class));
-
+                HttpdService.startDownload(MainActivity.this);
                 startActivityForResult(intent, FILE_REQUEST_CODE);
+
             }
         });
 
@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity
         });
 
         bindService(new Intent(this, HttpdService.class), mServiceConnection, Service.BIND_ABOVE_CLIENT | Service.BIND_AUTO_CREATE);
-
     }
 
 

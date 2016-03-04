@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
@@ -10,6 +11,8 @@ import android.text.format.Formatter;
 import android.util.Log;
 
 import com.bbbbiu.biu.httpd.HttpDaemon;
+import com.bbbbiu.biu.httpd.HttpServlet;
+import com.bbbbiu.biu.httpd.servlet.StaticServlet;
 
 import java.io.IOException;
 
@@ -21,6 +24,22 @@ public class HttpdService extends Service {
     private final HttpDaemon mHttpd = new HttpDaemon(8080);
     private final IBinder mBinder = new HttpdServiceBinder();
 
+    // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
+    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.service.action.UPLOAD";
+    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.service.action.DOWNLOAD";
+
+    public static void startUpload(Context context) {
+        Intent intent = new Intent(context, HttpdService.class);
+        intent.setAction(ACTION_UPLOAD);
+        context.startService(intent);
+    }
+
+    public static void startDownload(Context context) {
+        Intent intent = new Intent(context, HttpdService.class);
+        intent.setAction(ACTION_DOWNLOAD);
+        context.startService(intent);
+    }
+
     public class HttpdServiceBinder extends Binder {
         public HttpdService getService() {
             return HttpdService.this;
@@ -29,9 +48,19 @@ public class HttpdService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null) {
+            final String action = intent.getAction();
+            if (ACTION_UPLOAD.equals(action)) {
+                mHttpd.setIsUpload();
+            } else if (ACTION_DOWNLOAD.equals(action)) {
+                mHttpd.setIsDownload();
+            }
+        }
         startHttpd();
+
         return Service.START_STICKY;
     }
+
 
     private void startHttpd() {
         if (!mHttpd.isAlive()) {
@@ -42,6 +71,11 @@ public class HttpdService extends Service {
 
             try {
                 mHttpd.start();
+
+                HttpServlet servlet = new StaticServlet(this);
+                HttpDaemon.regServlet(HttpDaemon.STATIC_FILE_REG, servlet);
+                HttpDaemon.regServlet("/", servlet);
+
                 Log.i(TAG, "HttpdServer Started at " + getListenAddress());
             } catch (IOException e) {
                 Log.e(TAG, "HttpdServer Start Failed");

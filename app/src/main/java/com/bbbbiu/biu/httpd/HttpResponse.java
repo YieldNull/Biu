@@ -18,7 +18,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
 
@@ -79,6 +81,7 @@ public class HttpResponse {
     private boolean encodeAsGzip;
     private boolean keepAlive;
 
+    private HashMap<String, String> headerMap = new HashMap<>();
 
     public InputStream getData() {
         return this.data;
@@ -101,6 +104,10 @@ public class HttpResponse {
         this.data = data;
     }
 
+
+    private void addHeader(String header, String value) {
+        headerMap.put(header, value);
+    }
 
     public Status getStatus() {
         return status;
@@ -181,6 +188,13 @@ public class HttpResponse {
         return new HttpResponse(status, mimeType, data, -1);
     }
 
+
+    public static HttpResponse newRedirectResponse(String location) {
+        HttpResponse response = newResponse(Status.REDIRECT, ContentType.MIME_PLAINTEXT, null);
+        response.addHeader("location", location);
+        return response;
+    }
+
     /**
      * 发送返回的数据到客户端
      */
@@ -208,7 +222,12 @@ public class HttpResponse {
         printHeader(writer, "Date", gmtFrmt.format(new Date()));
 
         // Connection,Keep-Alive? 默认keep-alive
-        printHeader(writer, "Connection", (keepAlive ? "keep-alive" : "close"));
+        printHeader(writer, "Connection", (keepAlive ? "Keep-Alive" : "close"));
+
+
+        for (Map.Entry<String, String> header : headerMap.entrySet()) {
+            printHeader(writer, header.getKey(), header.getValue());
+        }
 
         // Use Gzip? 默认false
         if (encodeAsGzip) {

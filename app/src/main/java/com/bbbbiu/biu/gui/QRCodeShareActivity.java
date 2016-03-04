@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.ui;
+package com.bbbbiu.biu.gui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -35,7 +35,7 @@ public class QRCodeShareActivity extends AppCompatActivity {
 
         mQRCodeImage.setImageBitmap(genQRCode(url));
 
-        startService(new Intent(this,HttpdService.class));
+        HttpdService.startUpload(this);
         UploadServlet.register(this);
     }
 

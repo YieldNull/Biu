@@ -260,7 +260,7 @@ public class HttpRequest {
         } catch (UnsupportedEncodingException ignored) {
             Log.w(TAG, Thread.currentThread().getName() + "Encoding not supported, ignored ", ignored);
         }
-        return decoded;
+        return decoded == null ? "/" : decoded;
     }
 
 

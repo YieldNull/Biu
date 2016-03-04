@@ -3,6 +3,7 @@ package com.bbbbiu.biu.httpd;
 
 import android.util.Log;
 
+import com.bbbbiu.biu.httpd.servlet.StaticServlet;
 import com.bbbbiu.biu.httpd.util.ContentType;
 
 import java.io.Closeable;
@@ -36,10 +37,26 @@ public class HttpDaemon {
     private Thread mListenThread;
     private RequestManager mRequestManager;
 
+
+    private boolean isDownload;
+    private boolean isUpload;
+
+    public void setIsUpload() {
+        this.isUpload = true;
+        this.isDownload = false;
+    }
+
+    public void setIsDownload() {
+        this.isDownload = true;
+        this.isUpload = false;
+    }
+
+
     /**
      * 关联URL与其对应的{@link HttpServlet}
      */
     private static HashMap<String, HttpServlet> servletMap;
+    public static final String STATIC_FILE_REG = "/static/.*";
 
     public int getPort() {
         return mPort;
@@ -67,12 +84,6 @@ public class HttpDaemon {
         servletMap.put(urlPattern, servlet);
     }
 
-    /**
-     * 清除所有注册的Servlet
-     */
-    public static void clearServlet() {
-        servletMap.clear();
-    }
 
     /**
      * 安全地关闭流
@@ -276,18 +287,19 @@ public class HttpDaemon {
                 HttpRequest request = HttpRequest.parseRequest(inputStream, acceptSocket.getInetAddress());
                 HttpResponse response;
 
-                String acceptEncoding = null;
-                boolean keepAlive = false;
 
                 if (request == null) {
                     response = HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST, ContentType.MIME_PLAINTEXT,
                             HttpResponse.Status.BAD_REQUEST.getDescription());
-                } else {
-                    acceptEncoding = request.getHeaders().get("accept-encoding");
-                    keepAlive = request.isKeepAlive();
-
-                    response = handleRequest(request);
+                    response.send(outputStream);
+                    return;
                 }
+
+
+                String acceptEncoding = request.getHeaders().get("accept-encoding");
+                boolean keepAlive = request.isKeepAlive();
+
+                response = handleRequest(request);
 
 
                 // 返回用GZip压缩？
@@ -324,14 +336,21 @@ public class HttpDaemon {
 
             HttpServlet servlet = null;
 
+            if (uri.equals("/")) {
+                Log.d(TAG, String.valueOf(isDownload) + ":up:" + String.valueOf(isUpload));
+                if (isDownload) {
+                    return HttpResponse.newRedirectResponse("/download");
+                } else if (isUpload) {
+                    return HttpResponse.newRedirectResponse("/upload");
+                }
+            }
+
             for (Map.Entry<String, HttpServlet> entry : servletMap.entrySet()) {
                 if (uri.matches(entry.getKey())) {
                     servlet = entry.getValue();
                     break;
                 }
             }
-
-
             if (servlet != null) {
                 if (method == HttpRequest.Method.GET) {
                     return servlet.doGet(request);
