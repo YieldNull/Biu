@@ -41,6 +41,9 @@ public class HttpDaemon {
      */
     private static HashMap<String, HttpServlet> servletMap;
 
+    public int getPort() {
+        return mPort;
+    }
 
     /**
      * 指定监听端口
@@ -89,7 +92,6 @@ public class HttpDaemon {
             Log.e(TAG, "Could not close", e);
         }
     }
-
 
     /**
      * 启动服务器
@@ -150,7 +152,6 @@ public class HttpDaemon {
         return this.mServerSocket != null && this.mListenThread != null;
     }
 
-
     /**
      * 服务器主程序，监听请求
      */
@@ -198,7 +199,7 @@ public class HttpDaemon {
                     mRequestManager.handleRequest(inputStream, finalAccept); // 开线程，处理请求
 
                 } catch (IOException e) {
-                    Log.i(TAG, "Communication with the client broken", e);
+                    Log.w(TAG, "Communication with the client broken");
                 }
             } while (!mServerSocket.isClosed()); //不断等待请求
         }
@@ -219,11 +220,12 @@ public class HttpDaemon {
             running.add(requestHandler);
             requestCount++;
 
-            Log.i(TAG, "Request Come, Number: #" + requestCount + " From: " + acceptSocket.getInetAddress().getHostAddress());
+            Log.i(TAG, String.format("Request #%s come from %s",
+                    requestCount, acceptSocket.getInetAddress().getHostAddress()));
 
             Thread thread = new Thread(requestHandler);
             thread.setDaemon(true);
-            thread.setName("Httpd Request Processor (#" + this.requestCount + ")");
+            thread.setName("[RequestHandler #" + this.requestCount + "] ");
             thread.start();
         }
 
@@ -270,6 +272,7 @@ public class HttpDaemon {
         public void run() {
             try {
                 outputStream = acceptSocket.getOutputStream();
+
                 HttpRequest request = HttpRequest.parseRequest(inputStream, acceptSocket.getInetAddress());
                 HttpResponse response;
 
@@ -294,7 +297,13 @@ public class HttpDaemon {
 
                 response.send(outputStream);
 
-                Log.i(TAG, "Finish handling. Sending response to client");
+                Log.i(TAG,
+                        String.format("%s %s %s %s",
+                                request.getMethod().toString(), request.getUri(),
+                                response.getStatus().getDescription(),
+                                request.getHeaders().get("user-agent")
+                        )
+                );
 
             } catch (IOException e) {
                 Log.w(TAG, e.toString());
@@ -321,6 +330,7 @@ public class HttpDaemon {
                     break;
                 }
             }
+
 
             if (servlet != null) {
                 if (method == HttpRequest.Method.GET) {

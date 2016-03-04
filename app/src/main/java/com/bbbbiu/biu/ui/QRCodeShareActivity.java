@@ -33,7 +33,6 @@ public class QRCodeShareActivity extends AppCompatActivity {
         String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
         String url = "http://" + ip + ":8080";
 
-        Log.i(TAG, url);
         mQRCodeImage.setImageBitmap(genQRCode(url));
 
         startService(new Intent(this,HttpdService.class));

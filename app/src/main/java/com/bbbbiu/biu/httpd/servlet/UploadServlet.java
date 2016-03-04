@@ -59,11 +59,8 @@ public class UploadServlet extends HttpServlet {
         }
 
         for (FileItem item : items) {
-            Log.i(TAG, item.getName());
-
+            Log.i(TAG, "Uploading file " + item.getName() + " to " + downloadDir.getAbsolutePath());
         }
-
-        Log.i(TAG, "Upload file to " + downloadDir.getAbsolutePath());
         return HttpResponse.newResponse("Success Uploaded");
     }
 }

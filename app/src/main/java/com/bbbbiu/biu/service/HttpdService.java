@@ -2,9 +2,11 @@ package com.bbbbiu.biu.service;
 
 import android.app.Service;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.format.Formatter;
 import android.util.Log;
 
 import com.bbbbiu.biu.httpd.HttpDaemon;
@@ -40,11 +42,17 @@ public class HttpdService extends Service {
 
             try {
                 mHttpd.start();
-                Log.i(TAG, "HttpdServer Started");
+                Log.i(TAG, "HttpdServer Started at " + getListenAddress());
             } catch (IOException e) {
                 Log.e(TAG, "HttpdServer Start Failed");
             }
         }
+    }
+
+    private String getListenAddress() {
+        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
+        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
+        return ip + ":" + mHttpd.getPort();
     }
 
     private void closeHttpd() {
@@ -62,6 +70,13 @@ public class HttpdService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        Log.i(TAG, "Service binned");
+        return mBinder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Log.i(TAG, "Service unBinned");
+        return super.onUnbind(intent);
     }
 }

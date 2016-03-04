@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.ui;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -98,6 +99,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        bindService(new Intent(this, HttpdService.class), mServiceConnection, Service.BIND_ABOVE_CLIENT | Service.BIND_AUTO_CREATE);
+
     }
 
 
@@ -120,11 +123,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
-//        if (mHttpdService != null) {
-//            unbindService(mServiceConnection);
-//        }
-        super.onDestroy();
+        if (mHttpdService != null) {
+            mHttpdService.stopSelf();
+        }
+        unbindService(mServiceConnection);
 
+        super.onDestroy();
     }
 
     @Override

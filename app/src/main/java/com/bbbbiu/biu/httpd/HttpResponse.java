@@ -26,7 +26,6 @@ public class HttpResponse {
 
     private static final String TAG = HttpResponse.class.getSimpleName();
 
-
     /**
      * 返回状态码
      */
@@ -103,6 +102,10 @@ public class HttpResponse {
     }
 
 
+    public Status getStatus() {
+        return status;
+    }
+
     /**
      * 私有构造函数，会有工厂方法创建对象
      *
@@ -125,6 +128,9 @@ public class HttpResponse {
         chunkedTransfer = contentLength < 0; // 不知道totalBytes的时候采用chunkedTransfer
 
         keepAlive = true; // 默认KeepAlive,之后会根据Request做出相应更改
+
+        Log.d(TAG, String.format("%s Finish generating response. Status:%s",
+                Thread.currentThread().getName(), status.getDescription()));
     }
 
 
@@ -153,7 +159,7 @@ public class HttpResponse {
                 }
                 bytes = txt.getBytes(contentType.getEncoding());
             } catch (UnsupportedEncodingException e) {
-                Log.e(TAG, "Encoding problem, Responding nothing ", e);
+                Log.e(TAG, Thread.currentThread().getName() + "Encoding problem, Responding nothing", e);
                 bytes = new byte[0];
             }
             return newResponse(status, contentType.getContentTypeHeader(),
@@ -288,7 +294,7 @@ public class HttpResponse {
 
     /**
      * 自动将write的数据发送到output stream
-     * <p>
+     * <p/>
      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
      */
     private static class ChunkedOutputStream extends FilterOutputStream {

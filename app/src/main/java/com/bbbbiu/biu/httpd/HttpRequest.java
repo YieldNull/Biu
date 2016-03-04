@@ -135,9 +135,10 @@ public class HttpRequest {
 
         try {
             request.parseRequestContent();
+            Log.d(TAG, Thread.currentThread().getName() + "Finish parsing request content");
             return request;
         } catch (IOException | HttpResponse.ResponseException e) {
-            Log.w(TAG, "Parse Request Exception", e);
+            Log.w(TAG, Thread.currentThread().getName() + "Exception when parsing request");
         }
         return null;
     }
@@ -197,7 +198,7 @@ public class HttpRequest {
         String[] tokens = line.split("\\s+");
 
         if (tokens.length != 3) {
-            Log.w(TAG, "Invalid HTTP Request Header");
+            Log.w(TAG, Thread.currentThread().getName() + "Invalid HTTP Request Header");
             throw new HttpResponse.ResponseException(HttpResponse.Status.BAD_REQUEST.getDescription());
         }
 
@@ -257,7 +258,7 @@ public class HttpRequest {
         try {
             decoded = URLDecoder.decode(str, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
-            Log.w(TAG, "Encoding not supported, ignored ", ignored);
+            Log.w(TAG, Thread.currentThread().getName() + "Encoding not supported, ignored ", ignored);
         }
         return decoded;
     }
