@@ -11,8 +11,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.server.HttpDaemon;
-import com.bbbbiu.biu.server.servlet.UploadServlet;
+import com.bbbbiu.biu.httpd.servlet.UploadServlet;
 import com.bbbbiu.biu.service.HttpdService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;

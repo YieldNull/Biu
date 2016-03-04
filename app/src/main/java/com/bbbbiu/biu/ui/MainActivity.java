@@ -2,7 +2,6 @@ package com.bbbbiu.biu.ui;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.net.Uri;
@@ -22,8 +21,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.server.HttpDaemon;
-import com.bbbbiu.biu.server.servlet.DownloadServlet;
+import com.bbbbiu.biu.httpd.servlet.DownloadServlet;
 import com.bbbbiu.biu.service.HttpdService;
 
 import java.util.ArrayList;
