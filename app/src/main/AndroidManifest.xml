@@ -29,9 +29,6 @@
             android:name=".service.HttpdService"
             android:enabled="true"
             android:exported="false" />
-        <service
-            android:name=".service.MyIntentService"
-            android:exported="false"></service>
     </application>
 
 </manifest>

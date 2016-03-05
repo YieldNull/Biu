@@ -35,4 +35,7 @@ dependencies {
     compile 'com.hubspot.jinjava:jinjava:2.0.11-java7'
 
     compile 'commons-io:commons-io:2.4'
+
+    compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
+    compile 'com.github.clans:fab:1.6.2'
 }

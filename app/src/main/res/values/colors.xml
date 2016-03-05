@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#009999</color>
+    <color name="colorPrimaryDark">#008080</color>
+    <color name="colorAccent">@color/colorPrimary</color>
+
+    <color name="tabBackground">@color/colorPrimary</color>
+    <color name="tabText">#e6e6e6</color>
+    <color name="tabSelected">#FFFFFF</color>
+    <color name="tabIndicator">#ffcc99</color>
+
+    <color name="navBackground">@color/colorPrimary</color>
+
+    <color name="floatBtnShadow">#ccffffff</color>
+    <color name="floatBtn">@color/colorPrimary</color>
 </resources>

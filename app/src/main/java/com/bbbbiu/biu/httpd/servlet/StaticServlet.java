@@ -16,7 +16,15 @@ public class StaticServlet extends HttpServlet {
     @Override
     public HttpResponse doGet(HttpRequest request) {
         String uri = request.getUri().replaceFirst("/", "");
-        String mime = uri.contains("css") ? ContentType.MIME_CSS : ContentType.MIME_JAVASCRIPT;
+        String mime;
+
+        if (uri.endsWith(".css")) {
+            mime = ContentType.MIME_CSS;
+        } else if (uri.endsWith(".js")) {
+            mime = ContentType.MIME_JAVASCRIPT;
+        } else {
+            mime = ContentType.MIME_STREAM;
+        }
 
         String html = HtmlReader.readAll(context, uri);
         return HttpResponse.newResponse(HttpResponse.Status.OK, mime, html);

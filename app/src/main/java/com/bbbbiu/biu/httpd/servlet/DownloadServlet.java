@@ -8,18 +8,31 @@ import com.bbbbiu.biu.httpd.HttpDaemon;
 import com.bbbbiu.biu.httpd.HttpRequest;
 import com.bbbbiu.biu.httpd.HttpResponse;
 import com.bbbbiu.biu.httpd.HttpServlet;
+import com.bbbbiu.biu.httpd.util.ContentType;
+import com.bbbbiu.biu.httpd.util.HtmlReader;
+import com.bbbbiu.biu.util.StorageManager;
+import com.hubspot.jinjava.Jinjava;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 public class DownloadServlet extends HttpServlet {
     private static final String TAG = DownloadServlet.class.getSimpleName();
-    private List<Uri> fileUris;
+    private HashMap<String, File> hashFileMap = new HashMap<>();
 
     private DownloadServlet(Context context, List<Uri> fileUris) {
         super(context);
-        this.fileUris = fileUris;
+        List<Uri> fileUris1 = fileUris;
+
+
+        for (Uri uri : fileUris) {
+            File file = new File(StorageManager.getRealFilePath(context, uri));
+            hashFileMap.put(String.valueOf(file.hashCode()), file);
+        }
     }
 
     public static void register(Context context, List<Uri> fileUris) {
@@ -31,26 +44,34 @@ public class DownloadServlet extends HttpServlet {
     @Override
     public HttpResponse doGet(HttpRequest request) {
         String path = request.getUri();
-        if (path.equals("/")) {
-            StringBuilder sb = new StringBuilder();
-            for (Uri uri : fileUris) {
-                sb.append("<h1><a href=\"/download/\">Download ").append(uri.getPath()).append("</a></h1>");
-            }
-            String html = "<html><body>" + sb.toString() + "</body></html>";
-            return HttpResponse.newResponse(html);
+        if (path.equals("/download")) {
 
+            Jinjava jinjava = new Jinjava();
+
+            HashMap<String, Object> paramMap = new HashMap<>();
+            paramMap.put("files", hashFileMap.values());
+
+            String template = HtmlReader.readAll(context, "download.html");
+            String html = jinjava.render(template, paramMap);
+
+            return HttpResponse.newResponse(html);
         } else {
-            Uri fileUri = fileUris.get(0);
+            String hashCode = path.replace("/download/", "");
+
+            File file = hashFileMap.get(hashCode);
 
 
             InputStream inputStream = null;
             try {
-                inputStream = context.getContentResolver().openInputStream(fileUri);
+                inputStream = new FileInputStream(file);
             } catch (FileNotFoundException e) {
                 Log.e(TAG, e.toString());
             }
 
-            return HttpResponse.newChunkedResponse(HttpResponse.Status.OK, "application/octet-stream", inputStream);
+            HttpResponse response = HttpResponse.newChunkedResponse(HttpResponse.Status.OK, ContentType.MIME_STREAM, inputStream);
+            response.addHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", file.getName()));
+
+            return response;
         }
     }
 

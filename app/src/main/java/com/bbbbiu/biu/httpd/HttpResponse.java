@@ -105,7 +105,7 @@ public class HttpResponse {
     }
 
 
-    private void addHeader(String header, String value) {
+    public void addHeader(String header, String value) {
         headerMap.put(header, value);
     }
 
@@ -190,7 +190,7 @@ public class HttpResponse {
 
 
     public static HttpResponse newRedirectResponse(String location) {
-        HttpResponse response = newResponse(Status.REDIRECT, ContentType.MIME_PLAINTEXT, null);
+        HttpResponse response = newResponse(Status.REDIRECT, ContentType.MIME_HTML, null);
         response.addHeader("location", location);
         return response;
     }
@@ -313,7 +313,7 @@ public class HttpResponse {
 
     /**
      * 自动将write的数据发送到output stream
-     * <p/>
+     * <p>
      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
      */
     private static class ChunkedOutputStream extends FilterOutputStream {

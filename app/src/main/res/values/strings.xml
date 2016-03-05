@@ -1,8 +1,23 @@
 <resources>
-    <string name="app_name">Biu</string>
+    <string name="app_name">比鼬</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">设置</string>
+    <string name="action_search">搜索</string>
+    <string name="action_history">历史</string>
+    <string name="action_add">发现</string>
+    <string name="nav_user">梦 瑶 狗</string>
+    <string name="nav_settings">设置</string>
+    <string name="nav_about">关于</string>
+    <string name="nav_share">分享</string>
+    <string name="nav_help">帮助与反馈</string>
+    <string name="nav_history">历史</string>
+    <string name="nav_files">文件</string>
+    <string name="nav_computer">连接电脑</string>
+    <string name="fbtn_send">发送文件</string>
+    <string name="fbtn_send_android">到安卓</string>
+    <string name="fbtn_send_computer">到电脑</string>
+    <string name="fbtn_send_ios">到苹果</string>
 </resources>

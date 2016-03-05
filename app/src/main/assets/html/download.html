@@ -3,17 +3,15 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link type="text/css" rel="stylesheet" href="static/css/materialize.min.css"
-          media="screen,projection"/>
 </head>
 
 <body>
 
-<form method="POST" enctype="multipart/form-data" action="/upload">
-    File to upload: <input type="file" name="upfile" multiple><br/>
-    <input type="submit" value="Press"> to upload the file!
-</form>
-
+<div style="text-align:center;margin-top:50%;">
+    {% for file in files %}
+    <p><a href="/download/{{ file.hashCode() }}">{{ file.getName() }}</a></p>
+    {% endfor %}
+</div>
 </body>
 </html>
 
