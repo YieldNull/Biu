@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".gui.MainActivity"
-    tools:showIn="@layout/container_main">
+    android:fitsSystemWindows="true"
+    android:layout_height="match_parent">
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabLayout_main"
@@ -29,4 +25,4 @@
         android:layout_height="match_parent">
 
     </android.support.v4.view.ViewPager>
-</LinearLayout>
+</FrameLayout>

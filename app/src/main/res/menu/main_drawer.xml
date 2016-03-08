@@ -6,8 +6,12 @@
         android:checkableBehavior="single">
 
         <item
-            android:id="@+id/nav_files"
+            android:id="@+id/nav_home"
             android:checked="true"
+            android:icon="@drawable/ic_nav_home"
+            android:title="@string/nav_home" />
+        <item
+            android:id="@+id/nav_files"
             android:icon="@drawable/ic_nav_files"
             android:title="@string/nav_files" />
         <item
@@ -19,22 +23,18 @@
             android:icon="@drawable/ic_nav_computer"
             android:title="@string/nav_computer" />
         <item
-            android:id="@+id/nav_help"
-            android:icon="@drawable/ic_nav_help"
-            android:title="@string/nav_help" />
+            android:id="@+id/nav_iphone"
+            android:icon="@drawable/ic_nav_iphone"
+            android:title="@string/nav_iphone" />
     </group>
 
     <group
         android:id="@+id/nav_bottom"
-        android:checkableBehavior="single">
+        android:checkableBehavior="none">
         <item
-            android:id="@+id/nav_share"
-            android:icon="@drawable/ic_nav_share"
-            android:title="@string/nav_share" />
-        <item
-            android:id="@+id/nav_send"
-            android:icon="@drawable/ic_nav_info"
-            android:title="@string/nav_about" />
+            android:id="@+id/nav_help"
+            android:icon="@drawable/ic_nav_help"
+            android:title="@string/nav_help" />
         <item
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_nav_settings"

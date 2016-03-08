@@ -5,20 +5,20 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.bbbbiu.biu.gui.fragments.MainFragment;
+import com.bbbbiu.biu.gui.fragments.FileFragment;
 
-public class MainPageAdapter extends FragmentPagerAdapter {
+public class FileSelectPagerAdapter extends FragmentPagerAdapter {
     private Context context;
     private String tabTitles[] = new String[]{"文件", "文档", "图片", "音乐", "视频", "应用"};
 
-    public MainPageAdapter(FragmentManager fm, Context context) {
+    public FileSelectPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
         this.context = context;
     }
 
     @Override
     public Fragment getItem(int position) {
-        return new MainFragment();
+        return new FileFragment();
     }
 
     @Override

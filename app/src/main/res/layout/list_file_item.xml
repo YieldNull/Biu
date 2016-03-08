@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/imageView_file_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="16dp"
+        android:background="@drawable/shape_circle"
+        android:padding="10dp"
+        android:src="@drawable/ic_folder_blue_grey_400_24dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/imageView_file_icon"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="66dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/textView_file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="filename"
+            android:textColor="@color/fileName" />
+
+        <TextView
+            android:id="@+id/textView_file_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="大小：23MB  修改时间：16/03/07"
+            android:textColor="@color/fileDescription" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:id="@+id/imageView_file_option"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="20dp"
+        android:src="@drawable/ic_more_vert_grey_500_24dp" />
+</RelativeLayout>

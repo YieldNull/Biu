@@ -13,4 +13,8 @@
 
     <color name="floatBtnShadow">#ccffffff</color>
     <color name="floatBtn">@color/colorPrimary</color>
+
+    <color name="fileName">@android:color/black</color>
+    <color name="fileDescription">@android:color/tertiary_text_dark</color>
+    <color name="fileIconBackground">@android:color/darker_gray</color>
 </resources>

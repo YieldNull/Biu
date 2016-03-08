@@ -29,6 +29,12 @@
             android:name=".service.HttpdService"
             android:enabled="true"
             android:exported="false" />
+
+        <activity android:name=".gui.FileSendingActivity" />
+        <activity
+            android:name=".gui.FileSelectActivity"
+            android:label="fuck"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

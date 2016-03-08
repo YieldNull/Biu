@@ -10,13 +10,13 @@
     <string name="action_add">发现</string>
 
     <string name="nav_user">梦 瑶 狗</string>
-    <string name="nav_settings">设置</string>
-    <string name="nav_about">关于</string>
-    <string name="nav_share">分享</string>
-    <string name="nav_help">帮助与反馈</string>
-    <string name="nav_history">历史</string>
+
     <string name="nav_files">文件</string>
+    <string name="nav_history">历史</string>
     <string name="nav_computer">连接电脑</string>
+    <string name="nav_iphone">连接IPhone</string>
+    <string name="nav_help">帮助</string>
+    <string name="nav_settings">设置</string>
 
     <string name="fbtn_send">发送文件到</string>
     <string name="fbtn_send_android">安卓</string>
@@ -26,5 +26,10 @@
     <string name="popup_window_android">收安卓</string>
     <string name="popup_window_ios">收苹果</string>
     <string name="popup_window_computer">收电脑</string>
+    <string name="nav_home">首页</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="action_scan">扫一扫</string>
 
 </resources>

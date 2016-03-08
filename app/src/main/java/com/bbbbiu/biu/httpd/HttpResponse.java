@@ -190,7 +190,7 @@ public class HttpResponse {
 
 
     public static HttpResponse newRedirectResponse(String location) {
-        HttpResponse response = newResponse(Status.REDIRECT, ContentType.MIME_HTML, null);
+        HttpResponse response = newResponse(Status.REDIRECT_SEE_OTHER, ContentType.MIME_HTML, null);
         response.addHeader("location", location);
         return response;
     }
