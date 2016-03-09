@@ -14,7 +14,9 @@
     <color name="floatBtnShadow">#ccffffff</color>
     <color name="floatBtn">@color/colorPrimary</color>
 
+    <color name="fileCateBackground">#EEEEEE</color>
     <color name="fileName">@android:color/black</color>
     <color name="fileDescription">@android:color/tertiary_text_dark</color>
-    <color name="fileIconBackground">@android:color/darker_gray</color>
+    <color name="fileIconBackground">#E1E1E1</color>
+    <color name="fileIconBackgroundSelected">#4285f4</color>
 </resources>

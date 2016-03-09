@@ -5,14 +5,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 
-import com.bbbbiu.biu.httpd.util.ContentType;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-public class StorageManager {
+public class StorageUtil {
 
     public static File getDownloadDir(Context context) {
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -38,4 +33,12 @@ public class StorageManager {
         return uri.getPath();
     }
 
+
+    public static String getReadableSize(long bytes) {
+        int unit = 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = "KMGTPE".charAt(exp - 1) + "";//+ "i";
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+    }
 }

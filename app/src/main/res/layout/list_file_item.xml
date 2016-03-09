@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:descendantFocusability="blocksDescendants">
 
     <ImageView
         android:id="@+id/imageView_file_icon"
@@ -9,41 +10,45 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_margin="16dp"
-        android:background="@drawable/shape_circle"
+        android:background="@drawable/shape_file_icon_bkg"
         android:padding="10dp"
-        android:src="@drawable/ic_folder_blue_grey_400_24dp" />
+        android:src="@drawable/ic_file_folder" />
 
     <LinearLayout
+        android:id="@+id/linearLayout_file_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/imageView_file_icon"
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="66dp"
+        android:layout_toLeftOf="@+id/imageButton_file_option"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/textView_file_name"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="filename"
+            android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
             android:textColor="@color/fileName" />
 
         <TextView
             android:id="@+id/textView_file_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:text="大小：23MB  修改时间：16/03/07"
             android:textColor="@color/fileDescription" />
     </LinearLayout>
 
-    <ImageView
+    <ImageButton
+        android:id="@+id/imageButton_file_option"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="66dp"
         android:layout_alignParentRight="true"
-        android:id="@+id/imageView_file_option"
         android:layout_centerVertical="true"
-        android:layout_marginRight="20dp"
-        android:src="@drawable/ic_more_vert_grey_500_24dp" />
+        android:background="@android:color/transparent"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:src="@drawable/ic_action_setting" />
 </RelativeLayout>

@@ -10,8 +10,7 @@ import com.bbbbiu.biu.httpd.HttpResponse;
 import com.bbbbiu.biu.httpd.HttpServlet;
 import com.bbbbiu.biu.httpd.util.ContentType;
 import com.bbbbiu.biu.httpd.util.HtmlReader;
-import com.bbbbiu.biu.util.StorageManager;
-import com.hubspot.jinjava.Jinjava;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +29,7 @@ public class DownloadServlet extends HttpServlet {
 
 
         for (Uri uri : fileUris) {
-            File file = new File(StorageManager.getRealFilePath(context, uri));
+            File file = new File(StorageUtil.getRealFilePath(context, uri));
             hashFileMap.put(String.valueOf(file.hashCode()), file);
         }
     }
@@ -46,14 +45,7 @@ public class DownloadServlet extends HttpServlet {
         String path = request.getUri();
         if (path.equals("/download")) {
 
-            Jinjava jinjava = new Jinjava();
-
-            HashMap<String, Object> paramMap = new HashMap<>();
-            paramMap.put("files", hashFileMap.values());
-
-            String template = HtmlReader.readAll(context, "download.html");
-            String html = jinjava.render(template, paramMap);
-
+            String html = "";
             return HttpResponse.newResponse(html);
         } else {
             String hashCode = path.replace("/download/", "");
