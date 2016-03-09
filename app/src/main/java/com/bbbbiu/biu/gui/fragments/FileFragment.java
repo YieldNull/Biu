@@ -62,7 +62,21 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                arrayAdapter.handleItemClick();
+                File file = (File) arrayAdapter.getItem(position);
+
+                boolean isSelected = arrayAdapter.isFileSelected(position);
+
+                if (isSelected) {
+                    arrayAdapter.setFileSelected(position, false);
+                } else {
+                    if (file.isDirectory()) {
+                        arrayAdapter.enterDir(file);
+                    } else {
+                        arrayAdapter.setFileSelected(position, true);
+                    }
+                }
+
+                arrayAdapter.notifyDataSetChanged();
             }
         });
         return view;

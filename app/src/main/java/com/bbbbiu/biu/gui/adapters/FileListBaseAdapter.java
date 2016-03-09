@@ -1,13 +1,13 @@
 package com.bbbbiu.biu.gui.adapters;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
@@ -55,21 +55,15 @@ public class FileListBaseAdapter extends BaseAdapter {
         }
     };
 
-    private boolean onSelecting;
-
 
     public FileListBaseAdapter(Context context, File rootDir) {
         this.context = context;
         enterDir(rootDir);
     }
 
-    public void handleItemClick() {
-
-    }
-
     public void enterDir(File rootFile) {
         dirEnterStack.add(rootFile);
-        refresh();
+        notifyDirChanged();
     }
 
     public boolean quitDir() {
@@ -77,12 +71,24 @@ public class FileListBaseAdapter extends BaseAdapter {
             return false;
         } else {
             dirEnterStack.remove(dirEnterStack.size() - 1);
-            refresh();
+            notifyDirChanged();
             return true;
         }
     }
 
-    public void refresh() {
+    public boolean isFileSelected(int position) {
+        return selectedFile.contains((File) getItem(position));
+    }
+
+    public void setFileSelected(int position, boolean selected) {
+        if (selected) {
+            selectedFile.add((File) getItem(position));
+        } else {
+            selectedFile.remove((File) getItem(position));
+        }
+    }
+
+    private void notifyDirChanged() {
         File rootFile = dirEnterStack.get(dirEnterStack.size() - 1);
 
         files = rootFile.listFiles(new FileFilter() {
@@ -176,7 +182,6 @@ public class FileListBaseAdapter extends BaseAdapter {
             TextView fileNameText = (TextView) convertView.findViewById(R.id.textView_file_name);
             TextView fileDescriptionText = (TextView) convertView.findViewById(R.id.textView_file_description);
             ImageView optionImage = (ImageView) convertView.findViewById(R.id.imageButton_file_option);
-            LinearLayout fileInfoLayout = (LinearLayout) convertView.findViewById(R.id.linearLayout_file_info);
 
             // 设置文件信息
             final File file = (File) getItem(position);
@@ -203,17 +208,13 @@ public class FileListBaseAdapter extends BaseAdapter {
                 fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_default));
             }
 
-            // 设置文件图标背景
-
-            if (onSelecting) {
-                fileIconimageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
+            // 设置文件图标背景等样式
+            if (selectedFile.isEmpty()) {
+                setItemStyleNormal(convertView, fileIconimageView, file);
+            } else if (selectedFile.contains(file)) {
+                setItemStyleSelected(convertView, fileIconimageView, file);
             } else {
-                fileIconimageView.setBackgroundDrawable(null);
-            }
-
-            if (selectedFile.contains(file)) {
-                fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
-                fileIconimageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
+                setItemStyleChoosing(convertView, fileIconimageView, file);
             }
 
 
@@ -221,26 +222,48 @@ public class FileListBaseAdapter extends BaseAdapter {
             optionImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i(TAG, "嘻嘻嘻嘻");
+                    Log.i(TAG, "嘻嘻嘻嘻"); // TODO 弹出菜单
                 }
             });
 
             fileIconimageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (onSelecting) {
-                        if (selectedFile.contains(file)) {
-                            fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_default));
-                            fileIconimageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
-                            selectedFile.remove(file);
-                        } else {
-                            fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
-                            fileIconimageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
-                        }
+                    if (selectedFile.contains(file)) {
+                        selectedFile.remove(file);
+                    } else {
+                        selectedFile.add(file);
                     }
+                    notifyDataSetChanged();
                 }
             });
         }
         return convertView;
+    }
+
+    private void setItemStyleNormal(View parent, ImageView imageView, File file) {
+        parent.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+        imageView.setImageDrawable(getFileIcon(file));
+        imageView.setBackgroundDrawable(null);
+    }
+
+    private void setItemStyleChoosing(View parent, ImageView imageView, File file) {
+        parent.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+        imageView.setImageDrawable(getFileIcon(file));
+        imageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
+    }
+
+    private void setItemStyleSelected(View parent, ImageView imageView, File file) {
+        parent.setBackgroundColor(context.getResources().getColor(R.color.fileItemSelectedBackground));
+        imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
+        imageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
+    }
+
+    private Drawable getFileIcon(File file) {
+        if (file.isDirectory()) {
+            return context.getResources().getDrawable(R.drawable.ic_file_folder);
+        } else {
+            return context.getResources().getDrawable(R.drawable.ic_file_default);
+        }
     }
 }

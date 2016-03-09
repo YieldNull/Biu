@@ -19,4 +19,5 @@
     <color name="fileDescription">@android:color/tertiary_text_dark</color>
     <color name="fileIconBackground">#E1E1E1</color>
     <color name="fileIconBackgroundSelected">#4285f4</color>
+    <color name="fileItemSelectedBackground">#f1f6fe</color>
 </resources>
