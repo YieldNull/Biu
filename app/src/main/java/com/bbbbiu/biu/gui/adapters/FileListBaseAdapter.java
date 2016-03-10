@@ -45,25 +45,112 @@ public class FileListBaseAdapter extends BaseAdapter {
     private List<File> listItems = new ArrayList<>();
     private HashSet<File> selectedFile = new HashSet<>();
 
+    private boolean showHidden;
+    private boolean onSelecting;
 
-    private Comparator<File> nameComparator = new Comparator<File>() {
+    public static Comparator<File> COMPARATOR_NAME = new Comparator<File>() {
         @Override
         public int compare(File lhs, File rhs) {
             String name1 = lhs.getName().toLowerCase();
             String name2 = rhs.getName().toLowerCase();
-            return name1.compareTo(name2);
+            return name1.compareTo(name2); //升序
         }
     };
 
+    public static Comparator<File> COMPARATOR_TIME = new Comparator<File>() {
+        @Override
+        public int compare(File lhs, File rhs) {
+            return lhs.lastModified() - rhs.lastModified() > 0 ? -1 : 1; // 降序
+        }
+    };
+
+    public static Comparator<File> COMPARATOR_SIZE = new Comparator<File>() {
+        @Override
+        public int compare(File lhs, File rhs) {
+            if (lhs.isDirectory() && rhs.isDirectory()) {
+                return -(lhs.listFiles().length - rhs.listFiles().length);
+            } else {
+                return lhs.length() - rhs.length() > 0 ? -1 : 1; //降序
+            }
+        }
+    };
+
+    private Comparator<File> sortingComparator = COMPARATOR_NAME;
+
+
+    public boolean isShowHidden() {
+        return showHidden;
+    }
+
+    public boolean isOnSelecting() {
+        return onSelecting;
+    }
+
+    public boolean isFileSelected(int position) {
+        return selectedFile.contains((File) getItem(position));
+    }
+
+
+    public void setSortingComparator(Comparator<File> sortingComparator) {
+        this.sortingComparator = sortingComparator;
+        refreshDir();
+    }
+
+    public void setShowHidden(boolean showHidden) {
+        this.showHidden = showHidden;
+        refreshDir();
+    }
+
+
+    /**
+     * 菜单项“选择”
+     *
+     * @param onSelecting
+     */
+    public void setOnSelecting(boolean onSelecting) {
+        this.onSelecting = onSelecting;
+
+        if (!this.onSelecting) {
+            selectedFile.clear();
+        }
+
+        notifyDataSetChanged();
+    }
+
+
+    public void setFileSelected(int position, boolean selected) {
+        if (selected) {
+            selectedFile.add((File) getItem(position));
+            onSelecting = true;
+        } else {
+            selectedFile.remove((File) getItem(position));
+            if (selectedFile.size() == 0) {
+                onSelecting = false;
+            }
+        }
+        notifyDataSetChanged();
+
+    }
+
+    public void setFileAllSelected() {
+        for (File file : listItems) {
+            if (file != null) {
+                selectedFile.add(file);
+            }
+        }
+        onSelecting = true;
+        notifyDataSetChanged();
+    }
 
     public FileListBaseAdapter(Context context, File rootDir) {
         this.context = context;
         enterDir(rootDir);
     }
 
+
     public void enterDir(File rootFile) {
         dirEnterStack.add(rootFile);
-        notifyDirChanged();
+        refreshDir();
     }
 
     public boolean quitDir() {
@@ -71,59 +158,11 @@ public class FileListBaseAdapter extends BaseAdapter {
             return false;
         } else {
             dirEnterStack.remove(dirEnterStack.size() - 1);
-            notifyDirChanged();
+            refreshDir();
             return true;
         }
     }
 
-    public boolean isFileSelected(int position) {
-        return selectedFile.contains((File) getItem(position));
-    }
-
-    public void setFileSelected(int position, boolean selected) {
-        if (selected) {
-            selectedFile.add((File) getItem(position));
-        } else {
-            selectedFile.remove((File) getItem(position));
-        }
-    }
-
-    private void notifyDirChanged() {
-        File rootFile = dirEnterStack.get(dirEnterStack.size() - 1);
-
-        files = rootFile.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return (!pathname.isHidden()) && pathname.isFile();
-            }
-        });
-
-        dirs = rootFile.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-
-                return (!pathname.isHidden()) && pathname.isDirectory();
-            }
-        });
-
-
-        Arrays.sort(files, nameComparator);
-        Arrays.sort(dirs, nameComparator);
-
-        listItems.clear();
-
-        if (dirs.length > 0) {
-            listItems.add(null);
-            Collections.addAll(listItems, dirs);
-        }
-
-        if (files.length > 0) {
-            listItems.add(null);
-            Collections.addAll(listItems, files);
-        }
-
-        notifyDataSetChanged();
-    }
 
     @Override
     public int getCount() {
@@ -157,7 +196,7 @@ public class FileListBaseAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         int viewType = getItemViewType(position);
 
         // 获取或初始化convertView
@@ -209,7 +248,7 @@ public class FileListBaseAdapter extends BaseAdapter {
             }
 
             // 设置文件图标背景等样式
-            if (selectedFile.isEmpty()) {
+            if (isNormal()) {
                 setItemStyleNormal(convertView, fileIconimageView, file);
             } else if (selectedFile.contains(file)) {
                 setItemStyleSelected(convertView, fileIconimageView, file);
@@ -229,16 +268,59 @@ public class FileListBaseAdapter extends BaseAdapter {
             fileIconimageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (selectedFile.contains(file)) {
-                        selectedFile.remove(file);
+                    if (isNormal() && file.isDirectory()) {
+                        enterDir(file);
                     } else {
-                        selectedFile.add(file);
+                        if (selectedFile.contains(file)) {
+                            setFileSelected(position, false);
+                        } else {
+                            setFileSelected(position, true);
+                        }
                     }
-                    notifyDataSetChanged();
                 }
             });
         }
         return convertView;
+    }
+
+    private boolean isNormal() {
+        return selectedFile.isEmpty() && !onSelecting;
+    }
+
+    private void refreshDir() {
+        File rootFile = dirEnterStack.get(dirEnterStack.size() - 1);
+
+        files = rootFile.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return (showHidden || (!pathname.isHidden())) && pathname.isFile();
+            }
+        });
+
+        dirs = rootFile.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+
+                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory();
+            }
+        });
+
+
+        Arrays.sort(files, sortingComparator);
+        Arrays.sort(dirs, sortingComparator);
+
+        listItems.clear();
+
+        if (dirs.length > 0) {
+            listItems.add(null);
+            Collections.addAll(listItems, dirs);
+        }
+
+        if (files.length > 0) {
+            listItems.add(null);
+            Collections.addAll(listItems, files);
+        }
+        notifyDataSetChanged();
     }
 
     private void setItemStyleNormal(View parent, ImageView imageView, File file) {

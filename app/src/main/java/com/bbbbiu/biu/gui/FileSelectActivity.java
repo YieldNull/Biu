@@ -31,6 +31,7 @@ public class FileSelectActivity extends AppCompatActivity implements
     private ViewPager mViewPager;
     private FileSelectPagerAdapter mAdapter;
 
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,19 +78,21 @@ public class FileSelectActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.file_select_toolbar, menu);
+        this.menu = menu;
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                finish();
-                break;
-            default:
-                break;
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        } else if (id == R.id.action_select_all) {
+            MenuItem menuItem = menu.findItem(R.id.action_select_or_dismiss);
+            menuItem.setTitle("清除选择");
         }
-        return true;
+        return false;
     }
 
     @Override

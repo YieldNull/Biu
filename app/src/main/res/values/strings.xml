@@ -28,12 +28,13 @@
     <string name="popup_window_computer">收电脑</string>
     <string name="nav_home">首页</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="action_scan">扫一扫</string>
     <string name="action_show_hidden">显示隐藏文件</string>
     <string name="action_select_all">全选</string>
     <string name="action_select_or_dismiss">选择</string>
     <string name="action_sort_by">排序依据</string>
-
+    <string name="action_sort_by_name">按名称排序</string>
+    <string name="action_sort_by_time">按修改时间排序</string>
+    <string name="action_sort_by_size">按大小排序</string>
+    
 </resources>

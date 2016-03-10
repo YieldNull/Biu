@@ -3,15 +3,18 @@ package com.bbbbiu.biu.gui.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.FileSelectActivity;
 import com.bbbbiu.biu.gui.adapters.FileListBaseAdapter;
 
 import java.io.File;
@@ -24,10 +27,56 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
     private ListView listView;
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public boolean onBackPressed() {
         return arrayAdapter.quitDir();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_by_time:
+                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_TIME);
+                break;
+            case R.id.action_sort_by_size:
+                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_SIZE);
+                break;
+            case R.id.action_sort_by_name:
+                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_NAME);
+                break;
+            case R.id.action_show_hidden:
+                if (arrayAdapter.isShowHidden()) {
+                    arrayAdapter.setShowHidden(false);
+                    item.setTitle("显示隐藏文件");
+                } else {
+                    arrayAdapter.setShowHidden(true);
+                    item.setTitle("不显示隐藏文件");
+                }
+                break;
+            case R.id.action_select_or_dismiss:
+                if (arrayAdapter.isOnSelecting()) {
+                    arrayAdapter.setOnSelecting(false);
+                    item.setTitle("选择");
+                } else {
+                    arrayAdapter.setOnSelecting(true);
+                    item.setTitle("清除选择");
+                }
+                break;
+            case R.id.action_select_all:
+                arrayAdapter.setFileAllSelected();
+                break;
+            case R.id.action_search:
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
 
     public interface OnFileOptionClickListener {
         void onFileOptionClicked();
@@ -37,9 +86,7 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
         void onOutsideClicked();
     }
 
-
     private OnFileOptionClickListener mOnFileOptionClickListener;
-
 
     @Override
     public void onAttach(Context context) {
@@ -71,14 +118,14 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
                 } else {
                     if (file.isDirectory()) {
                         arrayAdapter.enterDir(file);
+
                     } else {
                         arrayAdapter.setFileSelected(position, true);
                     }
                 }
-
-                arrayAdapter.notifyDataSetChanged();
             }
         });
+
         return view;
     }
 }
