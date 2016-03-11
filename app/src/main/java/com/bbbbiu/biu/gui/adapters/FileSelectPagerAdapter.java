@@ -10,7 +10,7 @@ import com.bbbbiu.biu.gui.fragments.MainFragment;
 public class FileSelectPagerAdapter extends FragmentPagerAdapter {
     private static final String TAG = FileSelectPagerAdapter.class.getSimpleName();
 
-    private String tabTitles[] = new String[]{"文件", "文档", "图片", "音乐", "视频", "应用"};
+    private String tabTitles[] = new String[]{"文件", "文档", "图片", "音乐", "应用"};
 
     private Fragment[] fragments = new Fragment[tabTitles.length];
 

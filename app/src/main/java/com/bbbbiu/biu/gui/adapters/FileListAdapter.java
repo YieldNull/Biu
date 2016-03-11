@@ -2,15 +2,17 @@ package com.bbbbiu.biu.gui.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.fragments.FileFragment;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -23,9 +25,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
-public class FileListBaseAdapter extends BaseAdapter {
-    private static final String TAG = FileListBaseAdapter.class.getSimpleName();
+public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    private static final String TAG = FileListAdapter.class.getSimpleName();
 
     /**
      * ViewType 类型
@@ -34,6 +38,8 @@ public class FileListBaseAdapter extends BaseAdapter {
     private static final int VIEW_TYPE_ITEM = 1;
 
     private Context context;
+    private FileFragment.OnFileSelectingListener mOnFileSelectingListener;
+
 
     /**
      * 当前目录下的文件或文件夹
@@ -78,6 +84,10 @@ public class FileListBaseAdapter extends BaseAdapter {
     private Comparator<File> sortingComparator = COMPARATOR_NAME;
 
 
+    public File getItem(int position) {
+        return listItems.get(position);
+    }
+
     public boolean isShowHidden() {
         return showHidden;
     }
@@ -87,7 +97,7 @@ public class FileListBaseAdapter extends BaseAdapter {
     }
 
     public boolean isFileSelected(int position) {
-        return selectedFile.contains((File) getItem(position));
+        return selectedFile.contains(getItem(position));
     }
 
 
@@ -101,12 +111,6 @@ public class FileListBaseAdapter extends BaseAdapter {
         refreshDir();
     }
 
-
-    /**
-     * 菜单项“选择”
-     *
-     * @param onSelecting
-     */
     public void setOnSelecting(boolean onSelecting) {
         this.onSelecting = onSelecting;
 
@@ -120,12 +124,17 @@ public class FileListBaseAdapter extends BaseAdapter {
 
     public void setFileSelected(int position, boolean selected) {
         if (selected) {
-            selectedFile.add((File) getItem(position));
+            if (selectedFile.size() == 0) {
+                mOnFileSelectingListener.onFileFirstSelected();
+            }
+
+            selectedFile.add(getItem(position));
             onSelecting = true;
         } else {
-            selectedFile.remove((File) getItem(position));
+            selectedFile.remove(getItem(position));
             if (selectedFile.size() == 0) {
                 onSelecting = false;
+                mOnFileSelectingListener.onFileAllDismissed();
             }
         }
         notifyDataSetChanged();
@@ -142,9 +151,11 @@ public class FileListBaseAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public FileListBaseAdapter(Context context, File rootDir) {
+    public FileListAdapter(Context context, File rootDir, FileFragment.OnFileSelectingListener onFileSelectingListener) {
         this.context = context;
         enterDir(rootDir);
+
+        mOnFileSelectingListener = onFileSelectingListener;
     }
 
 
@@ -163,71 +174,43 @@ public class FileListBaseAdapter extends BaseAdapter {
         }
     }
 
-
     @Override
-    public int getCount() {
-        return listItems.size();
-    }
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View itemView;
 
-    @Override
-    public Object getItem(int position) {
-
-        return listItems.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return 2;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-
-        if (listItems.get(position) == null) {
-            return VIEW_TYPE_HEADER;
+        if (viewType == VIEW_TYPE_HEADER) {
+            itemView = inflater.inflate(R.layout.list_file_header, parent, false);
+            return new HeaderViewHolder(itemView);
         } else {
-            return VIEW_TYPE_ITEM;
+            itemView = inflater.inflate(R.layout.list_file_item, parent, false);
+            return new ItemViewHolder(itemView, context);
         }
     }
 
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    public void onBindViewHolder(RecyclerView.ViewHolder h, final int position) {
         int viewType = getItemViewType(position);
-
-        // 获取或初始化convertView
-        if (convertView == null) {
-            if (viewType == VIEW_TYPE_HEADER) {
-                convertView = LayoutInflater.from(context).inflate(R.layout.list_file_header, parent, false);
-            } else {
-                convertView = LayoutInflater.from(context).inflate(R.layout.list_file_item, parent, false);
-            }
-        }
 
         // 判断Layout类型
         if (viewType == VIEW_TYPE_HEADER) {
-            TextView headerText = (TextView) convertView.findViewById(R.id.textView_file_cate);
+            HeaderViewHolder holder = (HeaderViewHolder) h;
             if (position == 0 && dirs.length > 0) {
-                headerText.setText("文件夹");
+                holder.headerText.setText(context.getString(R.string.list_header_folder));
             } else {
-                headerText.setText("文件");
+                holder.headerText.setText(context.getString(R.string.list_header_file));
             }
         } else {
-            final ImageView fileIconimageView = (ImageView) convertView.findViewById(R.id.imageView_file_icon);
-            TextView fileNameText = (TextView) convertView.findViewById(R.id.textView_file_name);
-            TextView fileDescriptionText = (TextView) convertView.findViewById(R.id.textView_file_description);
-            ImageView optionImage = (ImageView) convertView.findViewById(R.id.imageButton_file_option);
+            ItemViewHolder holder = (ItemViewHolder) h;
+            holder.setPosition(position);
 
             // 设置文件信息
-            final File file = (File) getItem(position);
+            final File file = getItem(position);
             String name = file.getName();
-            fileNameText.setText(name);
+            holder.fileNameTextView.setText(name);
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
             String modifyTime = dateFormat.format(new Date(file.lastModified()));
 
             if (file.isDirectory()) { // 目录
@@ -238,40 +221,39 @@ public class FileListBaseAdapter extends BaseAdapter {
                     }
                 }).length;
 
-                fileDescriptionText.setText(String.format("%s  文件 %d ", modifyTime, itemCount));
-                fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_folder));
+                holder.fileInfoTextView.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.list_header_file), itemCount));
+                holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_folder));
 
             } else { // 文件
-                fileDescriptionText.setText(String.format("%s  %s", modifyTime, StorageUtil.getReadableSize(file.length())));
+                holder.fileInfoTextView.setText(String.format("%s  %s", modifyTime, StorageUtil.getReadableSize(file.length())));
 
-                fileIconimageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_default));
+                holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_default));
             }
 
             // 设置文件图标背景等样式
             if (isNormal()) {
-                setItemStyleNormal(convertView, fileIconimageView, file);
-            } else if (selectedFile.contains(file)) {
-                setItemStyleSelected(convertView, fileIconimageView, file);
+                holder.setItemStyleNormal(file);
+            } else if (isFileSelected(position)) {
+                holder.setItemStyleSelected(file);
             } else {
-                setItemStyleChoosing(convertView, fileIconimageView, file);
+                holder.setItemStyleChoosing(file);
             }
 
-
             //事件监听
-            optionImage.setOnClickListener(new View.OnClickListener() {
+            holder.optionsImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Log.i(TAG, "嘻嘻嘻嘻"); // TODO 弹出菜单
                 }
             });
 
-            fileIconimageView.setOnClickListener(new View.OnClickListener() {
+            holder.fileIconImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (isNormal() && file.isDirectory()) {
                         enterDir(file);
                     } else {
-                        if (selectedFile.contains(file)) {
+                        if (isFileSelected(position)) {
                             setFileSelected(position, false);
                         } else {
                             setFileSelected(position, true);
@@ -280,7 +262,16 @@ public class FileListBaseAdapter extends BaseAdapter {
                 }
             });
         }
-        return convertView;
+    }
+
+    @Override
+    public int getItemCount() {
+        return listItems.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return getItem(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
     }
 
     private boolean isNormal() {
@@ -323,29 +314,81 @@ public class FileListBaseAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    private void setItemStyleNormal(View parent, ImageView imageView, File file) {
-        parent.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
-        imageView.setImageDrawable(getFileIcon(file));
-        imageView.setBackgroundDrawable(null);
-    }
+    public static class HeaderViewHolder extends RecyclerView.ViewHolder {
+        public TextView headerText;
 
-    private void setItemStyleChoosing(View parent, ImageView imageView, File file) {
-        parent.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
-        imageView.setImageDrawable(getFileIcon(file));
-        imageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
-    }
+        public HeaderViewHolder(View itemView) {
+            super(itemView);
 
-    private void setItemStyleSelected(View parent, ImageView imageView, File file) {
-        parent.setBackgroundColor(context.getResources().getColor(R.color.fileItemSelectedBackground));
-        imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
-        imageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
-    }
-
-    private Drawable getFileIcon(File file) {
-        if (file.isDirectory()) {
-            return context.getResources().getDrawable(R.drawable.ic_file_folder);
-        } else {
-            return context.getResources().getDrawable(R.drawable.ic_file_default);
+            headerText = (TextView) itemView.findViewById(R.id.textView_file_cate);
         }
     }
+
+    public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        public ImageView fileIconImageView;
+        public TextView fileNameTextView;
+        public TextView fileInfoTextView;
+        public ImageButton optionsImageView;
+
+        private int position;
+        private Context context;
+
+        public ItemViewHolder(View itemView, Context context) {
+            super(itemView);
+            this.context = context;
+
+            fileIconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_icon);
+            fileNameTextView = (TextView) itemView.findViewById(R.id.textView_file_name);
+            fileInfoTextView = (TextView) itemView.findViewById(R.id.textView_file_description);
+            optionsImageView = (ImageButton) itemView.findViewById(R.id.imageButton_file_option);
+
+            itemView.setOnClickListener(this);
+        }
+
+        public void setPosition(int position) {
+            this.position = position;
+        }
+
+        public void setItemStyleNormal(File file) {
+            itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+            fileIconImageView.setImageDrawable(getFileIcon(file));
+            fileIconImageView.setBackgroundDrawable(null);
+        }
+
+        public void setItemStyleChoosing(File file) {
+            itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+            fileIconImageView.setImageDrawable(getFileIcon(file));
+            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
+        }
+
+        public void setItemStyleSelected(File file) {
+            itemView.setBackgroundColor(context.getResources().getColor(R.color.fileItemSelectedBackground));
+            fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
+            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
+        }
+
+        private Drawable getFileIcon(File file) {
+            if (file.isDirectory()) {
+                return context.getResources().getDrawable(R.drawable.ic_file_folder);
+            } else {
+                return context.getResources().getDrawable(R.drawable.ic_file_default);
+            }
+        }
+
+        @Override
+        public void onClick(View v) {
+            File file = getItem(position);
+
+            if (isFileSelected(position)) {
+                setFileSelected(position, false);
+            } else {
+                if (file.isDirectory()) {
+                    enterDir(file);
+                } else {
+                    setFileSelected(position, true);
+                }
+            }
+        }
+    }
+
 }

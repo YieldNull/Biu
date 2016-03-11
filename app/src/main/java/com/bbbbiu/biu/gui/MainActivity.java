@@ -3,7 +3,6 @@ package com.bbbbiu.biu.gui;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -18,13 +17,11 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.PopupMenu;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.service.HttpdService;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 
 public class MainActivity extends AppCompatActivity
@@ -34,12 +31,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private HttpdService mHttpdService;
-
-    private ImageButton mReceiveMenuButton;
-    private ImageButton mHistoryMenuButton;
-    private ImageButton mSearchMenuButton;
-
-    private SlidingUpPanelLayout mSlidingPanel;
 
     private ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -86,52 +77,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.setItemIconTintList(null);
-
-
-//        Button btn = (Button) findViewById(R.id.button_main_send);
-//
-//        btn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-////                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-//                intent.setType("*/*");
-//
-//
-//                startActivityForResult(intent, FILE_REQUEST_CODE);
-//
-//            }
-//        });
-//
-//
-//        Button btn2 = (Button) findViewById(R.id.button_main_receive);
-//        btn2.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                Intent intent = new Intent(MainActivity.this, QRCodeShareActivity.class);
-//                startActivity(intent);
-//            }
-//        });
-
-//        bindService(new Intent(this, HttpdService.class), mServiceConnection, Service.BIND_ABOVE_CLIENT | Service.BIND_AUTO_CREATE);
-
-
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
-
-//        // 右下侧浮动按钮
-//        FloatingActionMenu floatingActionMenu = (FloatingActionMenu) findViewById(R.id.float_menu);
-//        floatingActionMenu.setIconAnimated(false);
-//        floatingActionMenu.setClosedOnTouchOutside(true);
-
     }
 
 

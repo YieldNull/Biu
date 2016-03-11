@@ -3,19 +3,17 @@ package com.bbbbiu.biu.gui.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.FileSelectActivity;
-import com.bbbbiu.biu.gui.adapters.FileListBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.FileListAdapter;
 
 import java.io.File;
 
@@ -23,8 +21,24 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
     private static final String TAG = FileFragment.class.getSimpleName();
 
 
-    private FileListBaseAdapter arrayAdapter;
-    private ListView listView;
+    private FileListAdapter mArrayAdapter;
+    private RecyclerView mRecyclerView;
+
+    public interface OnFileSelectingListener {
+        void onFileFirstSelected();
+
+        void onFileAllDismissed();
+    }
+
+    private OnFileSelectingListener mOnFileSelectingListener;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        mOnFileSelectingListener = (OnFileSelectingListener) context;
+    }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,41 +48,41 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
 
     @Override
     public boolean onBackPressed() {
-        return arrayAdapter.quitDir();
+        return mArrayAdapter.quitDir();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_sort_by_time:
-                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_TIME);
+                mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_TIME);
                 break;
             case R.id.action_sort_by_size:
-                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_SIZE);
+                mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_SIZE);
                 break;
             case R.id.action_sort_by_name:
-                arrayAdapter.setSortingComparator(FileListBaseAdapter.COMPARATOR_NAME);
+                mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_NAME);
                 break;
             case R.id.action_show_hidden:
-                if (arrayAdapter.isShowHidden()) {
-                    arrayAdapter.setShowHidden(false);
-                    item.setTitle("显示隐藏文件");
+                if (mArrayAdapter.isShowHidden()) {
+                    mArrayAdapter.setShowHidden(false);
+                    item.setTitle(getString(R.string.action_show_hidden));
                 } else {
-                    arrayAdapter.setShowHidden(true);
-                    item.setTitle("不显示隐藏文件");
+                    mArrayAdapter.setShowHidden(true);
+                    item.setTitle(getString(R.string.action_not_show_hidden));
                 }
                 break;
             case R.id.action_select_or_dismiss:
-                if (arrayAdapter.isOnSelecting()) {
-                    arrayAdapter.setOnSelecting(false);
-                    item.setTitle("选择");
+                if (mArrayAdapter.isOnSelecting()) {
+                    mArrayAdapter.setOnSelecting(false);
+                    item.setTitle(getString(R.string.action_select));
                 } else {
-                    arrayAdapter.setOnSelecting(true);
-                    item.setTitle("清除选择");
+                    mArrayAdapter.setOnSelecting(true);
+                    item.setTitle(getString(R.string.action_select_dismiss));
                 }
                 break;
             case R.id.action_select_all:
-                arrayAdapter.setFileAllSelected();
+                mArrayAdapter.setFileAllSelected();
                 break;
             case R.id.action_search:
                 break;
@@ -78,23 +92,6 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
         return true;
     }
 
-    public interface OnFileOptionClickListener {
-        void onFileOptionClicked();
-    }
-
-    public interface OnOutsideClickListener {
-        void onOutsideClicked();
-    }
-
-    private OnFileOptionClickListener mOnFileOptionClickListener;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        mOnFileOptionClickListener = (OnFileOptionClickListener) context;
-    }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -102,30 +99,20 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
 
         File rootDir = Environment.getExternalStorageDirectory();
 
-        arrayAdapter = new FileListBaseAdapter(getContext(), rootDir);
+        mArrayAdapter = new FileListAdapter(getContext(), rootDir, mOnFileSelectingListener);
 
-        listView = (ListView) view.findViewById(R.id.listView_file);
-        listView.setAdapter(arrayAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView_file);
+        mRecyclerView.setAdapter(mArrayAdapter);
+        mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                File file = (File) arrayAdapter.getItem(position);
-
-                boolean isSelected = arrayAdapter.isFileSelected(position);
-
-                if (isSelected) {
-                    arrayAdapter.setFileSelected(position, false);
-                } else {
-                    if (file.isDirectory()) {
-                        arrayAdapter.enterDir(file);
-
-                    } else {
-                        arrayAdapter.setFileSelected(position, true);
-                    }
-                }
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
             }
         });
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         return view;
     }
+
+
 }

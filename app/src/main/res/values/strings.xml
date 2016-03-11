@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">比鼬</string>
+    <string name="label_select_file">选择文件</string>
 
     <string name="navigation_drawer_open">打开抽屉</string>
     <string name="navigation_drawer_close">关闭抽屉</string>
@@ -30,11 +31,15 @@
 
     <string name="action_scan">扫一扫</string>
     <string name="action_show_hidden">显示隐藏文件</string>
+    <string name="action_not_show_hidden">不显示隐藏文件</string>
     <string name="action_select_all">全选</string>
-    <string name="action_select_or_dismiss">选择</string>
+    <string name="action_select">选择…</string>
+    <string name="action_select_dismiss">清除选择</string>
     <string name="action_sort_by">排序依据</string>
     <string name="action_sort_by_name">按名称排序</string>
     <string name="action_sort_by_time">按修改时间排序</string>
     <string name="action_sort_by_size">按大小排序</string>
-    
+
+    <string name="list_header_folder">文件夹</string>
+    <string name="list_header_file">文件</string>
 </resources>
