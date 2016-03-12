@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
@@ -39,7 +40,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private Context context;
     private FileFragment.OnFileSelectingListener mOnFileSelectingListener;
-
+    private FileFragment.OnFileOptionClickListener mOnFileOptionClickListener;
 
     /**
      * 当前目录下的文件或文件夹
@@ -151,11 +152,14 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    public FileListAdapter(Context context, File rootDir, FileFragment.OnFileSelectingListener onFileSelectingListener) {
+    public FileListAdapter(Context context, File rootDir,
+                           FileFragment.OnFileSelectingListener onFileSelectingListener,
+                           FileFragment.OnFileOptionClickListener onFileOptionClickListener) {
         this.context = context;
         enterDir(rootDir);
 
         mOnFileSelectingListener = onFileSelectingListener;
+        mOnFileOptionClickListener = onFileOptionClickListener;
     }
 
 
@@ -243,7 +247,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             holder.optionsImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i(TAG, "嘻嘻嘻嘻"); // TODO 弹出菜单
+                    mOnFileOptionClickListener.onFileOptionClick(file);
                 }
             });
 

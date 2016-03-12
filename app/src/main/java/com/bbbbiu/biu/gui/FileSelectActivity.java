@@ -7,26 +7,36 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.FileOperationAdapter;
 import com.bbbbiu.biu.gui.adapters.FileSelectPagerAdapter;
 import com.bbbbiu.biu.gui.fragments.FileFragment;
 import com.bbbbiu.biu.gui.fragments.OnBackPressedListener;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
+import java.io.File;
 
 public class FileSelectActivity extends AppCompatActivity implements
-        FileFragment.OnFileSelectingListener {
+        FileFragment.OnFileSelectingListener, FileFragment.OnFileOptionClickListener {
 
     private static final String TAG = FileSelectActivity.class.getSimpleName();
 
     private ViewPager mViewPager;
-    private FileSelectPagerAdapter mAdapter;
+    private FileSelectPagerAdapter mPagerAdapter;
 
+    private SlidingUpPanelLayout mSlidingUpPanelLayout;
     private Menu mToolbarMenu;
+
+    private RecyclerView mRecyclerView;
+    private FileOperationAdapter mFileOperationAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +60,16 @@ public class FileSelectActivity extends AppCompatActivity implements
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_file_select);
 
         // 使用viewPager切换tab
-        mAdapter = new FileSelectPagerAdapter(getSupportFragmentManager());
+        mPagerAdapter = new FileSelectPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.viewpager_file_select);
-        mViewPager.setAdapter(mAdapter);
+        mViewPager.setAdapter(mPagerAdapter);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayout_file_select);
         tabLayout.setupWithViewPager(mViewPager);
+
+        mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_sliding_up);
     }
 
 
@@ -80,7 +95,7 @@ public class FileSelectActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        Fragment fragment = mAdapter.getItem(mViewPager.getCurrentItem());
+        Fragment fragment = mPagerAdapter.getItem(mViewPager.getCurrentItem());
 
         if (!((OnBackPressedListener) fragment).onBackPressed()) {
             super.onBackPressed();
@@ -97,5 +112,13 @@ public class FileSelectActivity extends AppCompatActivity implements
     public void onFileAllDismissed() {
         MenuItem item = mToolbarMenu.findItem(R.id.action_select_or_dismiss);
         item.setTitle(getString(R.string.action_select));
+    }
+
+    @Override
+    public void onFileOptionClick(File file) {
+        mFileOperationAdapter = new FileOperationAdapter(this,file);
+        mRecyclerView.setAdapter(mFileOperationAdapter);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
     }
 }

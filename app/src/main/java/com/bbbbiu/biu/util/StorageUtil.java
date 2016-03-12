@@ -41,4 +41,6 @@ public class StorageUtil {
         String pre = "KMGTPE".charAt(exp - 1) + "";//+ "i";
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
+
+
 }

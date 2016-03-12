@@ -1,17 +1,20 @@
 <resources>
     <string name="app_name">比鼬</string>
-    <string name="label_select_file">选择文件</string>
 
-    <string name="navigation_drawer_open">打开抽屉</string>
-    <string name="navigation_drawer_close">关闭抽屉</string>
+    <!--********************MainActivity****************-->
 
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
     <string name="action_history">历史</string>
-    <string name="action_add">发现</string>
 
+    <!--********************DrawerLayout*********************-->
+
+    <string name="navigation_drawer_open">打开抽屉</string>
+    <string name="navigation_drawer_close">关闭抽屉</string>
     <string name="nav_user">梦 瑶 狗</string>
 
+
+    <string name="nav_home">首页</string>
     <string name="nav_files">文件</string>
     <string name="nav_history">历史</string>
     <string name="nav_computer">连接电脑</string>
@@ -19,15 +22,10 @@
     <string name="nav_help">帮助</string>
     <string name="nav_settings">设置</string>
 
-    <string name="fbtn_send">发送文件到</string>
-    <string name="fbtn_send_android">安卓</string>
-    <string name="fbtn_send_computer">电脑</string>
-    <string name="fbtn_send_ios">苹果</string>
 
-    <string name="popup_window_android">收安卓</string>
-    <string name="popup_window_ios">收苹果</string>
-    <string name="popup_window_computer">收电脑</string>
-    <string name="nav_home">首页</string>
+    <!--********************FileSelectActivity****************-->
+
+    <string name="label_select_file">选择文件</string>
 
     <string name="action_scan">扫一扫</string>
     <string name="action_show_hidden">显示隐藏文件</string>
@@ -40,6 +38,17 @@
     <string name="action_sort_by_time">按修改时间排序</string>
     <string name="action_sort_by_size">按大小排序</string>
 
+
+    <string name="file_action_open">打开</string>
+    <string name="file_action_rename">重命名</string>
+    <string name="file_action_info">详情</string>
+    <string name="file_action_copy">复制</string>
+    <string name="file_action_move">移动</string>
+    <string name="file_action_delete">删除</string>
+
+
     <string name="list_header_folder">文件夹</string>
     <string name="list_header_file">文件</string>
+
+
 </resources>

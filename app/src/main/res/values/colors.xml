@@ -20,4 +20,8 @@
     <color name="fileIconBackground">#E1E1E1</color>
     <color name="fileIconBackgroundSelected">#4285f4</color>
     <color name="fileItemSelectedBackground">#f1f6fe</color>
+
+    <color name="upPanelBackground">@android:color/white</color>
+    <color name="upPanelText">#232323</color>
+    <color name="upPanelIconTint">#616161</color>
 </resources>

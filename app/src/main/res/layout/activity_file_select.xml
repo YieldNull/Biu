@@ -1,54 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coordinatorLayout_file_select"
+    xmlns:sothree="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/sliding_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:gravity="bottom"
+    sothree:umanoOverlay="true"
+    sothree:umanoPanelHeight="0dp"
+    sothree:umanoShadowHeight="4dp">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/appbar_file_select"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar_file_select"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorPrimary"
-            app:layout_scrollFlags="scroll|enterAlways|snap"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabLayout_file_select"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/tabBackground"
-            app:tabIndicatorColor="@color/tabIndicator"
-            app:tabMode="scrollable"
-            app:tabPaddingEnd="30dp"
-            app:tabPaddingStart="30dp"
-            app:tabSelectedTextColor="@color/tabSelected"
-            app:tabTextColor="@color/tabText" />
-    </android.support.design.widget.AppBarLayout>
-
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/viewpager_file_select"
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordinatorLayout_file_select"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        android:fitsSystemWindows="true">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_file_select"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_send" />
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar_file_select"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/toolbar_file_select"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorPrimary"
+                app:layout_scrollFlags="scroll|enterAlways|snap"
+                app:popupTheme="@style/AppTheme.PopupOverlay" />
 
 
-</android.support.design.widget.CoordinatorLayout>
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabLayout_file_select"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/tabBackground"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="@color/tabIndicator"
+                app:tabMode="fixed"
+                app:tabSelectedTextColor="@color/tabSelected"
+                app:tabTextColor="@color/tabText" />
+        </android.support.design.widget.AppBarLayout>
+
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpager_file_select"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/fab_file_select"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_send" />
+
+
+    </android.support.design.widget.CoordinatorLayout>
+
+    <LinearLayout
+        android:id="@+id/sliding_layout_panel"
+        android:layout_width="match_parent"
+        android:layout_height="340dp"
+        android:background="@color/upPanelBackground">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerView_sliding_up"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+</com.sothree.slidinguppanel.SlidingUpPanelLayout>

@@ -30,15 +30,9 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
         void onFileAllDismissed();
     }
 
-    private OnFileSelectingListener mOnFileSelectingListener;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        mOnFileSelectingListener = (OnFileSelectingListener) context;
+    public interface OnFileOptionClickListener {
+        void onFileOptionClick(File file);
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,8 +92,11 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
         View view = inflater.inflate(R.layout.fragment_file, container, false);
 
         File rootDir = Environment.getExternalStorageDirectory();
+        if (rootDir == null) {
+            rootDir = Environment.getRootDirectory();
+        }
 
-        mArrayAdapter = new FileListAdapter(getContext(), rootDir, mOnFileSelectingListener);
+        mArrayAdapter = new FileListAdapter(getContext(), rootDir, (OnFileSelectingListener) getContext(), (OnFileOptionClickListener) getContext());
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView_file);
         mRecyclerView.setAdapter(mArrayAdapter);
