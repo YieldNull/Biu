@@ -25,11 +25,11 @@
         </menu>
     </item>
     <item
-        android:id="@+id/action_select_or_dismiss"
-        android:title="@string/action_select"
+        android:id="@+id/action_choose_or_dismiss"
+        android:title="@string/action_choose"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_select_all"
+        android:id="@+id/action_choose_all"
         android:title="@string/action_select_all"
         app:showAsAction="never" />
 

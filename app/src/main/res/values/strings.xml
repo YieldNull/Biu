@@ -23,28 +23,28 @@
     <string name="nav_settings">设置</string>
 
 
-    <!--********************FileSelectActivity****************-->
+    <!--********************FileChooseActivity****************-->
 
-    <string name="label_select_file">选择文件</string>
+    <string name="label_choose_file">选择文件</string>
 
     <string name="action_scan">扫一扫</string>
     <string name="action_show_hidden">显示隐藏文件</string>
     <string name="action_not_show_hidden">不显示隐藏文件</string>
     <string name="action_select_all">全选</string>
-    <string name="action_select">选择…</string>
-    <string name="action_select_dismiss">清除选择</string>
+    <string name="action_choose">选择…</string>
+    <string name="action_choose_dismiss">清除选择</string>
     <string name="action_sort_by">排序依据</string>
     <string name="action_sort_by_name">按名称排序</string>
     <string name="action_sort_by_time">按修改时间排序</string>
     <string name="action_sort_by_size">按大小排序</string>
 
 
-    <string name="file_action_open">打开</string>
-    <string name="file_action_rename">重命名</string>
-    <string name="file_action_info">详情</string>
-    <string name="file_action_copy">复制</string>
-    <string name="file_action_move">移动</string>
-    <string name="file_action_delete">删除</string>
+    <string name="file_option_open">打开</string>
+    <string name="file_option_rename">重命名</string>
+    <string name="file_option_info">详情</string>
+    <string name="file_option_copy">复制</string>
+    <string name="file_option_move">移动</string>
+    <string name="file_option_delete">删除</string>
 
 
     <string name="list_header_folder">文件夹</string>

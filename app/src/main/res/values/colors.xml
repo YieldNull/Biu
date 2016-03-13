@@ -4,24 +4,25 @@
     <color name="colorPrimaryDark">#008080</color>
     <color name="colorAccent">@color/colorPrimary</color>
 
-    <color name="tabBackground">@color/colorPrimary</color>
-    <color name="tabText">#e6e6e6</color>
-    <color name="tabSelected">#FFFFFF</color>
-    <color name="tabIndicator">#ffcc99</color>
+    <color name="tab_background">@color/colorPrimary</color>
+    <color name="tab_text">#e6e6e6</color>
+    <color name="tab_chosen">#FFFFFF</color>
+    <color name="tab_indicator">#ffcc99</color>
 
-    <color name="navBackground">@color/colorPrimary</color>
+    <color name="drawer_background">@color/colorPrimary</color>
 
-    <color name="floatBtnShadow">#ccffffff</color>
-    <color name="floatBtn">@color/colorPrimary</color>
+    <color name="fbtn_shadow">#ccffffff</color>
+    <color name="fbtn">@color/colorPrimary</color>
 
-    <color name="fileCateBackground">#EEEEEE</color>
-    <color name="fileName">@android:color/black</color>
-    <color name="fileDescription">@android:color/tertiary_text_dark</color>
-    <color name="fileIconBackground">#E1E1E1</color>
-    <color name="fileIconBackgroundSelected">#4285f4</color>
-    <color name="fileItemSelectedBackground">#f1f6fe</color>
+    <color name="file_header">#EEEEEE</color>
+    <color name="file_name">@android:color/black</color>
+    <color name="file_info">@android:color/tertiary_text_dark</color>
+    <color name="file_icon">#E1E1E1</color>
+    <color name="file_icon_chosen">#4285f4</color>
+    <color name="file_item_chosen">#f1f6fe</color>
 
-    <color name="upPanelBackground">@android:color/white</color>
-    <color name="upPanelText">#232323</color>
-    <color name="upPanelIconTint">#616161</color>
+    <color name="upPanel">@android:color/white</color>
+    <color name="upPanel_text">#232323</color>
+    <color name="upPanel_icon_tint">#616161</color>
+    <color name="upPanel_list_divider">#9E9E9E</color>
 </resources>

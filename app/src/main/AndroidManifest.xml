@@ -32,7 +32,7 @@
 
         <activity android:name=".gui.FileSendingActivity" />
         <activity
-            android:name=".gui.FileSelectActivity"
+            android:name=".gui.FileChooseActivity"
             android:label="fuck"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>

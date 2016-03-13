@@ -1,6 +1,5 @@
 package com.bbbbiu.biu.gui.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
@@ -14,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.FileListAdapter;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 
@@ -23,16 +23,6 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
 
     private FileListAdapter mArrayAdapter;
     private RecyclerView mRecyclerView;
-
-    public interface OnFileSelectingListener {
-        void onFileFirstSelected();
-
-        void onFileAllDismissed();
-    }
-
-    public interface OnFileOptionClickListener {
-        void onFileOptionClick(File file);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -66,17 +56,17 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
                     item.setTitle(getString(R.string.action_not_show_hidden));
                 }
                 break;
-            case R.id.action_select_or_dismiss:
-                if (mArrayAdapter.isOnSelecting()) {
-                    mArrayAdapter.setOnSelecting(false);
-                    item.setTitle(getString(R.string.action_select));
+            case R.id.action_choose_or_dismiss:
+                if (mArrayAdapter.isOnChoosing()) {
+                    mArrayAdapter.setOnChoosing(false);
+                    item.setTitle(getString(R.string.action_choose));
                 } else {
-                    mArrayAdapter.setOnSelecting(true);
-                    item.setTitle(getString(R.string.action_select_dismiss));
+                    mArrayAdapter.setOnChoosing(true);
+                    item.setTitle(getString(R.string.action_choose_dismiss));
                 }
                 break;
-            case R.id.action_select_all:
-                mArrayAdapter.setFileAllSelected();
+            case R.id.action_choose_all:
+                mArrayAdapter.setFileAllChosen();
                 break;
             case R.id.action_search:
                 break;
@@ -96,7 +86,7 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
             rootDir = Environment.getRootDirectory();
         }
 
-        mArrayAdapter = new FileListAdapter(getContext(), rootDir, (OnFileSelectingListener) getContext(), (OnFileOptionClickListener) getContext());
+        mArrayAdapter = new FileListAdapter(getContext(), rootDir);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerView_file);
         mRecyclerView.setAdapter(mArrayAdapter);
@@ -107,6 +97,8 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
             }
         });
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(getContext()).build());
 
         return view;
     }

@@ -7,9 +7,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
-    sothree:umanoOverlay="true"
+    sothree:overlayed="true"
     sothree:umanoPanelHeight="0dp"
-    sothree:umanoShadowHeight="4dp">
+    sothree:umanoShadowHeight="8dp">
 
     <android.support.design.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout_file_select"
@@ -24,7 +24,7 @@
             android:theme="@style/AppTheme.AppBarOverlay">
 
             <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar_file_select"
+                android:id="@+id/toolbar_file_choosing"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/colorPrimary"
@@ -33,44 +33,35 @@
 
 
             <android.support.design.widget.TabLayout
-                android:id="@+id/tabLayout_file_select"
+                android:id="@+id/tabLayout_file_choose"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/tabBackground"
+                android:background="@color/tab_background"
                 app:tabGravity="fill"
-                app:tabIndicatorColor="@color/tabIndicator"
+                app:tabIndicatorColor="@color/tab_indicator"
                 app:tabMode="fixed"
-                app:tabSelectedTextColor="@color/tabSelected"
-                app:tabTextColor="@color/tabText" />
+                app:tabSelectedTextColor="@color/tab_chosen"
+                app:tabTextColor="@color/tab_text" />
         </android.support.design.widget.AppBarLayout>
 
 
         <android.support.v4.view.ViewPager
-            android:id="@+id/viewpager_file_select"
+            android:id="@+id/viewpager_file_choose"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab_file_select"
-            android:layout_width="wrap_content"
+        <include
+            layout="@layout/uppanel_file_chosen"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="@dimen/fab_margin"
-            android:src="@drawable/ic_send" />
-
+            android:layout_gravity="end|bottom" />
 
     </android.support.design.widget.CoordinatorLayout>
 
-    <LinearLayout
-        android:id="@+id/sliding_layout_panel"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_file_option"
         android:layout_width="match_parent"
         android:layout_height="340dp"
-        android:background="@color/upPanelBackground">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView_sliding_up"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </LinearLayout>
+        android:background="@color/upPanel" />
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

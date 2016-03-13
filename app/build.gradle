@@ -39,5 +39,5 @@ dependencies {
     compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
 
     compile 'com.sothree.slidinguppanel:library:3.3.0'
-
+    compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
 }

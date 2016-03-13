@@ -30,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
-            android:textColor="@color/fileName" />
+            android:textColor="@color/file_name" />
 
         <TextView
             android:id="@+id/textView_file_description"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="大小：23MB  修改时间：16/03/07"
-            android:textColor="@color/fileDescription" />
+            android:textColor="@color/file_info" />
     </LinearLayout>
 
     <ImageButton

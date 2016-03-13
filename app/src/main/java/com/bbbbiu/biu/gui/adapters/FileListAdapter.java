@@ -3,17 +3,16 @@ package com.bbbbiu.biu.gui.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.fragments.FileFragment;
+import com.bbbbiu.biu.gui.fragments.OnFileChoosingListener;
+import com.bbbbiu.biu.gui.fragments.OnFileOptionClickListener;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -39,8 +38,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int VIEW_TYPE_ITEM = 1;
 
     private Context context;
-    private FileFragment.OnFileSelectingListener mOnFileSelectingListener;
-    private FileFragment.OnFileOptionClickListener mOnFileOptionClickListener;
+    private OnFileChoosingListener mOnFileChoosingListener;
+    private OnFileOptionClickListener mOnFileOptionClickListener;
 
     /**
      * 当前目录下的文件或文件夹
@@ -50,10 +49,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private List<File> dirEnterStack = new ArrayList<>();
     private List<File> listItems = new ArrayList<>();
-    private HashSet<File> selectedFile = new HashSet<>();
+    private HashSet<File> chosenFiles = new HashSet<>();
 
     private boolean showHidden;
-    private boolean onSelecting;
+    private boolean onChoosing;
 
     public static Comparator<File> COMPARATOR_NAME = new Comparator<File>() {
         @Override
@@ -85,7 +84,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private Comparator<File> sortingComparator = COMPARATOR_NAME;
 
 
-    public File getItem(int position) {
+    public File getFileAt(int position) {
         return listItems.get(position);
     }
 
@@ -93,12 +92,12 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return showHidden;
     }
 
-    public boolean isOnSelecting() {
-        return onSelecting;
+    public boolean isOnChoosing() {
+        return onChoosing;
     }
 
-    public boolean isFileSelected(int position) {
-        return selectedFile.contains(getItem(position));
+    public boolean isFileChosen(int position) {
+        return chosenFiles.contains(getFileAt(position));
     }
 
 
@@ -112,54 +111,55 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         refreshDir();
     }
 
-    public void setOnSelecting(boolean onSelecting) {
-        this.onSelecting = onSelecting;
+    public void setOnChoosing(boolean onChoosing) {
+        this.onChoosing = onChoosing;
 
-        if (!this.onSelecting) {
-            selectedFile.clear();
+        if (!this.onChoosing) {
+            chosenFiles.clear();
         }
 
         notifyDataSetChanged();
     }
 
 
-    public void setFileSelected(int position, boolean selected) {
-        if (selected) {
-            if (selectedFile.size() == 0) {
-                mOnFileSelectingListener.onFileFirstSelected();
-            }
+    public void setFileChosen(int position, boolean chosen) {
+        File file = getFileAt(position);
 
-            selectedFile.add(getItem(position));
-            onSelecting = true;
+        if (chosen) {
+            if (chosenFiles.size() == 0) {
+                mOnFileChoosingListener.onFileFirstChosen();
+            }
+            mOnFileChoosingListener.onFileChosen(file);
+            chosenFiles.add(file);
+            onChoosing = true;
         } else {
-            selectedFile.remove(getItem(position));
-            if (selectedFile.size() == 0) {
-                onSelecting = false;
-                mOnFileSelectingListener.onFileAllDismissed();
+            chosenFiles.remove(file);
+            if (chosenFiles.size() == 0) {
+                onChoosing = false;
+                mOnFileChoosingListener.onFileAllDismissed();
             }
+            mOnFileChoosingListener.onFileDismissed(file);
         }
         notifyDataSetChanged();
 
     }
 
-    public void setFileAllSelected() {
+    public void setFileAllChosen() {
         for (File file : listItems) {
             if (file != null) {
-                selectedFile.add(file);
+                chosenFiles.add(file);
             }
         }
-        onSelecting = true;
+        onChoosing = true;
         notifyDataSetChanged();
     }
 
-    public FileListAdapter(Context context, File rootDir,
-                           FileFragment.OnFileSelectingListener onFileSelectingListener,
-                           FileFragment.OnFileOptionClickListener onFileOptionClickListener) {
+    public FileListAdapter(Context context, File rootDir) {
         this.context = context;
         enterDir(rootDir);
 
-        mOnFileSelectingListener = onFileSelectingListener;
-        mOnFileOptionClickListener = onFileOptionClickListener;
+        mOnFileChoosingListener = (OnFileChoosingListener) context;
+        mOnFileOptionClickListener = (OnFileOptionClickListener) context;
     }
 
 
@@ -210,7 +210,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             holder.setPosition(position);
 
             // 设置文件信息
-            final File file = getItem(position);
+            final File file = getFileAt(position);
             String name = file.getName();
             holder.fileNameTextView.setText(name);
 
@@ -237,8 +237,8 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             // 设置文件图标背景等样式
             if (isNormal()) {
                 holder.setItemStyleNormal(file);
-            } else if (isFileSelected(position)) {
-                holder.setItemStyleSelected(file);
+            } else if (isFileChosen(position)) {
+                holder.setItemStyleChosen(file);
             } else {
                 holder.setItemStyleChoosing(file);
             }
@@ -251,16 +251,17 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 }
             });
 
+
             holder.fileIconImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (isNormal() && file.isDirectory()) {
                         enterDir(file);
                     } else {
-                        if (isFileSelected(position)) {
-                            setFileSelected(position, false);
+                        if (isFileChosen(position)) {
+                            setFileChosen(position, false);
                         } else {
-                            setFileSelected(position, true);
+                            setFileChosen(position, true);
                         }
                     }
                 }
@@ -275,11 +276,11 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemViewType(int position) {
-        return getItem(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
+        return getFileAt(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
     }
 
     private boolean isNormal() {
-        return selectedFile.isEmpty() && !onSelecting;
+        return chosenFiles.isEmpty() && !onChoosing;
     }
 
     private void refreshDir() {
@@ -365,10 +366,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
         }
 
-        public void setItemStyleSelected(File file) {
-            itemView.setBackgroundColor(context.getResources().getColor(R.color.fileItemSelectedBackground));
-            fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_selected));
-            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_selected));
+        public void setItemStyleChosen(File file) {
+            itemView.setBackgroundColor(context.getResources().getColor(R.color.file_item_chosen));
+            fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
+            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
         }
 
         private Drawable getFileIcon(File file) {
@@ -381,15 +382,15 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         @Override
         public void onClick(View v) {
-            File file = getItem(position);
+            File file = getFileAt(position);
 
-            if (isFileSelected(position)) {
-                setFileSelected(position, false);
+            if (isFileChosen(position)) {
+                setFileChosen(position, false);
             } else {
                 if (file.isDirectory()) {
                     enterDir(file);
                 } else {
-                    setFileSelected(position, true);
+                    setFileChosen(position, true);
                 }
             }
         }

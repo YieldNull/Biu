@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main_toorbar, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity
             case R.id.nav_home:
                 break;
             case R.id.nav_files:
-                startActivity(new Intent(this, FileSelectActivity.class));
+                startActivity(new Intent(this, FileChooseActivity.class));
                 break;
             case R.id.nav_history:
                 break;
