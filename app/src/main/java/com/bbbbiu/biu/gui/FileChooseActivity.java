@@ -65,6 +65,8 @@ public class FileChooseActivity extends AppCompatActivity implements
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
+        FloatingActionButton fbtn = (FloatingActionButton) findViewById(R.id.fab_file_select);
+
         // 使用viewPager切换tab
         mPagerAdapter = new FileChoosePagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.viewpager_file_choose);
