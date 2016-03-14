@@ -41,37 +41,39 @@ public class FileFragment extends Fragment implements OnBackPressedListener {
             case R.id.action_sort_by_time:
                 mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_TIME);
                 break;
+
             case R.id.action_sort_by_size:
                 mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_SIZE);
                 break;
+
             case R.id.action_sort_by_name:
                 mArrayAdapter.setSortingComparator(FileListAdapter.COMPARATOR_NAME);
                 break;
+
             case R.id.action_show_hidden:
                 if (mArrayAdapter.isShowHidden()) {
                     mArrayAdapter.setShowHidden(false);
-                    item.setTitle(getString(R.string.action_show_hidden));
                 } else {
                     mArrayAdapter.setShowHidden(true);
-                    item.setTitle(getString(R.string.action_not_show_hidden));
                 }
                 break;
+
             case R.id.action_choose_or_dismiss:
                 if (mArrayAdapter.isOnChoosing()) {
                     mArrayAdapter.setOnChoosing(false);
-                    item.setTitle(getString(R.string.action_choose));
                 } else {
                     mArrayAdapter.setOnChoosing(true);
-                    item.setTitle(getString(R.string.action_choose_dismiss));
                 }
                 break;
+
             case R.id.action_choose_all:
                 mArrayAdapter.setFileAllChosen();
                 break;
+            
             case R.id.action_search:
                 break;
             default:
-                return super.onOptionsItemSelected(item);
+                break;
         }
         return true;
     }

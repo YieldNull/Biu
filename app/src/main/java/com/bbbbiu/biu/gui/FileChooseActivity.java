@@ -40,8 +40,9 @@ public class FileChooseActivity extends AppCompatActivity implements
     private FileChoosePagerAdapter mPagerAdapter;
 
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
-    private Menu mToolbarMenu;
 
+    private boolean onChoosing;
+    private boolean showHidden;
 
     private RecyclerView mFileOptionRecyclerView;
     private FileOptionAdapter mFileOptionAdapter;
@@ -90,20 +91,48 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.file_choosing, menu);
-        this.mToolbarMenu = menu;
+        if (onChoosing) {
+            getMenuInflater().inflate(R.menu.file_chosen, menu);
+            MenuItem item = menu.findItem(R.id.action_choose_or_dismiss);
+            item.setTitle(getString(R.string.action_choose_dismiss));
+
+        } else {
+            getMenuInflater().inflate(R.menu.file_choosing, menu);
+            MenuItem item = menu.findItem(R.id.action_choose_or_dismiss);
+            item.setTitle(getString(R.string.action_choose));
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
-            finish();
-            return true;
-        } else if (id == R.id.action_choose_all) {
-            MenuItem menuItem = mToolbarMenu.findItem(R.id.action_choose_or_dismiss);
-            menuItem.setTitle(getString(R.string.action_choose_dismiss));
+        switch (id) {
+            case android.R.id.home:
+                finish();
+                return true;
+
+            case R.id.action_choose_all:
+                onChoosing = true;
+                invalidateOptionsMenu();
+                break;
+
+            case R.id.action_show_hidden:
+                if (showHidden) {
+                    item.setTitle(getString(R.string.action_show_hidden));
+                } else {
+                    item.setTitle(getString(R.string.action_not_show_hidden));
+                }
+                showHidden = !showHidden;
+                break;
+
+            case R.id.action_choose_or_dismiss:
+                onChoosing = !onChoosing;
+                invalidateOptionsMenu();
+                break;
+
+            default:
+                break;
         }
         return false;
     }
@@ -119,14 +148,17 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     @Override
     public void onFileFirstChosen() {
-        MenuItem item = mToolbarMenu.findItem(R.id.action_choose_or_dismiss);
-        item.setTitle(getString(R.string.action_choose_dismiss));
+        onChoosing = true;
+        invalidateOptionsMenu();
+
     }
 
     @Override
     public void onFileAllDismissed() {
-        MenuItem item = mToolbarMenu.findItem(R.id.action_choose_or_dismiss);
-        item.setTitle(getString(R.string.action_choose));
+        onChoosing = false;
+        invalidateOptionsMenu();
+
+
     }
 
     @Override

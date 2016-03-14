@@ -134,14 +134,12 @@ public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public class OperationHeaderViewHolder extends RecyclerView.ViewHolder {
         public ImageView fileIconImageView;
         public TextView fileNameTextView;
-        public ImageView fileInfoImageView;
 
         public OperationHeaderViewHolder(View itemView) {
             super(itemView);
 
             fileIconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_operation_file_icon);
             fileNameTextView = (TextView) itemView.findViewById(R.id.textView_file_operation_file_name);
-            fileInfoImageView = (ImageView) itemView.findViewById(R.id.imageView_file_operation_file_info);
         }
     }
 

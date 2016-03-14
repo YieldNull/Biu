@@ -10,8 +10,8 @@
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         android:layout_margin="16dp"
-        android:tint="@color/upPanel_icon_tint"
-        android:src="@drawable/ic_file_folder" />
+        android:src="@drawable/ic_file_folder"
+        android:tint="@color/upPanel_icon_tint" />
 
     <TextView
         android:id="@+id/textView_file_operation_file_name"
@@ -20,17 +20,8 @@
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="20dp"
+        android:layout_marginRight="64dp"
         android:layout_toRightOf="@id/imageView_file_operation_file_icon"
-        android:text="删除"
+        android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
         android:textColor="@color/upPanel_text" />
-
-    <ImageView
-        android:id="@+id/imageView_file_operation_file_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="20dp"
-        android:tint="@color/upPanel_icon_tint"
-        android:src="@drawable/ic_file_option_info" />
 </RelativeLayout>
