@@ -1,5 +1,8 @@
 package com.bbbbiu.biu.gui;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -11,17 +14,18 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
+import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.FileOptionAdapter;
 import com.bbbbiu.biu.gui.adapters.FileChoosePagerAdapter;
+import com.bbbbiu.biu.gui.fragments.FileFragment;
 import com.bbbbiu.biu.gui.fragments.OnBackPressedListener;
 import com.bbbbiu.biu.gui.fragments.OnFileChoosingListener;
 import com.bbbbiu.biu.gui.fragments.OnFileOptionClickListener;
@@ -30,6 +34,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
+import java.util.HashSet;
 
 public class FileChooseActivity extends AppCompatActivity implements
         OnFileChoosingListener, OnFileOptionClickListener {
@@ -42,10 +47,12 @@ public class FileChooseActivity extends AppCompatActivity implements
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
 
     private boolean onChoosing;
-    private boolean showHidden;
 
     private RecyclerView mFileOptionRecyclerView;
     private FileOptionAdapter mFileOptionAdapter;
+
+    private HashSet<File> mChosenFiles = new HashSet<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,16 +98,7 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (onChoosing) {
-            getMenuInflater().inflate(R.menu.file_chosen, menu);
-            MenuItem item = menu.findItem(R.id.action_choose_or_dismiss);
-            item.setTitle(getString(R.string.action_choose_dismiss));
-
-        } else {
-            getMenuInflater().inflate(R.menu.file_choosing, menu);
-            MenuItem item = menu.findItem(R.id.action_choose_or_dismiss);
-            item.setTitle(getString(R.string.action_choose));
-        }
+        getMenuInflater().inflate(R.menu.file_choose, menu);
         return true;
     }
 
@@ -117,20 +115,10 @@ public class FileChooseActivity extends AppCompatActivity implements
                 invalidateOptionsMenu();
                 break;
 
-            case R.id.action_show_hidden:
-                if (showHidden) {
-                    item.setTitle(getString(R.string.action_show_hidden));
-                } else {
-                    item.setTitle(getString(R.string.action_not_show_hidden));
-                }
-                showHidden = !showHidden;
-                break;
-
-            case R.id.action_choose_or_dismiss:
+            case R.id.action_choosing_dismiss:
                 onChoosing = !onChoosing;
                 invalidateOptionsMenu();
                 break;
-
             default:
                 break;
         }
@@ -139,35 +127,24 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        Fragment fragment = mPagerAdapter.getItem(mViewPager.getCurrentItem());
-
-        if (!((OnBackPressedListener) fragment).onBackPressed()) {
+        if (!((OnBackPressedListener) getCurrentFragment()).onBackPressed()) {
             super.onBackPressed();
         }
     }
-
-    @Override
-    public void onFileFirstChosen() {
-        onChoosing = true;
-        invalidateOptionsMenu();
-
-    }
-
-    @Override
-    public void onFileAllDismissed() {
-        onChoosing = false;
-        invalidateOptionsMenu();
-
-
+    private Fragment getCurrentFragment(){
+        return mPagerAdapter.getItem(mViewPager.getCurrentItem());
     }
 
     @Override
     public void onFileChosen(File file) {
+        mChosenFiles.add(file);
+        getSupportActionBar().setTitle(String.format("已选 %d 项", mChosenFiles.size()));
     }
 
     @Override
     public void onFileDismissed(File file) {
-
+        mChosenFiles.remove(file);
+        getSupportActionBar().setTitle(String.format("已选 %d 项", mChosenFiles.size()));
     }
 
     @Override
@@ -190,8 +167,9 @@ public class FileChooseActivity extends AppCompatActivity implements
             mFileOptionAdapter.notifyDataSetChanged();
         }
 
-
         // 展开底部panel
+        mSlidingUpPanelLayout.invalidate();
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
     }
+
 }

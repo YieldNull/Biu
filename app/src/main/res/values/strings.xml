@@ -31,8 +31,7 @@
     <string name="action_show_hidden">显示隐藏文件</string>
     <string name="action_not_show_hidden">不显示隐藏文件</string>
     <string name="action_select_all">全选</string>
-    <string name="action_choose">选择…</string>
-    <string name="action_choose_dismiss">清除选择</string>
+    <string name="action_choosing_dismiss">清除选择</string>
     <string name="action_sort_by">排序依据</string>
     <string name="action_sort_by_name">按名称排序</string>
     <string name="action_sort_by_time">按修改时间排序</string>

@@ -64,6 +64,6 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView_file_option"
         android:layout_width="match_parent"
-        android:layout_height="340dp"
+        android:layout_height="280dp"
         android:background="@color/upPanel" />
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

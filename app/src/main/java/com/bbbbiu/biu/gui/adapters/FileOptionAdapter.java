@@ -1,15 +1,22 @@
 package com.bbbbiu.biu.gui.adapters;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.FileChooseActivity;
 import com.yqritc.recyclerviewflexibledivider.FlexibleDividerDecoration;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -18,27 +25,41 @@ import java.util.ArrayList;
 
 public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         implements FlexibleDividerDecoration.PaintProvider,
-        FlexibleDividerDecoration.VisibilityProvider, HorizontalDividerItemDecoration.MarginProvider {
+        HorizontalDividerItemDecoration.MarginProvider, FlexibleDividerDecoration.VisibilityProvider {
+
+    private static final String TAG = FileOptionAdapter.class.getSimpleName();
+
+    public int getOptionStringId(int position) {
+        return operations.get(position)[0];
+    }
 
     private ArrayList<Integer[]> operations = new ArrayList<>();
     private Context context;
     private final int VIEW_TYPE_HEADER = 0;
     private final int VIEW_TYPE_ITEM = 1;
 
+    public File getFile() {
+        return file;
+    }
+
     private File file;
 
-    public FileOptionAdapter(Context context,File file) {
+    public FileOptionAdapter(Context context, File file) {
         this.context = context;
-        this.file=file;
+        this.file = file;
 
         operations.add(new Integer[]{R.string.file_option_info, R.drawable.ic_file_option_info});
-        operations.add(new Integer[]{R.string.file_option_open, R.drawable.ic_file_option_open});
         operations.add(new Integer[]{R.string.file_option_rename, R.drawable.ic_file_option_rename});
         operations.add(new Integer[]{R.string.file_option_move, R.drawable.ic_file_option_move});
         operations.add(new Integer[]{R.string.file_option_copy, R.drawable.ic_file_option_copy});
         operations.add(new Integer[]{R.string.file_option_delete, R.drawable.ic_file_option_delete});
 
     }
+
+    public void setFile(File file) {
+        this.file = file;
+    }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -73,6 +94,8 @@ public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             holder.iconImageView.setImageDrawable(context.getResources().getDrawable(drawableId));
             holder.operationTextView.setText(context.getString(stringId));
+            holder.setOnClickListener(position);
+
         } else {
             OperationHeaderViewHolder holder = (OperationHeaderViewHolder) hd;
             holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_folder));
@@ -87,10 +110,6 @@ public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return operations.size();
     }
 
-    public void setFile(File file) {
-        this.file = file;
-    }
-
 
     /**
      * RecyclerView Divider
@@ -103,32 +122,20 @@ public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
         return paint;
     }
 
-    @Override
-    public boolean shouldHideDivider(int position, RecyclerView parent) {
-        switch (position) {
-            case 1:
-            case 3:
-                return true;
-        }
-        return false;
-    }
 
     @Override
     public int dividerLeftMargin(int position, RecyclerView parent) {
-        switch (position) {
-            case 0:
-                return 0;
-            case 2:
-                return 140;
-            case 4:
-                return 140;
-        }
-        return 0;
+        return position == 3 ? 140 : 0;
     }
 
     @Override
     public int dividerRightMargin(int position, RecyclerView parent) {
         return 0;
+    }
+
+    @Override
+    public boolean shouldHideDivider(int position, RecyclerView parent) {
+        return position == 1 || position == 2 ? true : false;
     }
 
     public class OperationHeaderViewHolder extends RecyclerView.ViewHolder {
@@ -153,6 +160,26 @@ public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             iconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_operation_icon);
             operationTextView = (TextView) itemView.findViewById(R.id.textView_file_operation);
+        }
+
+        public void setOnClickListener(final int position) {
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switch (getOptionStringId(position)) {
+                        case R.string.file_option_rename:
+                            break;
+                        case R.string.file_option_move:
+                            break;
+                        case R.string.file_option_copy:
+                            break;
+                        case R.string.file_option_delete:
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
         }
     }
 }
