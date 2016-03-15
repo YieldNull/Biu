@@ -1,87 +1,40 @@
 package com.bbbbiu.biu.httpd.util;
 
-import com.bbbbiu.biu.httpd.upload.InvalidFileNameException;
+import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
+import com.bbbbiu.biu.httpd.HttpDaemon;
+import com.bbbbiu.biu.httpd.upload.exceptions.InvalidFileNameException;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.io.IOUtils;
 
-/**
- * Utility class for working with streams.
- *
- * @version $Id: Streams.java 1565332 2014-02-06 16:42:19Z ggregory $
- */
 public final class Streams {
 
-    /**
-     * Private constructor, to prevent instantiation.
-     * This class has only static methods.
-     */
     private Streams() {
-        // Does nothing
     }
 
-    /**
-     * Default buffer size for use in
-     * {@link #copy(InputStream, OutputStream, boolean)}.
-     */
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
     /**
-     * Copies the contents of the given {@link InputStream}
-     * to the given {@link OutputStream}. Shortcut for
-     * <pre>
-     *   copy(pInputStream, pOutputStream, new byte[8192]);
-     * </pre>
+     * 把输入流内的内容写入到输出流。并关闭输入流
      *
-     * @param inputStream The input stream, which is being read.
-     * It is guaranteed, that {@link InputStream#close()} is called
-     * on the stream.
-     * @param outputStream The output stream, to which data should
-     * be written. May be null, in which case the input streams
-     * contents are simply discarded.
-     * @param closeOutputStream True guarantees, that {@link OutputStream#close()}
-     * is called on the stream. False indicates, that only
-     * {@link OutputStream#flush()} should be called finally.
-     *
-     * @return Number of bytes, which have been copied.
-     * @throws IOException An I/O error occurred.
+     * @param inputStream       最后会被关闭
+     * @param outputStream      可为null，表示输入流中的内容直接被丢弃
+     * @param closeOutputStream 最后是否关闭输出流
+     * @return 从输入流复制的数据量，按byte记
      */
     public static long copy(InputStream inputStream, OutputStream outputStream, boolean closeOutputStream)
             throws IOException {
-        return copy(inputStream, outputStream, closeOutputStream, new byte[DEFAULT_BUFFER_SIZE]);
-    }
 
-    /**
-     * Copies the contents of the given {@link InputStream}
-     * to the given {@link OutputStream}.
-     *
-     * @param inputStream The input stream, which is being read.
-     *   It is guaranteed, that {@link InputStream#close()} is called
-     *   on the stream.
-     * @param outputStream The output stream, to which data should
-     *   be written. May be null, in which case the input streams
-     *   contents are simply discarded.
-     * @param closeOutputStream True guarantees, that {@link OutputStream#close()}
-     *   is called on the stream. False indicates, that only
-     *   {@link OutputStream#flush()} should be called finally.
-     * @param buffer Temporary buffer, which is to be used for
-     *   copying data.
-     * @return Number of bytes, which have been copied.
-     * @throws IOException An I/O error occurred.
-     */
-    public static long copy(InputStream inputStream,
-            OutputStream outputStream, boolean closeOutputStream,
-            byte[] buffer)
-    throws IOException {
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         OutputStream out = outputStream;
         InputStream in = inputStream;
         try {
             long total = 0;
-            for (;;) {
+            while (true) {
                 int res = in.read(buffer);
                 if (res == -1) {
                     break;
@@ -105,46 +58,13 @@ public final class Streams {
             in = null;
             return total;
         } finally {
-            IOUtils.closeQuietly(in);
+            safeClose(in);
             if (closeOutputStream) {
-                IOUtils.closeQuietly(out);
+                safeClose(out);
             }
         }
     }
 
-    /**
-     * This convenience method allows to read a
-     * {@link //FileItemStream}'s
-     * content into a string. The platform's default character encoding
-     * is used for converting bytes into characters.
-     *
-     * @param inputStream The input stream to read.
-     * @see #asString(InputStream, String)
-     * @return The streams contents, as a string.
-     * @throws IOException An I/O error occurred.
-     */
-    public static String asString(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(inputStream, baos, true);
-        return baos.toString();
-    }
-
-    /**
-     * This convenience method allows to read a
-     * {//@link FileItemStream}'s
-     * content into a string, using the given character encoding.
-     *
-     * @param inputStream The input stream to read.
-     * @param encoding The character encoding, typically "UTF-8".
-     * @see #asString(InputStream)
-     * @return The streams contents, as a string.
-     * @throws IOException An I/O error occurred.
-     */
-    public static String asString(InputStream inputStream, String encoding) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(inputStream, baos, true);
-        return baos.toString(encoding);
-    }
 
     /**
      * Checks, whether the given file name is valid in the sense,
@@ -157,10 +77,10 @@ public final class Streams {
      * @throws InvalidFileNameException The file name was found to be invalid.
      */
     public static String checkFileName(String fileName) {
-        if (fileName != null  &&  fileName.indexOf('\u0000') != -1) {
+        if (fileName != null && fileName.indexOf('\u0000') != -1) {
             // pFileName.replace("\u0000", "\\0")
             final StringBuilder sb = new StringBuilder();
-            for (int i = 0;  i < fileName.length();  i++) {
+            for (int i = 0; i < fileName.length(); i++) {
                 char c = fileName.charAt(i);
                 switch (c) {
                     case 0:
@@ -177,4 +97,22 @@ public final class Streams {
         return fileName;
     }
 
+    /**
+     * 安全地关闭流
+     *
+     * @param closable 可关闭对象
+     */
+    public static void safeClose(Object closable) {
+        try {
+            if (closable != null) {
+                if (closable instanceof Closeable) {
+                    ((Closeable) closable).close();
+                } else {
+                    throw new IllegalArgumentException("Unknown object to close");
+                }
+            }
+        } catch (IOException e) {
+            Log.e(HttpDaemon.TAG, "Could not close", e);
+        }
+    }
 }

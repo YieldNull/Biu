@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.httpd.servlet;
+package com.bbbbiu.biu.httpd.servlets;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,8 +8,7 @@ import com.bbbbiu.biu.httpd.HttpDaemon;
 import com.bbbbiu.biu.httpd.HttpRequest;
 import com.bbbbiu.biu.httpd.HttpResponse;
 import com.bbbbiu.biu.httpd.HttpServlet;
-import com.bbbbiu.biu.httpd.util.ContentType;
-import com.bbbbiu.biu.httpd.util.HtmlReader;
+import com.bbbbiu.biu.httpd.ContentType;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;

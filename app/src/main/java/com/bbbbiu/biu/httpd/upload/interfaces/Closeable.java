@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bbbbiu.biu.httpd.util;
+package com.bbbbiu.biu.httpd.upload.interfaces;
 
 import java.io.IOException;
 

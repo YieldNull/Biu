@@ -12,7 +12,7 @@ import android.util.Log;
 
 import com.bbbbiu.biu.httpd.HttpDaemon;
 import com.bbbbiu.biu.httpd.HttpServlet;
-import com.bbbbiu.biu.httpd.servlet.StaticServlet;
+import com.bbbbiu.biu.httpd.servlets.StaticServlet;
 
 import java.io.IOException;
 

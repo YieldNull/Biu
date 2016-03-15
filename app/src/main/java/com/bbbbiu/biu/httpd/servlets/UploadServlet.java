@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.httpd.servlet;
+package com.bbbbiu.biu.httpd.servlets;
 
 import android.content.Context;
 import android.util.Log;
@@ -10,6 +10,7 @@ import com.bbbbiu.biu.httpd.HttpServlet;
 import com.bbbbiu.biu.httpd.upload.FileItem;
 import com.bbbbiu.biu.httpd.upload.FileItemFactory;
 import com.bbbbiu.biu.httpd.upload.FileUpload;
+import com.bbbbiu.biu.httpd.upload.exceptions.FileUploadException;
 import com.bbbbiu.biu.httpd.util.HtmlReader;
 import com.bbbbiu.biu.util.StorageUtil;
 
@@ -47,7 +48,7 @@ public class UploadServlet extends HttpServlet {
 
         try {
             items = fileUpload.parseRequest(request);
-        } catch (FileUpload.FileUploadException e) {
+        } catch (FileUploadException e) {
             Log.w(TAG, e.toString());
             return null;
         }

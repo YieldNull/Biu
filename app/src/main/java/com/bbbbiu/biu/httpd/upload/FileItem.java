@@ -1,5 +1,7 @@
 package com.bbbbiu.biu.httpd.upload;
 
+import com.bbbbiu.biu.httpd.upload.exceptions.FileUploadException;
+import com.bbbbiu.biu.httpd.util.FileItemHeaders;
 import com.bbbbiu.biu.httpd.util.Streams;
 
 
@@ -413,7 +415,7 @@ public class FileItem {
                  * For whatever reason we cannot write the
                  * file to disk.
                  */
-                throw new FileUpload.FileUploadException(
+                throw new FileUploadException(
                         "Cannot write uploaded file to disk!");
             }
         }

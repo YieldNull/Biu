@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.httpd.upload;
+package com.bbbbiu.biu.httpd.upload.exceptions;
 
 /**
  * This exception is thrown in case of an invalid file name.

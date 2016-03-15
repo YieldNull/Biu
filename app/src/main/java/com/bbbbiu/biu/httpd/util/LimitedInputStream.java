@@ -1,6 +1,8 @@
 package com.bbbbiu.biu.httpd.util;
 
 
+import com.bbbbiu.biu.httpd.upload.interfaces.Closeable;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;

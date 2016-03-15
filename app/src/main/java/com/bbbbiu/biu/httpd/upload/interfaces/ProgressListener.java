@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.httpd.upload;
+package com.bbbbiu.biu.httpd.upload.interfaces;
 
 /**
  * The {@link ProgressListener} may be used to display a progress bar

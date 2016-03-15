@@ -1,11 +1,11 @@
-package com.bbbbiu.biu.httpd.servlet;
+package com.bbbbiu.biu.httpd.servlets;
 
 import android.content.Context;
 
 import com.bbbbiu.biu.httpd.HttpRequest;
 import com.bbbbiu.biu.httpd.HttpResponse;
 import com.bbbbiu.biu.httpd.HttpServlet;
-import com.bbbbiu.biu.httpd.util.ContentType;
+import com.bbbbiu.biu.httpd.ContentType;
 import com.bbbbiu.biu.httpd.util.HtmlReader;
 
 public class StaticServlet extends HttpServlet {

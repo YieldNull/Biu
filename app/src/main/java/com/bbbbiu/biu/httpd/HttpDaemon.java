@@ -3,10 +3,8 @@ package com.bbbbiu.biu.httpd;
 
 import android.util.Log;
 
-import com.bbbbiu.biu.httpd.servlet.StaticServlet;
-import com.bbbbiu.biu.httpd.util.ContentType;
+import com.bbbbiu.biu.httpd.util.Streams;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -86,25 +84,6 @@ public class HttpDaemon {
 
 
     /**
-     * 安全地关闭流
-     *
-     * @param closable 可关闭对象
-     */
-    public static void safeClose(Object closable) {
-        try {
-            if (closable != null) {
-                if (closable instanceof Closeable) {
-                    ((Closeable) closable).close();
-                } else {
-                    throw new IllegalArgumentException("Unknown object to close");
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Could not close", e);
-        }
-    }
-
-    /**
      * 启动服务器
      *
      * @throws IOException 端口已被使用
@@ -139,7 +118,7 @@ public class HttpDaemon {
      */
     public void stop() {
         try {
-            safeClose(mServerSocket);
+            Streams.safeClose(mServerSocket);
             mRequestManager.closeAll();
             if (mListenThread != null) {
                 mListenThread.join();
@@ -272,10 +251,10 @@ public class HttpDaemon {
 
         public void close() {
             if (outputStream != null) {
-                safeClose(outputStream);
+                Streams.safeClose(outputStream);
             }
-            safeClose(inputStream);
-            safeClose(acceptSocket);
+            Streams.safeClose(inputStream);
+            Streams.safeClose(acceptSocket);
         }
 
 
@@ -320,9 +299,9 @@ public class HttpDaemon {
             } catch (IOException e) {
                 Log.w(TAG, e.toString());
             } finally {
-                safeClose(inputStream);
-                safeClose(outputStream);
-                safeClose(acceptSocket);
+                Streams.safeClose(inputStream);
+                Streams.safeClose(outputStream);
+                Streams.safeClose(acceptSocket);
                 mRequestManager.close(this);
             }
         }

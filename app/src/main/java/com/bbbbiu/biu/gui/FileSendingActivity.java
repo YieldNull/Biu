@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.httpd.servlet.DownloadServlet;
+import com.bbbbiu.biu.httpd.servlets.DownloadServlet;
 import com.bbbbiu.biu.service.HttpdService;
 
 import java.util.ArrayList;

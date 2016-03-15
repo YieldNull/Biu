@@ -3,8 +3,6 @@ package com.bbbbiu.biu.httpd;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.bbbbiu.biu.httpd.util.ContentType;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.FilterOutputStream;

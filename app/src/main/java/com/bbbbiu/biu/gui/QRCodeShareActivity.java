@@ -1,6 +1,5 @@
 package com.bbbbiu.biu.gui;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
@@ -11,7 +10,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.httpd.servlet.UploadServlet;
+import com.bbbbiu.biu.httpd.servlets.UploadServlet;
 import com.bbbbiu.biu.service.HttpdService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;

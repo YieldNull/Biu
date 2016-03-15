@@ -2,8 +2,6 @@ package com.bbbbiu.biu.httpd;
 
 import android.content.Context;
 
-import com.bbbbiu.biu.httpd.util.ContentType;
-
 public class HttpServlet {
     protected Context context;
 
