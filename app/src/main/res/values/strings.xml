@@ -7,21 +7,22 @@
     <string name="action_search">搜索</string>
     <string name="action_history">历史</string>
 
-    <!--********************DrawerLayout*********************-->
+    <string name="cate_image">图片</string>
+    <string name="cate_music">音乐</string>
+    <string name="cate_video">视频</string>
+    <string name="cate_document">文档</string>
+    <string name="cate_archive">压缩包</string>
+    <string name="cate_apk">安装包</string>
+    <string name="cate_download">下载</string>
+    <string name="cate_trash">回收站</string>
+    <string name="cate_storage">内存设备</string>
+    <string name="cate_sdcard">SD卡</string>
 
-    <string name="navigation_drawer_open">打开抽屉</string>
-    <string name="navigation_drawer_close">关闭抽屉</string>
-    <string name="nav_user">梦 瑶 狗</string>
 
-
-    <string name="nav_home">首页</string>
-    <string name="nav_files">文件</string>
-    <string name="nav_history">历史</string>
-    <string name="nav_computer">连接电脑</string>
-    <string name="nav_iphone">连接IPhone</string>
-    <string name="nav_help">帮助</string>
-    <string name="nav_settings">设置</string>
-
+    <string name="fbtn_receive">接收文件从</string>
+    <string name="fbtn_android">安卓</string>
+    <string name="fbtn_computer">电脑</string>
+    <string name="fbtn_ios">苹果</string>
 
     <!--********************FileChooseActivity****************-->
 
@@ -48,6 +49,7 @@
 
     <string name="list_header_folder">文件夹</string>
     <string name="list_header_file">文件</string>
+    <string name="fbtn_send">发送文件到</string>
 
 
 </resources>

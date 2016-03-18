@@ -1,26 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    tools:context=".gui.MainActivity">
 
-    <include
-        layout="@layout/content_main"
-        android:id="@+id/activity_main_container"
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay"
+        app:elevation="0dp">
 
-    <android.support.design.widget.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar_main"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_main"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/drawer_header"
-        app:menu="@menu/drawer" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-</android.support.v4.widget.DrawerLayout>
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/float_action_menu_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        app:menu_labels_colorNormal="@color/fbtn_label"
+        app:menu_labels_colorPressed="@color/fbtn_label"
+        app:menu_labels_colorRipple="@color/fbtn_label"
+        fab:menu_backgroundColor="@color/fbtn_shadow"
+        fab:menu_colorNormal="@color/fbtn"
+        fab:menu_colorPressed="@color/fbtn"
+        fab:menu_colorRipple="@color/fbtn"
+        fab:menu_fab_label="@string/fbtn_receive"
+        fab:menu_icon="@drawable/ic_receive"
+        fab:menu_labels_ellipsize="end"
+        fab:menu_labels_singleLine="true"
+        fab:menu_labels_textColor="@color/fbtn_label_text">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fbtn_receive_android"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_send_android"
+            app:fab_colorNormal="@color/fbtn_sub"
+            app:fab_colorPressed="@color/fbtn_sub"
+            app:fab_colorRipple="@color/fbtn_sub"
+            app:fab_label="@string/fbtn_android"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fbtn_receive_ios"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_send_ios"
+            app:fab_colorNormal="@color/fbtn_sub"
+            app:fab_colorPressed="@color/fbtn_sub"
+            app:fab_colorRipple="@color/fbtn_sub"
+            app:fab_label="@string/fbtn_ios"
+            fab:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/fbtn_receive_computer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_send_computer"
+            app:fab_colorNormal="@color/fbtn_sub"
+            app:fab_colorPressed="@color/fbtn_sub"
+            app:fab_colorRipple="@color/fbtn_sub"
+            app:fab_label="@string/fbtn_computer"
+            fab:fab_size="mini" />
+    </com.github.clans.fab.FloatingActionMenu>
+</android.support.design.widget.CoordinatorLayout>
+

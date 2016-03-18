@@ -31,6 +31,7 @@ dependencies {
     compile 'com.android.support:support-v4:23.2.0'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
+    compile 'com.android.support:cardview-v7:23.2.1'
 
     compile 'com.google.zxing:core:3.2.1'
     compile 'com.google.zxing:android-core:3.2.1'
@@ -40,4 +41,6 @@ dependencies {
 
     compile 'com.sothree.slidinguppanel:library:3.3.0'
     compile 'com.yqritc:recyclerview-flexibledivider:1.2.9'
+
+    compile 'com.github.clans:fab:1.6.2'
 }

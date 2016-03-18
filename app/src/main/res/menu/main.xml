@@ -6,11 +6,6 @@
         android:icon="@drawable/ic_action_history"
         android:title="@string/action_history"
         app:showAsAction="always" />
-    <item
-        android:id="@+id/action_scan"
-        android:icon="@drawable/ic_action_scan"
-        android:title="@string/action_scan"
-        app:showAsAction="always" />
 
     <item
         android:id="@+id/action_settings"

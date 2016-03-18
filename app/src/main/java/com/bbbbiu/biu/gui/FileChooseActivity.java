@@ -1,34 +1,25 @@
 package com.bbbbiu.biu.gui;
 
-import android.content.ActivityNotFoundException;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.FileListAdapter;
 import com.bbbbiu.biu.gui.adapters.FileOptionAdapter;
-import com.bbbbiu.biu.gui.adapters.FileChoosePagerAdapter;
-import com.bbbbiu.biu.gui.fragments.FileFragment;
-import com.bbbbiu.biu.gui.fragments.OnBackPressedListener;
 import com.bbbbiu.biu.gui.fragments.OnFileChoosingListener;
 import com.bbbbiu.biu.gui.fragments.OnFileOptionClickListener;
+import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
@@ -41,8 +32,8 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
-    private ViewPager mViewPager;
-    private FileChoosePagerAdapter mPagerAdapter;
+    private FileListAdapter mArrayAdapter;
+    private RecyclerView mRecyclerView;
 
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
 
@@ -73,15 +64,6 @@ public class FileChooseActivity extends AppCompatActivity implements
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        FloatingActionButton fbtn = (FloatingActionButton) findViewById(R.id.fab_file_select);
-
-        // 使用viewPager切换tab
-        mPagerAdapter = new FileChoosePagerAdapter(getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.viewpager_file_choose);
-        mViewPager.setAdapter(mPagerAdapter);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabLayout_file_choose);
-        tabLayout.setupWithViewPager(mViewPager);
-
 
         mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
@@ -91,8 +73,30 @@ public class FileChooseActivity extends AppCompatActivity implements
                 mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
             }
         });
-
         mFileOptionRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file_option);
+
+        File rootDir = Environment.getExternalStorageDirectory();
+        if (rootDir == null) {
+            rootDir = Environment.getRootDirectory();
+        }
+
+        mArrayAdapter = new FileListAdapter(this, rootDir);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file);
+        mRecyclerView.setAdapter(mArrayAdapter);
+        mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
+
+        FloatingActionMenu actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_file);
+        actionMenu.setIconAnimated(false);
+        actionMenu.setClosedOnTouchOutside(true);
     }
 
 
@@ -112,12 +116,12 @@ public class FileChooseActivity extends AppCompatActivity implements
 
             case R.id.action_choose_all:
                 onChoosing = true;
-                invalidateOptionsMenu();
+                mArrayAdapter.setFileAllChosen();
                 break;
 
             case R.id.action_choosing_dismiss:
                 onChoosing = !onChoosing;
-                invalidateOptionsMenu();
+                mArrayAdapter.dismissChoosing();
                 break;
             default:
                 break;
@@ -127,12 +131,9 @@ public class FileChooseActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        if (!((OnBackPressedListener) getCurrentFragment()).onBackPressed()) {
+        if (!mArrayAdapter.quitDir()) {
             super.onBackPressed();
         }
-    }
-    private Fragment getCurrentFragment(){
-        return mPagerAdapter.getItem(mViewPager.getCurrentItem());
     }
 
     @Override
