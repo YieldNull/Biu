@@ -28,7 +28,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private ArrayList<Integer[]> nameImgMap;
     private Context context;
-    private int spanSize;
 
     private int externalDirCount;
     private boolean hasRealExternal;
@@ -153,10 +152,22 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     file2Enter = file;
                 } else {
                     file = context.getFilesDir();
-                    if (externalDirCount == 1 && (!hasRealExternal)) {  // 有一个外置,但是不是真的外置
+                    if (externalDirCount == 1 && (!hasRealExternal)) {  // 有一个外置,但是不是真的外置,emulated
                         file2Enter = Environment.getExternalStorageDirectory();// 点击进入外置
                     } else {
-                        file2Enter = new File("/storage"); // 进入根目录代表进入手机存储
+
+                        // "/storage“ 目录里面有一些文件夹，很多是符号链接的
+                        // 什么 usb emulated sdcard0 sdcard1 emmc等
+                        File[] storage = new File("/storage").listFiles();
+                        for (File f : storage) {
+                            if ((f.canRead()) && (f.listFiles().length != 0) && (!f.getName().toLowerCase().contains("sdcard"))) {
+                                file2Enter = f;
+                                break;
+                            }
+                        }
+                        if (file2Enter == null) {
+                            file2Enter = new File("/");
+                        }
                     }
                 }
             } else if (stringId == R.string.cate_sdcard) {

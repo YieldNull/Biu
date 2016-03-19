@@ -223,7 +223,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         files = rootFile.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return (showHidden || (!pathname.isHidden())) && pathname.isFile();
+                return (showHidden || (!pathname.isHidden())) && pathname.isFile() && pathname.canRead();
             }
         });
 
@@ -231,7 +231,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public boolean accept(File pathname) {
 
-                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory();
+                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory() && pathname.canExecute() && pathname.canRead();
             }
         });
 
