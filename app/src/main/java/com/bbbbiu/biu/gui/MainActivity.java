@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
@@ -14,6 +15,8 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.CategoryAdapter;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+
+import java.io.File;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -38,7 +41,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_main);
+
         final CategoryAdapter adapter = new CategoryAdapter(this);
+        recyclerView.setAdapter(adapter);
+
         GridLayoutManager manager = new GridLayoutManager(this, CategoryAdapter.SPAN_COUNT);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -47,12 +53,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        recyclerView.setLayoutManager(manager);
+
         FloatingActionMenu actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_main);
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
-
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(manager);
     }
 
 
@@ -72,4 +77,5 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
 }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -31,6 +32,7 @@ public class FileChooseActivity extends AppCompatActivity implements
         OnFileChoosingListener, OnFileOptionClickListener {
 
     private static final String TAG = FileChooseActivity.class.getSimpleName();
+    public static final String INTENT_EXTRA_ROOT_FILE_PATH = "intent_extra_root_file_path";
 
     private FileListAdapter mArrayAdapter;
     private RecyclerView mRecyclerView;
@@ -75,10 +77,7 @@ public class FileChooseActivity extends AppCompatActivity implements
         });
         mFileOptionRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file_option);
 
-        File rootDir = Environment.getExternalStorageDirectory();
-        if (rootDir == null) {
-            rootDir = Environment.getRootDirectory();
-        }
+        File rootDir = new File(getIntent().getExtras().getString(INTENT_EXTRA_ROOT_FILE_PATH));
 
         mArrayAdapter = new FileListAdapter(this, rootDir);
 
