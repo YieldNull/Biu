@@ -1,8 +1,7 @@
 package com.bbbbiu.biu.gui;
 
+import android.content.Context;
 import android.os.Build;
-import android.os.Environment;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,7 +10,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -37,6 +35,26 @@ public class FileChooseActivity extends AppCompatActivity implements
     private FileListAdapter mArrayAdapter;
     private RecyclerView mRecyclerView;
 
+    private MyLayoutManager mLayoutManager = new MyLayoutManager(this);
+
+    private static class MyLayoutManager extends LinearLayoutManager {
+        private boolean canScroll = true;
+
+        public void setCanScroll(boolean canScroll) {
+            this.canScroll = canScroll;
+        }
+
+        public MyLayoutManager(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean canScrollVertically() {
+            return canScroll;
+        }
+    }
+
+
     private SlidingUpPanelLayout mSlidingUpPanelLayout;
 
     private boolean onChoosing;
@@ -52,8 +70,8 @@ public class FileChooseActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_choose);
 
+        // Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_file_choosing);
-
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getString(R.string.label_choose_file));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -67,32 +85,54 @@ public class FileChooseActivity extends AppCompatActivity implements
         }
 
 
-        mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
-        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-        mSlidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-            }
-        });
-        mFileOptionRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file_option);
-
+        // 文件列表
         File rootDir = new File(getIntent().getExtras().getString(INTENT_EXTRA_ROOT_FILE_PATH));
 
         mArrayAdapter = new FileListAdapter(this, rootDir);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file);
         mRecyclerView.setAdapter(mArrayAdapter);
-        mRecyclerView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return false;
-            }
-        });
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(mLayoutManager);
 
         mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
+
+        // bottom to up panel
+        mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+        mFileOptionRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_file_option);
+        mSlidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+                // enable recycler view
+                mRecyclerView.setEnabled(true);
+                mLayoutManager.setCanScroll(true);
+            }
+        });
+
+        mSlidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                Log.d(TAG, "PanelState pre:" + String.valueOf(previousState));
+                Log.d(TAG, "PanelState new:" + String.valueOf(newState));
+
+                if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING && newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    // enable recycler view
+                    mRecyclerView.setEnabled(true);
+                    mLayoutManager.setCanScroll(true);
+                }
+            }
+        });
+
+        // floating button
         FloatingActionMenu actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_file);
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
@@ -167,9 +207,13 @@ public class FileChooseActivity extends AppCompatActivity implements
             mFileOptionAdapter.notifyDataSetChanged();
         }
 
-        // 展开底部panel
-        mSlidingUpPanelLayout.invalidate();
-        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-    }
 
+        // 展开底部panel
+        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+
+
+        // disable click and scroll
+        mRecyclerView.setEnabled(false);
+        mLayoutManager.setCanScroll(false);
+    }
 }
