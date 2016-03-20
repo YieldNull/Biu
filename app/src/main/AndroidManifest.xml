@@ -32,8 +32,28 @@
 
         <activity android:name=".gui.FileSendingActivity" />
         <activity
-            android:name=".gui.FileChooseActivity"
+            android:name=".gui.choose.FileChooseActivity"
             android:label="fuck"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.ImageChooseActivity"
+            android:label="@string/title_activity_choose_image"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.VideoChooseActivity"
+            android:label="@string/title_activity_choose_video"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.MusicChooseActivity"
+            android:label="@string/title_activity_choose_music"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.DocumentChooseActivity"
+            android:label="@string/title_activity_choose_document"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.ApkChooseActivity"
+            android:label="@string/title_activity_choose_apk"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
 

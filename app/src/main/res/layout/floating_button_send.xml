@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.github.clans.fab.FloatingActionMenu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/float_action_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentRight="true"
+    android:paddingBottom="10dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    app:menu_icon="@drawable/ic_fbtn_send"
+    app:menu_labels_colorNormal="@color/fbtn_label"
+    app:menu_labels_colorPressed="@color/fbtn_label"
+    app:menu_labels_colorRipple="@color/fbtn_label"
+    fab:menu_backgroundColor="@color/fbtn_shadow"
+    fab:menu_colorNormal="@color/fbtn"
+    fab:menu_colorPressed="@color/fbtn"
+    fab:menu_colorRipple="@color/fbtn"
+    fab:menu_fab_label="@string/fbtn_send"
+    fab:menu_labels_ellipsize="end"
+    fab:menu_labels_singleLine="true"
+    fab:menu_labels_textColor="@color/fbtn_label_text">
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fbtn_send_android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fbtn_android"
+        app:fab_colorNormal="@color/fbtn_sub"
+        app:fab_colorPressed="@color/fbtn_sub"
+        app:fab_colorRipple="@color/fbtn_sub"
+        app:fab_label="@string/fbtn_android"
+        fab:fab_size="mini" />
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fbtn_send_ios"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fbtn_ios"
+        app:fab_colorNormal="@color/fbtn_sub"
+        app:fab_colorPressed="@color/fbtn_sub"
+        app:fab_colorRipple="@color/fbtn_sub"
+        app:fab_label="@string/fbtn_ios"
+        fab:fab_size="mini" />
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fbtn_send_computer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fbtn_computer"
+        app:fab_colorNormal="@color/fbtn_sub"
+        app:fab_colorPressed="@color/fbtn_sub"
+        app:fab_colorRipple="@color/fbtn_sub"
+        app:fab_label="@string/fbtn_computer"
+        fab:fab_size="mini" />
+</com.github.clans.fab.FloatingActionMenu>

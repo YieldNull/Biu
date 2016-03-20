@@ -12,7 +12,7 @@
         android:layout_margin="16dp"
         android:background="@drawable/shape_file_icon_bkg"
         android:padding="10dp"
-        android:src="@drawable/ic_file_folder" />
+        android:src="@drawable/ic_type_folder" />
 
     <LinearLayout
         android:id="@+id/linearLayout_file_info"
@@ -50,5 +50,5 @@
         android:background="@android:color/transparent"
         android:paddingLeft="20dp"
         android:paddingRight="20dp"
-        android:src="@drawable/ic_action_setting" />
+        android:src="@drawable/ic_file_option" />
 </RelativeLayout>

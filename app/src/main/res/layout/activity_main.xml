@@ -2,7 +2,6 @@
 
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -31,60 +30,6 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.github.clans.fab.FloatingActionMenu
-        android:id="@+id/float_action_menu_main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:paddingBottom="10dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        app:menu_labels_colorNormal="@color/fbtn_label"
-        app:menu_labels_colorPressed="@color/fbtn_label"
-        app:menu_labels_colorRipple="@color/fbtn_label"
-        fab:menu_backgroundColor="@color/fbtn_shadow"
-        fab:menu_colorNormal="@color/fbtn"
-        fab:menu_colorPressed="@color/fbtn"
-        fab:menu_colorRipple="@color/fbtn"
-        fab:menu_fab_label="@string/fbtn_receive"
-        fab:menu_icon="@drawable/ic_receive"
-        fab:menu_labels_ellipsize="end"
-        fab:menu_labels_singleLine="true"
-        fab:menu_labels_textColor="@color/fbtn_label_text">
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fbtn_receive_android"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_send_android"
-            app:fab_colorNormal="@color/fbtn_sub"
-            app:fab_colorPressed="@color/fbtn_sub"
-            app:fab_colorRipple="@color/fbtn_sub"
-            app:fab_label="@string/fbtn_android"
-            fab:fab_size="mini" />
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fbtn_receive_ios"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_send_ios"
-            app:fab_colorNormal="@color/fbtn_sub"
-            app:fab_colorPressed="@color/fbtn_sub"
-            app:fab_colorRipple="@color/fbtn_sub"
-            app:fab_label="@string/fbtn_ios"
-            fab:fab_size="mini" />
-
-        <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/fbtn_receive_computer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_send_computer"
-            app:fab_colorNormal="@color/fbtn_sub"
-            app:fab_colorPressed="@color/fbtn_sub"
-            app:fab_colorRipple="@color/fbtn_sub"
-            app:fab_label="@string/fbtn_computer"
-            fab:fab_size="mini" />
-    </com.github.clans.fab.FloatingActionMenu>
+    <include layout="@layout/floating_button_receive" />
 </android.support.design.widget.CoordinatorLayout>
 

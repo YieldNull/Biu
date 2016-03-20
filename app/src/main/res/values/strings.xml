@@ -20,28 +20,17 @@
 
 
     <string name="fbtn_receive">接收文件从</string>
+    <string name="fbtn_send">发送文件到</string>
     <string name="fbtn_android">安卓</string>
     <string name="fbtn_computer">电脑</string>
     <string name="fbtn_ios">苹果</string>
 
-    <!--********************FileChooseActivity****************-->
 
-    <string name="label_choose_file">选择文件</string>
-
-    <string name="action_scan">扫一扫</string>
-    <string name="action_show_hidden">显示隐藏文件</string>
-    <string name="action_not_show_hidden">不显示隐藏文件</string>
     <string name="action_select_all">全选</string>
     <string name="action_choosing_dismiss">清除选择</string>
-    <string name="action_sort_by">排序依据</string>
-    <string name="action_sort_by_name">按名称排序</string>
-    <string name="action_sort_by_time">按修改时间排序</string>
-    <string name="action_sort_by_size">按大小排序</string>
-
 
     <string name="file_option_open">打开</string>
     <string name="file_option_rename">重命名</string>
-    <string name="file_option_info">详情</string>
     <string name="file_option_copy">复制</string>
     <string name="file_option_move">移动</string>
     <string name="file_option_delete">删除</string>
@@ -49,7 +38,14 @@
 
     <string name="list_header_folder">文件夹</string>
     <string name="list_header_file">文件</string>
-    <string name="fbtn_send">发送文件到</string>
 
+    <string name="title_activity_choose">选择</string>
+    <string name="title_activity_choose_image">ChooseImageActivity</string>
+    <string name="title_activity_choose_video">ChooseVideoActivity</string>
+    <string name="title_activity_choose_music">ChooseMusicActivity</string>
+    <string name="title_activity_choose_document">ChooseDocumentActivity</string>
+    <string name="title_activity_choose_apk">ChooseApkActivity</string>
+    <string name="title_activity_history">HistoryActivity</string>
+    <string name="file_option_info">详情</string>
 
 </resources>

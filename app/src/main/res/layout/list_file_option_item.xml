@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_file_folder"
+        android:src="@drawable/ic_type_folder"
         android:tint="@color/upPanel_icon_tint" />
 
     <TextView
