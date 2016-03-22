@@ -21,6 +21,15 @@ import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 
+/**
+ * 选各类文件的基类。
+ * <p>
+ * 各类文件选择共用一个布局文件“R.layout.activity_choosing”
+ * 界面中主内容为一个RecyclerView，记为 ContentRecyclerView
+ * 底部有一个滑出菜单，也是RecyclerView，记为PanelRecyclerView
+ * <p>
+ * 有五个抽象方法，提供相应实现即可
+ */
 public abstract class ChooseBaseActivity extends AppCompatActivity implements
         OnChoosingListener, OnFileOptionClickListener {
 
@@ -84,16 +93,16 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         mPanelRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_bottom_panel);
         mPanelAdapter = onCreatePanelAdapter();
 
-        if (mPanelAdapter == null) {
-            throw new NullPointerException("Panel adapter can not be null");
+        if (mPanelAdapter != null) {
+            mPanelRecyclerView.setAdapter(mPanelAdapter);
+            mPanelRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            mPanelRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this)
+                    .paintProvider(mPanelAdapter)
+                    .visibilityProvider(mPanelAdapter)
+                    .marginProvider(mPanelAdapter)
+                    .build());
         }
-        mPanelRecyclerView.setAdapter(mPanelAdapter);
-        mPanelRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mPanelRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this)
-                .paintProvider(mPanelAdapter)
-                .visibilityProvider(mPanelAdapter)
-                .marginProvider(mPanelAdapter)
-                .build());
+
 
         // floating action menu
         mFloatingActionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu);
@@ -101,7 +110,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         mFloatingActionMenu.setClosedOnTouchOutside(true);
 
 
-        // sliding up panel
+        // sliding up panel.点击 滑出Panel外部时，panel关闭
         mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         mSlidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
@@ -135,6 +144,14 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         });
     }
 
+    /**
+     * 底部滑出菜单一般是每个文件都有的，点击时传入对应的File
+     * 然后更新PanelRecyclerView(更新对应的文件)
+     * <p>
+     * 使用方法见 {@link com.bbbbiu.biu.gui.adapters.FileAdapter}
+     *
+     * @param file 对应的文件
+     */
     @Override
     public void onFileOptionClick(File file) {
         onPanelRecyclerViewUpdate(file);
@@ -145,16 +162,62 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         onBottomPanelOpen();
     }
 
-    protected abstract RecyclerView.ItemDecoration onCreateContentItemDecoration();
-
-    protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
-
+    /**
+     * Create Adapter for ContentRecyclerView
+     *
+     * @return ContentAdapter
+     */
     protected abstract RecyclerView.Adapter onCreateContentAdapter();
 
-    protected abstract void onPanelRecyclerViewUpdate(File file);
+    /**
+     * ContentRecyclerView 中各项内容的分割线
+     * <p>
+     * 当LayoutManager使用LinearLayoutManager时，
+     * 返回 new HorizontalDividerItemDecoration.Builder(this).build();
+     * <p>
+     * 当使用GridLayoutManager使，返回相应ItemDecoration
+     * <p>
+     * 参见开源库 com.yqritc:recyclerview-flexibledivider
+     *
+     * @return 可以为空
+     */
+    protected abstract RecyclerView.ItemDecoration onCreateContentItemDecoration();
 
+
+    /**
+     * ContentRecyclerView对应的布局管理
+     * 必须使用本类中自定义的两种布局管理器
+     *
+     * @return ContentLinearLayoutManager or ContentGridLayoutManager
+     * @see com.bbbbiu.biu.gui.choose.ChooseBaseActivity.LinearContentLayoutManager
+     * @see com.bbbbiu.biu.gui.choose.ChooseBaseActivity.GridContentLayoutManager
+     */
+    protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
+
+
+    /**
+     * Create Adapter for PanelRecyclerView
+     * <p>
+     * 当需要使用底部的滑出菜单时，创建相应的Adapter。
+     * Adapter必须继承PanelBaseAdapter
+     *
+     * @return adapter 可以为空，表示不使用底部的滑出菜单
+     * @see PanelBaseAdapter
+     */
     protected abstract PanelBaseAdapter onCreatePanelAdapter();
 
+    /**
+     * 底部滑出菜单一般是每个文件都有的，当点击另一个文件的菜单时，
+     * 更新PanelRecyclerView的Adapter里面纪录的File即可。依具体实现而定
+     *
+     * @param file 滑出菜单对应的文件
+     */
+    protected abstract void onPanelRecyclerViewUpdate(File file);
+
+
+    /**
+     * 当底部滑出Panel关闭后，enable ContentRecyclerView
+     */
     protected void onBottomPanelClose() {
         if (mContentRecyclerView != null) {
             mContentRecyclerView.setEnabled(true);
@@ -168,6 +231,10 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * 当底部滑出Panel打开后，disable ContentRecyclerView
+     * 否则 SlidingUpLayout的FadeOnClickListener会与RecyclerView相应的监听器冲突
+     */
     protected void onBottomPanelOpen() {
         if (mContentRecyclerView != null) {
             mContentRecyclerView.setEnabled(false);
@@ -181,6 +248,9 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * 自定义的LinearLayoutManager，实现canScrollVertically的管理
+     */
     protected static class LinearContentLayoutManager extends LinearLayoutManager {
         private boolean canScroll = true;
 
@@ -198,6 +268,9 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * 自定义的GridLayoutManager，实现canScrollVertically的管理
+     */
     protected static class GridContentLayoutManager extends GridLayoutManager {
         private boolean canScroll = true;
 
