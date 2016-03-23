@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.FileListAdapter;
 import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
@@ -31,7 +32,7 @@ import java.io.File;
  * 有五个抽象方法，提供相应实现即可
  */
 public abstract class ChooseBaseActivity extends AppCompatActivity implements
-        OnChoosingListener, OnFileOptionClickListener {
+        OnChoosingListener, OnItemOptionClickListener {
 
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
@@ -148,7 +149,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      * 底部滑出菜单一般是每个文件都有的，点击时传入对应的File
      * 然后更新PanelRecyclerView(更新对应的文件)
      * <p>
-     * 使用方法见 {@link com.bbbbiu.biu.gui.adapters.FileAdapter}
+     * 使用方法见 {@link FileListAdapter}
      *
      * @param file 对应的文件
      */
@@ -189,8 +190,8 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      * 必须使用本类中自定义的两种布局管理器
      *
      * @return ContentLinearLayoutManager or ContentGridLayoutManager
-     * @see com.bbbbiu.biu.gui.choose.ChooseBaseActivity.LinearContentLayoutManager
-     * @see com.bbbbiu.biu.gui.choose.ChooseBaseActivity.GridContentLayoutManager
+     * @see ChooseBaseActivity.LinearContentLayoutManager
+     * @see ChooseBaseActivity.GridContentLayoutManager
      */
     protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
 

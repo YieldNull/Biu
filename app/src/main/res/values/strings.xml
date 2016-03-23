@@ -34,6 +34,7 @@
     <string name="file_option_copy">复制</string>
     <string name="file_option_move">移动</string>
     <string name="file_option_delete">删除</string>
+    <string name="file_option_info">详情</string>
 
 
     <string name="list_header_folder">文件夹</string>
@@ -46,6 +47,10 @@
     <string name="title_activity_choose_document">ChooseDocumentActivity</string>
     <string name="title_activity_choose_apk">ChooseApkActivity</string>
     <string name="title_activity_history">HistoryActivity</string>
-    <string name="file_option_info">详情</string>
+
+    <string name="title_activity_receive_computer">接收文件</string>
+    <string name="title_activity_qrcode_scan">扫描二维码</string>
+    <string name="title_activity_receive">ReceiveActivity</string>
+    <string name="title_activity_send">SendActivity</string>
 
 </resources>

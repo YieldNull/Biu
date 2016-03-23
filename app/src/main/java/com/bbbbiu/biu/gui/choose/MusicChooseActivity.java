@@ -6,7 +6,7 @@ import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
 
 import java.io.File;
 
-public class MusicChooseActivity extends ChooseBaseActivity{
+public class MusicChooseActivity extends ChooseBaseActivity {
 
 
     @Override

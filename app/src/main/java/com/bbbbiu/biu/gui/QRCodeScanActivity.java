@@ -7,16 +7,12 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import com.bbbbiu.biu.client.Constants;
+import com.bbbbiu.biu.client.HttpManager;
 import com.google.zxing.Result;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * Created by YieldNull at 3/22/16
@@ -25,70 +21,66 @@ import okhttp3.Response;
 public class QRCodeScanActivity extends Activity implements ZXingScannerView.ResultHandler {
     private static final String TAG = QRCodeScanActivity.class.getSimpleName();
 
+    public static final String INTENT_EXTRA_BIND_ACTION = "com.bbbbiu.biu.gui.QRCodeScanActivity.INTENT_EXTRA_BIND_ACTION";
+    public static final int BIND_ACTION_UPLOAD = HttpManager.BIND_ACTION_UPLOAD;
+    public static final int BIND_ACTION_DOWNLOAD = HttpManager.BIND_ACTION_DOWNLOAD;
+
+    private static final int MSG_ENTER_RECEIVE_ACTIVITY = 0;
+    private static final int MSG_ENTER_SEND_ACTIVITY = 1;
+
+
+    private int mBindAction;
     private ZXingScannerView mScannerView;
 
+    private String mUid;
 
-    private final OkHttpClient client = new OkHttpClient();
+    private Handler mHandler = new HandlerClass(this);
 
-    private String uid;
-
-
-    private Handler handler = new HandlerClass(this);
-
-    private static final int MSG_ENTER_RECEIVE = 0;
 
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
-        mScannerView = new ZXingScannerView(this);   // Programmatically initialize the scanner view
-        setContentView(mScannerView);                // Set the scanner view as the content view
 
-        mScannerView.setResultHandler(this); // Register ourselves as a handler for scan results.
-        mScannerView.startCamera();          // Start camera on resume
+        mScannerView = new ZXingScannerView(this);
+        setContentView(mScannerView);
+
+        mScannerView.setResultHandler(this);
+
+        mBindAction = getIntent().getExtras().getInt(INTENT_EXTRA_BIND_ACTION);
+
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mScannerView.startCamera();
+    }
 
     @Override
     public void onPause() {
         super.onPause();
-        mScannerView.stopCamera();           // Stop camera on pause
+        mScannerView.stopCamera();
     }
 
     @Override
     public void handleResult(Result rawResult) {
-        // Do something with the result here
-        Log.v(TAG, rawResult.getText()); // Prints scan results
-        uid = rawResult.getText();
+        Log.v(TAG, rawResult.getText());
+        mUid = rawResult.getText();
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                bind(Constants.ACTION_DOWNLOAD);
+                bind();
             }
         }).start();
     }
 
-    private void bind(String what) {
-        Request request = new Request.Builder()
-                .url(Constants.URL_BIND + "?uid=" + uid + "&what=" + what)
-                .build();
-
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            Log.w(TAG, "Http error", e);
-            return;
-        }
-
-        if (!response.isSuccessful()) {
-            Log.w(TAG, "Unexpected code " + response);
-        }
-
-        if (response.code() == 200) {
-            handler.sendEmptyMessage(MSG_ENTER_RECEIVE);
+    private void bind() {
+        if (HttpManager.bind(mUid, mBindAction)) {
+            int what = mBindAction == BIND_ACTION_DOWNLOAD ? MSG_ENTER_RECEIVE_ACTIVITY : MSG_ENTER_SEND_ACTIVITY;
+            mHandler.sendEmptyMessage(what);
         } else {
-            Log.w(TAG, String.valueOf(response.code()));
+            Log.i(TAG, "Retry binding");//TODO
         }
     }
 
@@ -102,13 +94,18 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
 
         @Override
         public void handleMessage(Message msg) {
+            QRCodeScanActivity tar = mTarget.get();
+            Intent intent;
 
             switch (msg.what) {
-                case MSG_ENTER_RECEIVE:
-                    QRCodeScanActivity tar = mTarget.get();
-                    Intent intent = new Intent(tar, ReceiveActivity.class);
-                    intent.putExtra(ReceiveActivity.INTENT_UID, tar.uid);
-
+                case MSG_ENTER_RECEIVE_ACTIVITY:
+                    intent = new Intent(tar, ReceiveActivity.class);
+                    intent.putExtra(ReceiveActivity.INTENT_EXTRA_UID, tar.mUid);
+                    tar.startActivity(intent);
+                    break;
+                case MSG_ENTER_SEND_ACTIVITY:
+                    intent = new Intent(tar, SendActivity.class);
+                    intent.putExtra(ReceiveActivity.INTENT_EXTRA_UID, tar.mUid);
                     tar.startActivity(intent);
                     break;
             }

@@ -31,7 +31,6 @@
             android:enabled="true"
             android:exported="false" />
 
-        <activity android:name=".gui.FileSendingActivity" />
         <activity
             android:name=".gui.choose.FileChooseActivity"
             android:label="fuck"
@@ -56,9 +55,19 @@
             android:name=".gui.choose.ApkChooseActivity"
             android:label="@string/title_activity_choose_apk"
             android:theme="@style/AppTheme.NoActionBar" />
-
-        <activity android:name=".gui.QRCodeScanActivity" />
-        <activity android:name=".gui.ReceiveActivity" />
+        <activity
+            android:name=".gui.QRCodeScanActivity"
+            android:label="@string/title_activity_qrcode_scan"
+            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.ReceiveActivity"
+            android:label="@string/title_activity_receive"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.SendActivity"
+            android:label="@string/title_activity_send"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

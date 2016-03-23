@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.OnChoosingListener;
-import com.bbbbiu.biu.gui.choose.OnFileOptionClickListener;
+import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -27,9 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public class FileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final String TAG = FileAdapter.class.getSimpleName();
+    private static final String TAG = FileListAdapter.class.getSimpleName();
 
     /**
      * ViewType 类型
@@ -39,7 +39,7 @@ public class FileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
     private OnChoosingListener mOnChoosingListener;
-    private OnFileOptionClickListener mOnFileOptionClickListener;
+    private OnItemOptionClickListener mOnItemOptionClickListener;
 
     /**
      * 当前目录下的文件或文件夹
@@ -93,12 +93,12 @@ public class FileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return dataFileList.size();
     }
 
-    public FileAdapter(Context context, File rootDir) {
+    public FileListAdapter(Context context, File rootDir) {
         this.context = context;
         enterDir(rootDir);
 
         mOnChoosingListener = (OnChoosingListener) context;
-        mOnFileOptionClickListener = (OnFileOptionClickListener) context;
+        mOnItemOptionClickListener = (OnItemOptionClickListener) context;
     }
 
 
@@ -184,7 +184,7 @@ public class FileAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             holder.optionsImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mOnFileOptionClickListener.onFileOptionClick(file);
+                    mOnItemOptionClickListener.onFileOptionClick(file);
                 }
             });
 

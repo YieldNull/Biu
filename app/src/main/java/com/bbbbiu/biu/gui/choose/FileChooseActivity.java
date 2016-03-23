@@ -7,7 +7,7 @@ import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.FileAdapter;
+import com.bbbbiu.biu.gui.adapters.FileListAdapter;
 import com.bbbbiu.biu.gui.adapters.FilePanelAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -20,19 +20,23 @@ public class FileChooseActivity extends ChooseBaseActivity {
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
 
-    private FileAdapter mFileAdapter;
+    private FileListAdapter mFileAdapter;
 
     private int chosenFileCount;
 
     private void setTitle() {
-        getSupportActionBar().setTitle(String.valueOf(chosenFileCount));
+        if (chosenFileCount == 0) {
+            getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
+        } else {
+            getSupportActionBar().setTitle(String.valueOf(chosenFileCount));
+        }
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFileAdapter = (FileAdapter) super.mContentAdapter;
+        mFileAdapter = (FileListAdapter) super.mContentAdapter;
     }
 
     @Override
@@ -107,7 +111,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
             rootDir = new File(path);
         }
 
-        return new FileAdapter(this, rootDir);
+        return new FileListAdapter(this, rootDir);
     }
 
     @Override

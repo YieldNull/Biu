@@ -22,14 +22,14 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-
+    private FloatingActionMenu actionMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // android 4.4 状态栏透明
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView_main);
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
         final MainAdapter adapter = new MainAdapter(this);
         recyclerView.setAdapter(adapter);
@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setLayoutManager(manager);
 
-        FloatingActionMenu actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_main);
+        actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_main);
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
 
@@ -63,7 +63,12 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, QRCodeScanActivity.class));
+                actionMenu.toggle(false);
+
+                Intent intent = new Intent(MainActivity.this, QRCodeScanActivity.class);
+
+                intent.putExtra(QRCodeScanActivity.INTENT_EXTRA_BIND_ACTION, QRCodeScanActivity.BIND_ACTION_DOWNLOAD);
+                startActivity(intent);
             }
         });
     }
