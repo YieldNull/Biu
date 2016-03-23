@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +9,12 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.MainAdapter;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -55,6 +58,14 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionMenu actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_main);
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
+
+        FloatingActionButton btn = (FloatingActionButton) findViewById(R.id.fbtn_receive_computer);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, QRCodeScanActivity.class));
+            }
+        });
     }
 
 
