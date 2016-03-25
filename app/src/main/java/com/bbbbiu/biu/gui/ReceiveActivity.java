@@ -1,8 +1,9 @@
 package com.bbbbiu.biu.gui;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Message;
+import android.os.ResultReceiver;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,45 +11,103 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.client.HttpManager;
-import com.bbbbiu.biu.gui.adapters.FileStreamAdapter;
+import com.bbbbiu.biu.http.client.FileItem;
+import com.bbbbiu.biu.gui.adapters.ReceiveAdapter;
+import com.bbbbiu.biu.service.DownloadService;
+import com.bbbbiu.biu.service.PollingService;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
-import java.io.File;
-import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 
 public class ReceiveActivity extends AppCompatActivity {
     private static final String TAG = ReceiveActivity.class.getSimpleName();
 
-    public static final String INTENT_EXTRA_UID = "com.bbbbiu.biu.gui.ReceiveActivity.INTENT_EXTRA_UID";
-    private static final int MSG_GOT_FILE_LIST = 0;
-    private static final int MSG_SHOW_FILE_DOWNLOADED = 1;
+    public static final String EXTRA_UID = "com.bbbbiu.biu.gui.ReceiveActivity.extra.UID";
+    public static final String EXTRA_FILE_LIST = "com.bbbbiu.biu.gui.ReceiveActivity.extra.FILE_LIST";
+
+    public static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.gui.ReceiveActivity.extra.FILE_ITEM";
+    public static final String EXTRA_PROGRESS = "com.bbbbiu.biu.gui.ReceiveActivity.extra.PROGRESS";
+
+    @Bind(R.id.recyclerView_receive)
+    RecyclerView mRecyclerView;
+
+    ReceiveAdapter mAdapter;
+
+    @SuppressLint("ParcelCreator")
+    private class PollingResultReceiver extends ResultReceiver {
+
+        public PollingResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            if (resultCode == PollingService.RESULT_OK) {
+                ArrayList<FileItem> fileItems = resultData.getParcelableArrayList(EXTRA_FILE_LIST);
+                Log.i(TAG, "Received file list. Count " + fileItems.size());
+
+                mAdapter.addFileList(fileItems);
+                mAdapter.notifyDataSetChanged();
+
+                Log.i(TAG, "Starting download file one by one");
+                for (FileItem fileItem : fileItems) {
+                    DownloadService.startDownload(ReceiveActivity.this, fileItem);
+                }
+            } else {
+                Toast.makeText(ReceiveActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @SuppressLint("ParcelCreator")
+    private class ProgressResultReceiver extends ResultReceiver {
+
+        public ProgressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            switch (resultCode) {
+                case DownloadService.RESULT_FAILED:
+                    break;
+                case DownloadService.RESULT_SUCCESS:
+                    break;
+                case DownloadService.RESULT_PROGRESS:
+                    FileItem fileItem = resultData.getParcelable(EXTRA_FILE_ITEM);
+                    int progress = resultData.getInt(EXTRA_PROGRESS);
 
 
-    private String mUid;
+                    int position = mAdapter.getItemPosition(fileItem);
+                    ReceiveAdapter.FileItemViewHolder holder = (ReceiveAdapter.FileItemViewHolder)
+                            mRecyclerView.findViewHolderForAdapterPosition(position);
 
-    private Handler mHandler = new HandlerClass(this);
+                    holder.getProgressBar().setProgress(progress);
 
+                    String read = StorageUtil.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
+                    String all = StorageUtil.getReadableSize(fileItem.getSize());
 
-    private List<HttpManager.FileItem> mFileList;
-
-    private RecyclerView mRecyclerView;
-    private FileStreamAdapter mAdapter;
-
-    public void setFileList(List<HttpManager.FileItem> mFileList) {
-        this.mFileList = mFileList;
+                    holder.setProgressText(String.format("%s/%s", read, all));
+                    break;
+            }
+        }
     }
 
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive);
+        ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -62,75 +121,25 @@ public class ReceiveActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        mUid = getIntent().getExtras().getString(INTENT_EXTRA_UID);
+        String uid = getIntent().getExtras().getString(EXTRA_UID);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_receive_computer);
-
-        mAdapter = new FileStreamAdapter(this);
+        mAdapter = new ReceiveAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getFileList();
-            }
-        }).start();
+        ResultReceiver pollingResultReceiver = new PollingResultReceiver(new Handler());
+        Log.i(TAG, "onCreate. Starting polling service");
+        PollingService.startPolling(this, uid, pollingResultReceiver);
 
+        ResultReceiver progressResultReceiver = new ProgressResultReceiver(new Handler());
+        DownloadService.setResultReceiver(this, progressResultReceiver);
     }
 
-    private void getFileList() {
-        List<HttpManager.FileItem> fileList = HttpManager.getFileList(mUid);
-        if (fileList != null) {
-            Message msg = new Message();
-            msg.setTarget(mHandler);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-            msg.what = MSG_GOT_FILE_LIST;
-            msg.obj = fileList;
-            msg.sendToTarget();
-        } else {
-            Log.i(TAG, "User has not send files to server");
-            Log.i(TAG, "Retry waiting");
-
-            getFileList(); // TODO 怎么避免无限递归？
-        }
-    }
-
-    private void downloadFile() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                File repository = StorageUtil.getDownloadDir(ReceiveActivity.this);
-                for (HttpManager.FileItem fileItem : mFileList) {
-                    HttpManager.downloadFile(fileItem.url, mUid, new File(repository, fileItem.name));
-                }
-                Log.i(TAG, "Finish download");
-            }
-        }).start();
-    }
-
-    private void showFileList() {
-        mAdapter.setFileList(mFileList);
-        mAdapter.notifyDataSetChanged();
-
-    }
-
-    private static class HandlerClass extends Handler {
-        private final WeakReference<ReceiveActivity> mTarget;
-
-        public HandlerClass(ReceiveActivity context) {
-            mTarget = new WeakReference<>(context);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_GOT_FILE_LIST:
-                    mTarget.get().setFileList((List<HttpManager.FileItem>) msg.obj);
-                    mTarget.get().showFileList();
-                    mTarget.get().downloadFile();
-                    break;
-            }
-        }
+        Log.i(TAG, "onDestroy. Stopping polling service");
+        PollingService.stopPolling(this);
     }
 }

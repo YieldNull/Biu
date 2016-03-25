@@ -283,7 +283,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             fileIconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_icon);
             fileNameTextView = (TextView) itemView.findViewById(R.id.textView_file_name);
-            fileInfoTextView = (TextView) itemView.findViewById(R.id.textView_file_description);
+            fileInfoTextView = (TextView) itemView.findViewById(R.id.textView_file_info);
             optionsImageView = (ImageButton) itemView.findViewById(R.id.imageButton_file_option);
 
             itemView.setOnClickListener(this);

@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent intent = new Intent(MainActivity.this, QRCodeScanActivity.class);
 
-                intent.putExtra(QRCodeScanActivity.INTENT_EXTRA_BIND_ACTION, QRCodeScanActivity.BIND_ACTION_DOWNLOAD);
+                intent.putExtra(QRCodeScanActivity.EXTRA_BIND_ACTION, QRCodeScanActivity.ACTION_DOWNLOAD);
                 startActivity(intent);
             }
         });

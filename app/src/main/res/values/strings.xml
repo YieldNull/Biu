@@ -52,5 +52,6 @@
     <string name="title_activity_qrcode_scan">扫描二维码</string>
     <string name="title_activity_receive">ReceiveActivity</string>
     <string name="title_activity_send">SendActivity</string>
+    <string name="net_server_error">服务器无响应，请稍后再试</string>
 
 </resources>

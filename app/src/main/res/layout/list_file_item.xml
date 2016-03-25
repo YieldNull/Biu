@@ -33,7 +33,7 @@
             android:textColor="@color/file_name" />
 
         <TextView
-            android:id="@+id/textView_file_description"
+            android:id="@+id/textView_file_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
