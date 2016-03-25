@@ -16,6 +16,7 @@ import java.io.IOException;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * Created by YieldNull at 3/22/16
@@ -123,18 +124,27 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
     private boolean bindServer() {
         Request request = HttpConstants.newBindRequest(uid, mBindAction);
         Response response;
-        try {
-            response = HttpConstants.getHttpClient().newCall(request).execute();
-        } catch (IOException e) {
-            Log.i(TAG, "Bind server failed. HTTP error " + e.toString());
-            return false;
-        }
+        ResponseBody body = null;
 
-        if (response.code() == 200) {
-            return true;
-        } else {
-            Log.i(TAG, "Bind server failed. Response status code " + response.code());
-            return false;
+        try {
+            try {
+                response = HttpConstants.getHttpClient().newCall(request).execute();
+                body = response.body();
+            } catch (IOException e) {
+                Log.i(TAG, "Bind server failed. HTTP error " + e.toString());
+                return false;
+            }
+
+            if (response.code() == 200) {
+                return true;
+            } else {
+                Log.i(TAG, "Bind server failed. Response status code " + response.code());
+                return false;
+            }
+        } finally {
+            if (body != null) {
+                body.close();
+            }
         }
     }
 }

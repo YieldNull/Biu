@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * 轮询Service，用于电脑将文件先传到公网服务器，然后再从服务器下载的情景。
@@ -231,32 +232,39 @@ public class PollingService extends Service {
         Request request = HttpConstants.newFileListRequest(mUid);
 
         Response response;
-        try {
-            response = HttpConstants.getHttpClient().newCall(request).execute();
-
-        } catch (IOException e) {
-            Log.i(TAG, "Get file list failed. HTTP error" + e.toString());
-            return null;
-        }
-
-        if (response.code() != 200) {
-            Log.i(TAG, "Get file list failed. Response status code " + response.code());
-            return null;
-        }
+        ResponseBody body = null;
 
         try {
-            Gson gson = new Gson();
-            ArrayList<FileItem> list = gson.fromJson(response.body().charStream(),
-                    new TypeToken<ArrayList<FileItem>>() {
-                    }.getType());
+            try {
+                response = HttpConstants.getHttpClient().newCall(request).execute();
+                body = response.body();
+            } catch (IOException e) {
+                Log.i(TAG, "Get file list failed. HTTP error" + e.toString());
+                return null;
+            }
 
-            return list;
+            if (response.code() != 200) {
+                Log.i(TAG, "Get file list failed. Response status code " + response.code());
+                return null;
+            }
 
-        } catch (JsonSyntaxException e) {
-            Log.i(TAG, "Get file list failed. Response is not a valid json");
-            Log.i(TAG, e.toString());
+            try {
+                Gson gson = new Gson();
+                ArrayList<FileItem> list = gson.fromJson(body.charStream(),
+                        new TypeToken<ArrayList<FileItem>>() {
+                        }.getType());
+
+                return list;
+
+            } catch (JsonSyntaxException e) {
+                Log.i(TAG, "Get file list failed. Response is not a valid json");
+                Log.i(TAG, e.toString());
+            }
+        } finally {
+            if (body != null) {
+                body.close();
+            }
         }
-
         return null;
     }
 }

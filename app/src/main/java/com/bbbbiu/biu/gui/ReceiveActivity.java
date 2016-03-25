@@ -90,7 +90,7 @@ public class ReceiveActivity extends AppCompatActivity {
                     ReceiveAdapter.FileItemViewHolder holder = (ReceiveAdapter.FileItemViewHolder)
                             mRecyclerView.findViewHolderForAdapterPosition(position);
 
-                    holder.getProgressBar().setProgress(progress);
+                    holder.getProgressBar().setProgress(progress); // TODO 文件太小，导致list还没完成更新，此处NullPointer
 
                     String read = StorageUtil.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
                     String all = StorageUtil.getReadableSize(fileItem.getSize());

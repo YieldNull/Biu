@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class DownloadService extends Service implements ProgressListener {
     private static final String TAG = DownloadService.class.getSimpleName();
@@ -108,30 +109,37 @@ public class DownloadService extends Service implements ProgressListener {
         mCurrentProgress = 0;
 
         Response response;
+        ResponseBody body = null;
 
         try {
-            response = HttpConstants.getHttpClient().newCall(request).execute();
-        } catch (IOException e) {
-            Log.i(TAG, "Download file failed. " + destFile.getName() + "  HTTP error" + e.toString());
-            return false;
-        }
+            try {
+                response = HttpConstants.getHttpClient().newCall(request).execute();
+                body = response.body();
+            } catch (IOException e) {
+                Log.i(TAG, "Download file failed. " + destFile.getName() + "  HTTP error" + e.toString());
+                return false;
+            }
 
-        if (response.code() != 200) {
-            Log.i(TAG, "Get file list failed. Response status code " + response.code());
-            return false;
-        }
+            if (response.code() != 200) {
+                Log.i(TAG, "Get file list failed. Response status code " + response.code());
+                return false;
+            }
 
-        FileOutputStream fileOutStream = null;
-        try {
-            fileOutStream = new FileOutputStream(destFile);
-            ProgressNotifier notifier = new ProgressNotifier(this, fileItem.getSize());
-            Streams.copy(response.body().byteStream(), fileOutStream, true, notifier);
-            Log.i(TAG, "Finish downloading file " + fileItem.getName());
-        } catch (IOException e) {
-            Log.w(TAG, "Store file failed", e);
+            FileOutputStream fileOutStream = null;
+            try {
+                fileOutStream = new FileOutputStream(destFile);
+                ProgressNotifier notifier = new ProgressNotifier(this, fileItem.getSize());
+                Streams.copy(response.body().byteStream(), fileOutStream, true, notifier);
+                Log.i(TAG, "Finish downloading file " + fileItem.getName());
+            } catch (IOException e) {
+                Log.w(TAG, "Store file failed", e);
+            }
         } finally {
-            response.body().close();
+            if (body != null) {
+                body.close();
+            }
         }
+
         return true;
     }
 
