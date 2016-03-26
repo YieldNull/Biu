@@ -4,13 +4,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.ReceiveActivity;
+import com.bbbbiu.biu.gui.DownloadActivity;
 import com.bbbbiu.biu.http.client.FileItem;
 import com.bbbbiu.biu.http.client.HttpConstants;
 import com.google.gson.Gson;
@@ -213,7 +211,7 @@ public class PollingService extends Service {
             } else {
                 // 下载成功
                 Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(ReceiveActivity.EXTRA_FILE_LIST, list);
+                bundle.putParcelableArrayList(DownloadActivity.EXTRA_FILE_LIST, list);
 
                 Log.i(TAG, "Got file list. Send it to receiver");
 
@@ -236,7 +234,7 @@ public class PollingService extends Service {
 
         try {
             try {
-                response = HttpConstants.getHttpClient().newCall(request).execute();
+                response = HttpConstants.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
                 Log.i(TAG, "Get file list failed. HTTP error" + e.toString());

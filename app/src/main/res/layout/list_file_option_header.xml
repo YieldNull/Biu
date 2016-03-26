@@ -4,7 +4,7 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:id="@+id/imageView_file_operation_file_icon"
+        android:id="@+id/imageView_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -14,14 +14,14 @@
         android:tint="@color/upPanel_icon_tint" />
 
     <TextView
-        android:id="@+id/textView_file_operation_file_name"
+        android:id="@+id/textView_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="64dp"
-        android:layout_toRightOf="@id/imageView_file_operation_file_icon"
+        android:layout_toRightOf="@id/imageView_icon"
         android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
         android:textColor="@color/upPanel_text" />
 </RelativeLayout>

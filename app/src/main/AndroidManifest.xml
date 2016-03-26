@@ -31,6 +31,19 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".service.PollingService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".service.DownloadService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name=".service.UploadService"
+            android:enabled="true"
+            android:exported="false" />
+
         <activity
             android:name=".gui.choose.FileChooseActivity"
             android:label="fuck"
@@ -61,22 +74,21 @@
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.ReceiveActivity"
-            android:label="@string/title_activity_receive"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.SendActivity"
-            android:label="@string/title_activity_send"
+            android:name=".gui.DownloadActivity"
+            android:label="@string/title_activity_download"
             android:theme="@style/AppTheme.NoActionBar" />
 
-        <service
-            android:name=".service.PollingService"
-            android:enabled="true"
-            android:exported="true" />
-        <service
-            android:name=".service.DownloadService"
-            android:enabled="true"
-            android:exported="true" />
+
+        <activity
+            android:name=".gui.ConnectComputerActivity"
+            android:label="@string/title_activity_connect_computer"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+
+        <activity
+            android:name=".gui.UploadActivity"
+            android:label="@string/title_activity_upload"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

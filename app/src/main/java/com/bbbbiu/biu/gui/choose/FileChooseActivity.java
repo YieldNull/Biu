@@ -2,16 +2,21 @@ package com.bbbbiu.biu.gui.choose;
 
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.FileListAdapter;
-import com.bbbbiu.biu.gui.adapters.FilePanelAdapter;
+import com.bbbbiu.biu.gui.ConnectComputerActivity;
+import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.FilePanelAdapter;
+import com.bbbbiu.biu.util.Preference;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
+import java.util.List;
 
 public class FileChooseActivity extends ChooseBaseActivity {
 
@@ -20,10 +25,11 @@ public class FileChooseActivity extends ChooseBaseActivity {
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
 
-    private FileListAdapter mFileAdapter;
+    private FileContentAdapter mFileAdapter;
 
     private int chosenFileCount;
 
+    @SuppressWarnings("ConstantConditions")
     private void setTitle() {
         if (chosenFileCount == 0) {
             getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
@@ -36,7 +42,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mFileAdapter = (FileListAdapter) super.mContentAdapter;
+        mFileAdapter = (FileContentAdapter) super.mContentAdapter;
     }
 
     @Override
@@ -49,6 +55,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -100,7 +107,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected RecyclerView.Adapter onCreateContentAdapter() {
+    protected ContentBaseAdapter onCreateContentAdapter() {
         Bundle bundle = getIntent().getExtras();
         File rootDir = null;
         if (bundle != null) {
@@ -111,7 +118,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
             rootDir = new File(path);
         }
 
-        return new FileListAdapter(this, rootDir);
+        return new FileContentAdapter(this, rootDir);
     }
 
     @Override
@@ -135,5 +142,26 @@ public class FileChooseActivity extends ChooseBaseActivity {
         FilePanelAdapter adapter = (FilePanelAdapter) mPanelAdapter;
         adapter.setFile(file);
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onSendIOSClicked() {
+
+    }
+
+    @Override
+    protected void onSendAndroidClicked() {
+
+    }
+
+    @Override
+    protected void onSendComputerClicked() {
+
+        List<File> files = mFileAdapter.getChosenFiles();
+        Preference.storeFilesToSend(this, files);
+
+        Log.i(TAG, "Sending files to computer. File Amount " + files.size());
+
+        ConnectComputerActivity.connectForUpload(this);
     }
 }

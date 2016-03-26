@@ -5,13 +5,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import java.io.File;
 
-public class StorageUtil {
+public class Storage {
 
-    private static final String TAG = StorageUtil.class.getSimpleName();
+    private static final String TAG = Storage.class.getSimpleName();
 
     public static File getDownloadDir(Context context) {
         File downloads;

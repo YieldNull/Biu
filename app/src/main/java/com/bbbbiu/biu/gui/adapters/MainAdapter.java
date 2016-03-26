@@ -21,10 +21,13 @@ import com.bbbbiu.biu.gui.choose.FileChooseActivity;
 import com.bbbbiu.biu.gui.choose.ImageChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
 import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.Storage;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int SPAN_COUNT = 2;
@@ -53,7 +56,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         nameImgMap.add(new Integer[]{R.string.cate_trash, R.drawable.ic_cate_trash});
         nameImgMap.add(new Integer[]{R.string.cate_storage, R.drawable.ic_cate_phone});
 
-        externalDirCount = StorageUtil.getExternalDirCount(context);
+        externalDirCount = Storage.getExternalDirCount(context);
         Log.d(TAG, "External Count" + String.valueOf(externalDirCount));
 
         if (externalDirCount == 2) {
@@ -92,8 +95,8 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         if (getItemViewType(position) == TYPE_CATEGORY) {
             CategoryHolder holder = (CategoryHolder) hd;
-            holder.cateImage.setImageDrawable(context.getResources().getDrawable(imageId));
-            holder.cateText.setText(context.getString(stringId));
+            holder.iconImage.setImageDrawable(context.getResources().getDrawable(imageId));
+            holder.nameText.setText(context.getString(stringId));
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -134,8 +137,8 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             });
         } else {
             StorageHolder holder = (StorageHolder) hd;
-            holder.cateImage.setImageDrawable(context.getResources().getDrawable(imageId));
-            holder.cateText.setText(context.getString(stringId));
+            holder.iconImage.setImageDrawable(context.getResources().getDrawable(imageId));
+            holder.nameText.setText(context.getString(stringId));
             holder.setPercentage(position);
         }
     }
@@ -159,31 +162,37 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return nameImgMap.get(position)[0];
     }
 
-    private class CategoryHolder extends RecyclerView.ViewHolder {
-        public ImageView cateImage;
-        public TextView cateText;
+    class CategoryHolder extends RecyclerView.ViewHolder {
 
-        public CategoryHolder(View itemView) {
+        @Bind(R.id.imageView_icon)
+        ImageView iconImage;
+
+        @Bind(R.id.textView_name)
+        TextView nameText;
+
+        CategoryHolder(View itemView) {
             super(itemView);
-
-            cateImage = (ImageView) itemView.findViewById(R.id.imageView_main_cate);
-            cateText = (TextView) itemView.findViewById(R.id.textView_main_cate);
+            ButterKnife.bind(this, itemView);
         }
     }
 
-    private class StorageHolder extends RecyclerView.ViewHolder {
-        public ImageView cateImage;
-        public TextView cateText;
-        public ProgressBar progressBar;
-        public TextView storageText;
+    class StorageHolder extends RecyclerView.ViewHolder {
 
-        public StorageHolder(View itemView) {
+        @Bind(R.id.imageView_icon)
+        ImageView iconImage;
+
+        @Bind(R.id.textView_name)
+        TextView nameText;
+
+        @Bind(R.id.progressBar)
+        ProgressBar progressBar;
+
+        @Bind(R.id.textView_storage)
+        TextView storageText;
+
+        StorageHolder(View itemView) {
             super(itemView);
-
-            cateImage = (ImageView) itemView.findViewById(R.id.imageView_main_cate);
-            cateText = (TextView) itemView.findViewById(R.id.textView_main_cate);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.progressBar_main_storage);
-            storageText = (TextView) itemView.findViewById(R.id.textView_main_storage);
+            ButterKnife.bind(this, itemView);
         }
 
         public void setPercentage(int position) {
@@ -217,7 +226,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 }
             } else if (stringId == R.string.cate_sdcard) {
                 if (externalDirCount == 2) {
-                    file = StorageUtil.getSecondaryExternalDir(context);// 有两个外置，进入第二个
+                    file = Storage.getSecondaryExternalDir(context);// 有两个外置，进入第二个
                     file2Enter = file.getParentFile().getParentFile().getParentFile().getParentFile();
                 } else {
                     file = Environment.getExternalStorageDirectory();// 有一个外置，进入第一个
@@ -248,7 +257,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             progressBar.setMax(100);
             progressBar.setProgress((int) (((total - free) / (total * 1.0)) * 100));
 
-            String percentage = StorageUtil.getReadableSize(total - free) + "/" + StorageUtil.getReadableSize(total);
+            String percentage = Storage.getReadableSize(total - free) + "/" + Storage.getReadableSize(total);
             storageText.setText(percentage);
         }
     }

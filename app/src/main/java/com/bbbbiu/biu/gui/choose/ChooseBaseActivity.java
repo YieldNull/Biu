@@ -11,10 +11,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.FileListAdapter;
-import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
@@ -22,13 +24,17 @@ import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 /**
  * 选各类文件的基类。
- * <p>
- * 各类文件选择共用一个布局文件“R.layout.activity_choosing”
+ * <p/>
+ * 各类文件选择共用一个布局文件“R.layout.activity_choose_base”
  * 界面中主内容为一个RecyclerView，记为 ContentRecyclerView
  * 底部有一个滑出菜单，也是RecyclerView，记为PanelRecyclerView
- * <p>
+ * <p/>
  * 有五个抽象方法，提供相应实现即可
  */
 public abstract class ChooseBaseActivity extends AppCompatActivity implements
@@ -36,24 +42,55 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
+    @Bind(R.id.sliding_layout)
+    protected SlidingUpPanelLayout mSlidingUpPanelLayout;
+
+    @Bind(R.id.recyclerView_choosing)
     protected RecyclerView mContentRecyclerView;
-    protected RecyclerView.Adapter mContentAdapter;
+    protected ContentBaseAdapter mContentAdapter;
     protected RecyclerView.LayoutManager mContentLayoutManager;
 
-    protected SlidingUpPanelLayout mSlidingUpPanelLayout;
+    @Bind(R.id.recyclerView_panel)
     protected RecyclerView mPanelRecyclerView;
     protected PanelBaseAdapter mPanelAdapter;
 
+    @Bind(R.id.float_action_menu)
     protected FloatingActionMenu mFloatingActionMenu;
+
+    @OnClick(R.id.fbtn_send_android)
+    protected void clickSendAndroid() {
+        mFloatingActionMenu.toggle(false);
+        onSendAndroidClicked();
+    }
+
+    @OnClick(R.id.fbtn_send_ios)
+    protected void clickSendIOS() {
+        mFloatingActionMenu.toggle(false);
+        onSendIOSClicked();
+    }
+
+    @OnClick(R.id.fbtn_send_computer)
+    protected void clickSendComputer() {
+        mFloatingActionMenu.toggle(false);
+        onSendComputerClicked();
+    }
+
+
+    protected abstract void onSendIOSClicked();
+
+    protected abstract void onSendAndroidClicked();
+
+    protected abstract void onSendComputerClicked();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choosing);
+        setContentView(R.layout.activity_choose_base);
+        ButterKnife.bind(this);
 
         // Toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_choosing);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
@@ -69,15 +106,12 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         }
 
         // 主内容 RecyclerView
-        mContentRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_choosing);
-
         mContentLayoutManager = onCreateContentLayoutManager();
         if (!(mContentLayoutManager instanceof LinearContentLayoutManager) &&
                 !(mContentLayoutManager instanceof GridContentLayoutManager)) {
             throw new RuntimeException(("You must use custom content LayoutManager"));
         }
         mContentRecyclerView.setLayoutManager(mContentLayoutManager);
-
 
         mContentAdapter = onCreateContentAdapter();
         if (mContentAdapter == null) {
@@ -91,7 +125,6 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         }
 
         // 滑动panel RecyclerView
-        mPanelRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_bottom_panel);
         mPanelAdapter = onCreatePanelAdapter();
 
         if (mPanelAdapter != null) {
@@ -104,15 +137,21 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
                     .build());
         }
 
-
         // floating action menu
-        mFloatingActionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu);
         mFloatingActionMenu.setIconAnimated(false);
         mFloatingActionMenu.setClosedOnTouchOutside(true);
-
+        mFloatingActionMenu.setOnMenuButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mContentAdapter.getChosenFiles().size() == 0) {
+                    Toast.makeText(ChooseBaseActivity.this, R.string.hint_choose_file_required, Toast.LENGTH_SHORT).show();
+                } else {
+                    mFloatingActionMenu.toggle(true);
+                }
+            }
+        });
 
         // sliding up panel.点击 滑出Panel外部时，panel关闭
-        mSlidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         mSlidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,8 +187,8 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
     /**
      * 底部滑出菜单一般是每个文件都有的，点击时传入对应的File
      * 然后更新PanelRecyclerView(更新对应的文件)
-     * <p>
-     * 使用方法见 {@link FileListAdapter}
+     * <p/>
+     * 使用方法见 {@link FileContentAdapter}
      *
      * @param file 对应的文件
      */
@@ -168,16 +207,16 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      *
      * @return ContentAdapter
      */
-    protected abstract RecyclerView.Adapter onCreateContentAdapter();
+    protected abstract ContentBaseAdapter onCreateContentAdapter();
 
     /**
      * ContentRecyclerView 中各项内容的分割线
-     * <p>
+     * <p/>
      * 当LayoutManager使用LinearLayoutManager时，
      * 返回 new HorizontalDividerItemDecoration.Builder(this).build();
-     * <p>
+     * <p/>
      * 当使用GridLayoutManager使，返回相应ItemDecoration
-     * <p>
+     * <p/>
      * 参见开源库 com.yqritc:recyclerview-flexibledivider
      *
      * @return 可以为空
@@ -198,7 +237,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
     /**
      * Create Adapter for PanelRecyclerView
-     * <p>
+     * <p/>
      * 当需要使用底部的滑出菜单时，创建相应的Adapter。
      * Adapter必须继承PanelBaseAdapter
      *

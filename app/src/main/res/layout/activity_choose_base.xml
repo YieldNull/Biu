@@ -24,7 +24,7 @@
             android:theme="@style/AppTheme.AppBarOverlay">
 
             <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar_choosing"
+                android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@color/colorPrimary"
@@ -43,7 +43,7 @@
     </android.support.design.widget.CoordinatorLayout>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView_bottom_panel"
+        android:id="@+id/recyclerView_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/upPanel" />

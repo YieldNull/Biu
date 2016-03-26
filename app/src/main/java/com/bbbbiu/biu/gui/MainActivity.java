@@ -9,25 +9,42 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.MainAdapter;
-import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private FloatingActionMenu actionMenu;
+
+
+    @Bind(R.id.float_action_menu_main)
+    FloatingActionMenu actionMenu;
+
+    @Bind(R.id.recyclerView)
+    RecyclerView recyclerView;
+
+    @OnClick(R.id.fbtn_receive_computer)
+    void receiveComputer() {
+        actionMenu.toggle(false);
+
+        ConnectComputerActivity.connectForDownload(this);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -40,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
 
         final MainAdapter adapter = new MainAdapter(this);
         recyclerView.setAdapter(adapter);
@@ -52,25 +68,11 @@ public class MainActivity extends AppCompatActivity {
                 return adapter.getSpanSize(position);
             }
         });
-
         recyclerView.setLayoutManager(manager);
 
-        actionMenu = (FloatingActionMenu) findViewById(R.id.float_action_menu_main);
+
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
-
-        FloatingActionButton btn = (FloatingActionButton) findViewById(R.id.fbtn_receive_computer);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                actionMenu.toggle(false);
-
-                Intent intent = new Intent(MainActivity.this, QRCodeScanActivity.class);
-
-                intent.putExtra(QRCodeScanActivity.EXTRA_BIND_ACTION, QRCodeScanActivity.ACTION_DOWNLOAD);
-                startActivity(intent);
-            }
-        });
     }
 
 

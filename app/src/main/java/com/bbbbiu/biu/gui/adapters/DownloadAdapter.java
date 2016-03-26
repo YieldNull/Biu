@@ -12,7 +12,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.http.client.FileItem;
 import com.bbbbiu.biu.http.util.ProgressListener;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.Storage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +24,8 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 3/23/16
  */
-public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private static final String TAG = ReceiveAdapter.class.getSimpleName();
+public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final String TAG = DownloadAdapter.class.getSimpleName();
 
     private static final int VIEW_TYPE_HEADER = 0;
     private static final int VIEW_TYPE_ITEM = 1;
@@ -34,14 +34,12 @@ public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private final Context context;
     private ArrayList<FileItem> fileList = new ArrayList<>();
 
-    private HashMap<FileItem, ProgressListener> fileItemProgressListenerHashMap = new HashMap<>();
-
     public void addFileList(List<FileItem> files) {
         fileList.addAll(files);
     }
 
 
-    public ReceiveAdapter(Context context) {
+    public DownloadAdapter(Context context) {
         this.context = context;
         fileList.add(null); //Header
     }
@@ -55,10 +53,10 @@ public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         LayoutInflater inflater = LayoutInflater.from(context);
 
         if (viewType == VIEW_TYPE_ITEM) {
-            View itemView = inflater.inflate(R.layout.list_receive_item, parent, false);
+            View itemView = inflater.inflate(R.layout.list_download_item, parent, false);
             return new FileItemViewHolder(itemView);
         } else {
-            View itemView = inflater.inflate(R.layout.list_receive_header, parent, false);
+            View itemView = inflater.inflate(R.layout.list_download_header, parent, false);
             return new HeaderViewHolder(itemView);
         }
 
@@ -72,8 +70,9 @@ public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             FileItem fileItem = fileList.get(position);
 
             holder.fileNameText.setText(fileItem.getName());
-            holder.progressText.setText(StorageUtil.getReadableSize(fileItem.getSize()));
+            holder.progressText.setText(Storage.getReadableSize(fileItem.getSize()));
             holder.progressBar.setMax(100);
+            holder.progressBar.setProgress(0);
 
         } else {
 
@@ -91,25 +90,18 @@ public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
     }
 
-
-    public void updateProgress(RecyclerView.ViewHolder holder, int progress) {
-        FileItemViewHolder fileItemViewHolder = (FileItemViewHolder) holder;
-        fileItemViewHolder.progressBar.setProgress(progress);
-    }
-
-
     public class FileItemViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(R.id.imageView_file_icon)
+        @Bind(R.id.imageView_icon)
         ImageView fileIconImage;
 
-        @Bind(R.id.textView_file_name)
+        @Bind(R.id.textView_name)
         TextView fileNameText;
 
-        @Bind(R.id.textView_file_info)
+        @Bind(R.id.textView_progress)
         TextView progressText;
 
-        @Bind(R.id.progressBar_receive)
+        @Bind(R.id.progressBar)
         ProgressBar progressBar;
 
         public ProgressBar getProgressBar() {
@@ -128,7 +120,7 @@ public class ReceiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     class HeaderViewHolder extends RecyclerView.ViewHolder {
 
-        @Bind(R.id.textView_receive_hint)
+        @Bind(R.id.textView)
         TextView hintText;
 
         public HeaderViewHolder(View itemView) {

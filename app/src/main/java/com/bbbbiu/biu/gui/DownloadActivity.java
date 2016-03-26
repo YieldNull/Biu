@@ -1,11 +1,13 @@
 package com.bbbbiu.biu.gui;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -15,10 +17,10 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.http.client.FileItem;
-import com.bbbbiu.biu.gui.adapters.ReceiveAdapter;
+import com.bbbbiu.biu.gui.adapters.DownloadAdapter;
 import com.bbbbiu.biu.service.DownloadService;
 import com.bbbbiu.biu.service.PollingService;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.Storage;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import java.util.ArrayList;
@@ -27,19 +29,34 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class ReceiveActivity extends AppCompatActivity {
-    private static final String TAG = ReceiveActivity.class.getSimpleName();
+public class DownloadActivity extends AppCompatActivity {
+    private static final String TAG = DownloadActivity.class.getSimpleName();
 
-    public static final String EXTRA_UID = "com.bbbbiu.biu.gui.ReceiveActivity.extra.UID";
-    public static final String EXTRA_FILE_LIST = "com.bbbbiu.biu.gui.ReceiveActivity.extra.FILE_LIST";
+    /**
+     * 轮询接收文件列表
+     */
+    public static final String EXTRA_FILE_LIST = "com.bbbbiu.biu.gui.DownloadActivity.extra.FILE_LIST";
 
-    public static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.gui.ReceiveActivity.extra.FILE_ITEM";
-    public static final String EXTRA_PROGRESS = "com.bbbbiu.biu.gui.ReceiveActivity.extra.PROGRESS";
+    /**
+     * 下载接收进度
+     */
+    public static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.gui.DownloadActivity.extra.FILE_ITEM";
+    public static final String EXTRA_PROGRESS = "com.bbbbiu.biu.gui.DownloadActivity.extra.PROGRESS";
 
-    @Bind(R.id.recyclerView_receive)
+
+    private static final String EXTRA_UID = "com.bbbbiu.biu.gui.DownloadActivity.extra.UID";
+
+
+    public static void startDownload(Context context, String uid) {
+        Intent intent = new Intent(context, DownloadActivity.class);
+        intent.putExtra(EXTRA_UID, uid);
+        context.startActivity(intent);
+    }
+
+    @Bind(R.id.recyclerView)
     RecyclerView mRecyclerView;
 
-    ReceiveAdapter mAdapter;
+    DownloadAdapter mAdapter;
 
     @SuppressLint("ParcelCreator")
     private class PollingResultReceiver extends ResultReceiver {
@@ -59,10 +76,10 @@ public class ReceiveActivity extends AppCompatActivity {
 
                 Log.i(TAG, "Starting download file one by one");
                 for (FileItem fileItem : fileItems) {
-                    DownloadService.startDownload(ReceiveActivity.this, fileItem);
+                    DownloadService.startDownload(DownloadActivity.this, fileItem);
                 }
             } else {
-                Toast.makeText(ReceiveActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DownloadActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -87,13 +104,13 @@ public class ReceiveActivity extends AppCompatActivity {
 
 
                     int position = mAdapter.getItemPosition(fileItem);
-                    ReceiveAdapter.FileItemViewHolder holder = (ReceiveAdapter.FileItemViewHolder)
+                    DownloadAdapter.FileItemViewHolder holder = (DownloadAdapter.FileItemViewHolder)
                             mRecyclerView.findViewHolderForAdapterPosition(position);
 
                     holder.getProgressBar().setProgress(progress); // TODO 文件太小，导致list还没完成更新，此处NullPointer
 
-                    String read = StorageUtil.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
-                    String all = StorageUtil.getReadableSize(fileItem.getSize());
+                    String read = Storage.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
+                    String all = Storage.getReadableSize(fileItem.getSize());
 
                     holder.setProgressText(String.format("%s/%s", read, all));
                     break;
@@ -123,7 +140,7 @@ public class ReceiveActivity extends AppCompatActivity {
 
         String uid = getIntent().getExtras().getString(EXTRA_UID);
 
-        mAdapter = new ReceiveAdapter(this);
+        mAdapter = new DownloadAdapter(this);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -132,7 +149,7 @@ public class ReceiveActivity extends AppCompatActivity {
         PollingService.startPolling(this, uid, pollingResultReceiver);
 
         ResultReceiver progressResultReceiver = new ProgressResultReceiver(new Handler());
-        DownloadService.setResultReceiver(this, progressResultReceiver);
+        DownloadService.setReceiver(this, progressResultReceiver);
     }
 
     @Override

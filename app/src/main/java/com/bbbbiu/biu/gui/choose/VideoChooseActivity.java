@@ -2,7 +2,8 @@ package com.bbbbiu.biu.gui.choose;
 
 import android.support.v7.widget.RecyclerView;
 
-import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 
 import java.io.File;
 
@@ -20,7 +21,7 @@ public class VideoChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected RecyclerView.Adapter onCreateContentAdapter() {
+    protected ContentBaseAdapter onCreateContentAdapter() {
         return null;
     }
 
@@ -41,6 +42,21 @@ public class VideoChooseActivity extends ChooseBaseActivity {
 
     @Override
     public void onFileDismissed(File file) {
+
+    }
+
+    @Override
+    protected void onSendIOSClicked() {
+
+    }
+
+    @Override
+    protected void onSendAndroidClicked() {
+
+    }
+
+    @Override
+    protected void onSendComputerClicked() {
 
     }
 }

@@ -17,7 +17,7 @@
         android:descendantFocusability="blocksDescendants">
 
         <ImageView
-            android:id="@+id/imageView_file_icon"
+            android:id="@+id/imageView_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -39,7 +39,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/textView_file_name"
+                    android:id="@+id/textView_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
@@ -49,7 +49,7 @@
                     android:textColor="@color/file_name" />
 
                 <TextView
-                    android:id="@+id/textView_file_info"
+                    android:id="@+id/textView_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
@@ -59,7 +59,7 @@
             </RelativeLayout>
 
             <ProgressBar
-                android:id="@+id/progressBar_receive"
+                android:id="@+id/progressBar"
                 style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

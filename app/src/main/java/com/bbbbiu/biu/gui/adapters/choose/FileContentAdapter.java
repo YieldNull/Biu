@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters;
+package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.Storage;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -23,13 +23,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
-    private static final String TAG = FileListAdapter.class.getSimpleName();
+public class FileContentAdapter extends ContentBaseAdapter {
+
+    private static final String TAG = FileContentAdapter.class.getSimpleName();
 
     /**
      * ViewType 类型
@@ -48,13 +50,20 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private File[] files;
 
     private List<File> dirEnterStack = new ArrayList<>();
-    private List<File> dataFileList = new ArrayList<>();
-    private HashSet<File> chosenFiles = new HashSet<>();
+    private List<File> fileDataSet = new ArrayList<>();
+
+
+    @Override
+    public List<File> getChosenFiles() {
+        return chosenFiles;
+    }
+
+    private ArrayList<File> chosenFiles = new ArrayList<>(); // 没必要用Set吧？ 本来查出来的File就没有重复的啊
 
     private boolean showHidden;
 
     public File getFileAt(int position) {
-        return dataFileList.get(position);
+        return fileDataSet.get(position);
     }
 
 
@@ -82,7 +91,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public int setFileAllChosen() {
-        for (File file : dataFileList) {
+        for (File file : fileDataSet) {
             if (file != null) {
                 chosenFiles.add(file);
             }
@@ -90,10 +99,10 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         notifyDataSetChanged();
 
-        return dataFileList.size();
+        return fileDataSet.size();
     }
 
-    public FileListAdapter(Context context, File rootDir) {
+    public FileContentAdapter(Context context, File rootDir) {
         this.context = context;
         enterDir(rootDir);
 
@@ -168,7 +177,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
 
             } else { // 文件
-                holder.fileInfoTextView.setText(String.format("%s  %s", modifyTime, StorageUtil.getReadableSize(file.length())));
+                holder.fileInfoTextView.setText(String.format("%s  %s", modifyTime, Storage.getReadableSize(file.length())));
 
                 holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_default));
             }
@@ -204,7 +213,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        return dataFileList.size();
+        return fileDataSet.size();
     }
 
     @Override
@@ -244,35 +253,43 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         Arrays.sort(files, comparator);
         Arrays.sort(dirs, comparator);
 
-        dataFileList.clear();
+        fileDataSet.clear();
 
         if (dirs.length > 0) {
-            dataFileList.add(null);
-            Collections.addAll(dataFileList, dirs);
+            fileDataSet.add(null);
+            Collections.addAll(fileDataSet, dirs);
         }
 
         if (files.length > 0) {
-            dataFileList.add(null);
-            Collections.addAll(dataFileList, files);
+            fileDataSet.add(null);
+            Collections.addAll(fileDataSet, files);
         }
         notifyDataSetChanged();
     }
 
-    public static class HeaderViewHolder extends RecyclerView.ViewHolder {
-        public TextView headerText;
+    class HeaderViewHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.textView_header)
+        TextView headerText;
 
-        public HeaderViewHolder(View itemView) {
+        HeaderViewHolder(View itemView) {
             super(itemView);
-
-            headerText = (TextView) itemView.findViewById(R.id.textView_file_cate);
+            ButterKnife.bind(this, itemView);
         }
     }
 
-    public class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        public ImageView fileIconImageView;
-        public TextView fileNameTextView;
-        public TextView fileInfoTextView;
-        public ImageButton optionsImageView;
+    class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        @Bind(R.id.imageView_icon)
+        ImageView fileIconImageView;
+
+        @Bind(R.id.textView_name)
+        TextView fileNameTextView;
+
+        @Bind(R.id.textView_progress)
+        TextView fileInfoTextView;
+
+        @Bind(R.id.imageButton_option)
+        ImageButton optionsImageView;
 
         private int position;
         private Context context;
@@ -281,10 +298,7 @@ public class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(itemView);
             this.context = context;
 
-            fileIconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_icon);
-            fileNameTextView = (TextView) itemView.findViewById(R.id.textView_file_name);
-            fileInfoTextView = (TextView) itemView.findViewById(R.id.textView_file_info);
-            optionsImageView = (ImageButton) itemView.findViewById(R.id.imageButton_file_option);
+            ButterKnife.bind(this, itemView);
 
             itemView.setOnClickListener(this);
         }

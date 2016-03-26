@@ -1,18 +1,24 @@
 package com.bbbbiu.biu.gui;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.http.client.HttpConstants;
 import com.google.zxing.Result;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import java.io.IOException;
 
+import butterknife.ButterKnife;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -22,19 +28,18 @@ import okhttp3.ResponseBody;
  * Created by YieldNull at 3/22/16
  */
 
-public class QRCodeScanActivity extends Activity implements ZXingScannerView.ResultHandler {
+public class QRCodeScanActivity extends AppCompatActivity implements ZXingScannerView.ResultHandler {
     private static final String TAG = QRCodeScanActivity.class.getSimpleName();
 
-    public static final String EXTRA_BIND_ACTION = "com.bbbbiu.biu.gui.QRCodeScanActivity.extra.BIND_ACTION";
 
-    public static final int ACTION_UPLOAD = HttpConstants.BIND_ACTION_UPLOAD;
-    public static final int ACTION_DOWNLOAD = HttpConstants.BIND_ACTION_DOWNLOAD;
+    public static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.QRCodeScanActivity.action.UPLOAD";
+    public static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.QRCodeScanActivity.action.DOWNLOAD";
 
-    private static final int MSG_ENTER_RECEIVE_ACTIVITY = 0;
-    private static final int MSG_ENTER_SEND_ACTIVITY = 1;
+    private static final int MSG_ENTER_DOWNLOAD_ACTIVITY = 0;
+    private static final int MSG_ENTER_UPLOAD_ACTIVITY = 1;
     private static final int MSG_SERVER_ERROR = 2;
 
-    private int mBindAction;
+    private String mBindAction;
     private ZXingScannerView mScannerView;
 
     private String uid;
@@ -42,41 +47,64 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
     private Handler mHandler;
 
 
+    public static void scanForDownload(Context context) {
+        Intent intent = new Intent(context, QRCodeScanActivity.class);
+        intent.setAction(ACTION_DOWNLOAD);
+        context.startActivity(intent);
+    }
+
+    public static void scanForUpload(Context context) {
+        Intent intent = new Intent(context, QRCodeScanActivity.class);
+        intent.setAction(ACTION_UPLOAD);
+        context.startActivity(intent);
+    }
+
     @Override
     public void onCreate(Bundle state) {
         super.onCreate(state);
+        ButterKnife.bind(this);
+
+        // android 4.4 状态栏透明
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            SystemBarTintManager tintManager = new SystemBarTintManager(this);
+            tintManager.setStatusBarTintEnabled(true);
+            tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
+        }
 
         mScannerView = new ZXingScannerView(this);
         setContentView(mScannerView);
 
         mScannerView.setResultHandler(this);
 
-        mBindAction = getIntent().getExtras().getInt(EXTRA_BIND_ACTION);
+        mBindAction = getIntent().getAction();
 
         mHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
-
-                Intent intent;
-
                 switch (msg.what) {
-                    case MSG_ENTER_RECEIVE_ACTIVITY:
-                        intent = new Intent(QRCodeScanActivity.this, ReceiveActivity.class);
-                        intent.putExtra(ReceiveActivity.EXTRA_UID, uid);
-                        QRCodeScanActivity.this.startActivity(intent);
+                    case MSG_ENTER_DOWNLOAD_ACTIVITY:
+                        Log.i(TAG, "Bind succeeded. Enter download activity");
+
+                        DownloadActivity.startDownload(QRCodeScanActivity.this, uid);
                         break;
-                    case MSG_ENTER_SEND_ACTIVITY:
-                        intent = new Intent(QRCodeScanActivity.this, SendActivity.class);
-                        intent.putExtra(ReceiveActivity.EXTRA_UID, uid);
-                        QRCodeScanActivity.this.startActivity(intent);
+
+                    case MSG_ENTER_UPLOAD_ACTIVITY:
+                        Log.i(TAG, "Bind succeeded. Enter upload activity");
+
+                        UploadActivity.startUpload(QRCodeScanActivity.this, uid);
                         break;
+
                     case MSG_SERVER_ERROR:
-                        Toast.makeText(QRCodeScanActivity.this, "服务器无响应，请稍后再试", Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, "Server error. Stop retrying");
+                        Toast.makeText(QRCodeScanActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
                         break;
                 }
                 return false;
             }
         });
+
+        Log.i(TAG, "Scanning QRCode on desktop internet browser");
     }
 
     @Override
@@ -96,6 +124,8 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
         Log.v(TAG, rawResult.getText());
         uid = rawResult.getText();
 
+        Log.i(TAG, "The uid in QRCode is " + uid);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -105,14 +135,18 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
     }
 
     private void bind() {
+        Log.i(TAG, "Try to bind server");
+
         int retry = 0;
         while (true) {
             if (bindServer()) {
-                int what = mBindAction == ACTION_DOWNLOAD ? MSG_ENTER_RECEIVE_ACTIVITY : MSG_ENTER_SEND_ACTIVITY;
+                int what = mBindAction.equals(ACTION_DOWNLOAD) ? MSG_ENTER_DOWNLOAD_ACTIVITY : MSG_ENTER_UPLOAD_ACTIVITY;
                 mHandler.sendEmptyMessage(what);
                 break;
             }
             retry++;
+
+            Log.i(TAG, "Retry binding server");
 
             if (retry > 10) {
                 mHandler.sendEmptyMessage(MSG_SERVER_ERROR);
@@ -122,13 +156,14 @@ public class QRCodeScanActivity extends Activity implements ZXingScannerView.Res
     }
 
     private boolean bindServer() {
-        Request request = HttpConstants.newBindRequest(uid, mBindAction);
+        int action = mBindAction.equals(ACTION_DOWNLOAD) ? HttpConstants.BIND_ACTION_DOWNLOAD : HttpConstants.BIND_ACTION_UPLOAD;
+        Request request = HttpConstants.newBindRequest(uid, action);
         Response response;
         ResponseBody body = null;
 
         try {
             try {
-                response = HttpConstants.getHttpClient().newCall(request).execute();
+                response = HttpConstants.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
                 Log.i(TAG, "Bind server failed. HTTP error " + e.toString());

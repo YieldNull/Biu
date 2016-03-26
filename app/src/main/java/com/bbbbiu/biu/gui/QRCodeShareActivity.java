@@ -3,10 +3,12 @@ package com.bbbbiu.biu.gui;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
@@ -16,6 +18,9 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.readystatesoftware.systembartint.SystemBarTintManager;
+
+import butterknife.ButterKnife;
 
 
 public class QRCodeShareActivity extends AppCompatActivity {
@@ -25,6 +30,15 @@ public class QRCodeShareActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_code_share);
+        ButterKnife.bind(this);
+
+        // android 4.4 状态栏透明
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            SystemBarTintManager tintManager = new SystemBarTintManager(this);
+            tintManager.setStatusBarTintEnabled(true);
+            tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
+        }
 
         ImageView mQRCodeImage = (ImageView) findViewById(R.id.imageView_qrcode_share);
 

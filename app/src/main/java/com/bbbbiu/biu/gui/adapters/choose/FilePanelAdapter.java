@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters;
+package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
 import android.graphics.Paint;
@@ -13,6 +13,9 @@ import com.bbbbiu.biu.R;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class FilePanelAdapter extends PanelBaseAdapter {
 
@@ -128,31 +131,37 @@ public class FilePanelAdapter extends PanelBaseAdapter {
         return position == 1 || position == 2;
     }
 
-    public class OperationHeaderViewHolder extends RecyclerView.ViewHolder {
-        public ImageView fileIconImageView;
-        public TextView fileNameTextView;
+    class OperationHeaderViewHolder extends RecyclerView.ViewHolder {
 
-        public OperationHeaderViewHolder(View itemView) {
+        @Bind(R.id.imageView_icon)
+        ImageView fileIconImageView;
+
+        @Bind(R.id.textView_name)
+        TextView fileNameTextView;
+
+        OperationHeaderViewHolder(View itemView) {
             super(itemView);
 
-            fileIconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_operation_file_icon);
-            fileNameTextView = (TextView) itemView.findViewById(R.id.textView_file_operation_file_name);
+            ButterKnife.bind(this,itemView);
         }
     }
 
-    public class OperationViewHolder extends RecyclerView.ViewHolder {
-        public ImageView iconImageView;
-        public TextView operationTextView;
+    class OperationViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.imageView_icon)
+        ImageView iconImageView;
+
+        @Bind(R.id.textView_operation)
+        TextView operationTextView;
 
 
-        public OperationViewHolder(View itemView) {
+        OperationViewHolder(View itemView) {
             super(itemView);
 
-            iconImageView = (ImageView) itemView.findViewById(R.id.imageView_file_operation_icon);
-            operationTextView = (TextView) itemView.findViewById(R.id.textView_file_operation);
+            ButterKnife.bind(this,itemView);
         }
 
-        public void setOnClickListener(final int position) {
+        void setOnClickListener(final int position) {
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

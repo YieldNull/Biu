@@ -1,9 +1,15 @@
 package com.bbbbiu.biu.http.client;
 
+import android.webkit.MimeTypeMap;
+
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 
 /**
  * Created by YieldNull at 3/23/16
@@ -22,15 +28,13 @@ public class HttpConstants {
     private static final String BIND_WHAT_UPLOAD = "upload";
     private static final String BIND_WHAT_DOWNLOAD = "download";
 
-    private static final OkHttpClient mHttpClient = new OkHttpClient.Builder()
-            .connectTimeout(0, TimeUnit.SECONDS)
-            .readTimeout(0, TimeUnit.SECONDS)
-            .writeTimeout(0, TimeUnit.SECONDS)
-            .build();
 
-
-    public static OkHttpClient getHttpClient() {
-        return mHttpClient;
+    public static OkHttpClient newHttpClient() {
+        return new OkHttpClient.Builder()
+                .connectTimeout(0, TimeUnit.SECONDS)
+                .readTimeout(0, TimeUnit.SECONDS)
+                .writeTimeout(0, TimeUnit.SECONDS)
+                .build();
     }
 
     public static Request newFileListRequest(String uid) {
@@ -56,4 +60,18 @@ public class HttpConstants {
                 .build();
     }
 
+    public static Request newFileUploadRequest(String uid, File file) {
+        String url = URL_UPLOAD;
+
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("uid", uid)
+                .addFormDataPart("files", file.getName(), RequestBody.create(null, file))
+                .build();
+
+        return new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+    }
 }

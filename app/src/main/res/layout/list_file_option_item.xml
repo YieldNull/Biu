@@ -5,7 +5,7 @@
     android:orientation="horizontal">
 
     <ImageView
-        android:id="@+id/imageView_file_operation_icon"
+        android:id="@+id/imageView_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
@@ -13,7 +13,7 @@
         android:tint="@color/upPanel_icon_tint" />
 
     <TextView
-        android:id="@+id/textView_file_operation"
+        android:id="@+id/textView_operation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"

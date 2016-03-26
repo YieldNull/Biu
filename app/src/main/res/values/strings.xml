@@ -25,7 +25,6 @@
     <string name="fbtn_computer">电脑</string>
     <string name="fbtn_ios">苹果</string>
 
-
     <string name="action_select_all">全选</string>
     <string name="action_choosing_dismiss">清除选择</string>
 
@@ -48,10 +47,13 @@
     <string name="title_activity_choose_apk">ChooseApkActivity</string>
     <string name="title_activity_history">HistoryActivity</string>
 
-    <string name="title_activity_receive_computer">接收文件</string>
+    <string name="title_activity_upload">正在上传</string>
+    <string name="title_activity_connect_computer">连接电脑</string>
     <string name="title_activity_qrcode_scan">扫描二维码</string>
-    <string name="title_activity_receive">ReceiveActivity</string>
-    <string name="title_activity_send">SendActivity</string>
+    <string name="title_activity_download">正在下载</string>
+
+
     <string name="net_server_error">服务器无响应，请稍后再试</string>
+    <string name="hint_choose_file_required">请先选择文件</string>
 
 </resources>

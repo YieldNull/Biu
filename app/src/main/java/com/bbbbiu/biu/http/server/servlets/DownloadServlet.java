@@ -9,7 +9,7 @@ import com.bbbbiu.biu.http.server.HttpRequest;
 import com.bbbbiu.biu.http.server.HttpResponse;
 import com.bbbbiu.biu.http.server.HttpServlet;
 import com.bbbbiu.biu.http.server.ContentType;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.Storage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +28,7 @@ public class DownloadServlet extends HttpServlet {
 
 
         for (Uri uri : fileUris) {
-            File file = new File(StorageUtil.getRealFilePath(context, uri));
+            File file = new File(Storage.getRealFilePath(context, uri));
             hashFileMap.put(String.valueOf(file.hashCode()), file);
         }
     }
