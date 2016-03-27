@@ -107,12 +107,14 @@ public class DownloadActivity extends AppCompatActivity {
                     DownloadAdapter.FileItemViewHolder holder = (DownloadAdapter.FileItemViewHolder)
                             mRecyclerView.findViewHolderForAdapterPosition(position);
 
-                    holder.getProgressBar().setProgress(progress); // TODO 文件太小，导致list还没完成更新，此处NullPointer
+                    if (holder != null) { // 文件太小，导致list还没完成更新，此处NullPointer
+                        holder.getProgressBar().setProgress(progress);
 
-                    String read = Storage.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
-                    String all = Storage.getReadableSize(fileItem.getSize());
+                        String read = Storage.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
+                        String all = Storage.getReadableSize(fileItem.getSize());
 
-                    holder.setProgressText(String.format("%s/%s", read, all));
+                        holder.setProgressText(String.format("%s/%s", read, all));
+                    }
                     break;
             }
         }

@@ -19,8 +19,10 @@ import com.bbbbiu.biu.gui.adapters.DownloadAdapter;
 import com.bbbbiu.biu.gui.adapters.UploadAdapter;
 import com.bbbbiu.biu.service.UploadService;
 import com.bbbbiu.biu.util.Preference;
+import com.bbbbiu.biu.util.Storage;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
+import java.io.File;
 import java.util.Set;
 
 import butterknife.Bind;
@@ -58,7 +60,30 @@ public class UploadActivity extends AppCompatActivity {
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            super.onReceiveResult(resultCode, resultData);
+            switch (resultCode) {
+                case UploadService.RESULT_FAILED:
+                    break;
+                case UploadService.RESULT_SUCCESS:
+                    break;
+                case UploadService.RESULT_PROGRESS:
+                    String filePath = resultData.getString(EXTRA_FILE_PATH);
+                    int progress = resultData.getInt(EXTRA_PROGRESS);
+
+                    int position = mAdapter.getItemPosition(filePath);
+                    long length = mAdapter.getItemAt(position).length();
+
+                    UploadAdapter.FileItemViewHolder holder = (UploadAdapter.FileItemViewHolder)
+                            mRecyclerView.findViewHolderForAdapterPosition(position);
+
+                    if (holder != null) {
+                        holder.getProgressBar().setProgress(progress);
+                        String read = Storage.getReadableSize((long) (length * progress * 0.01));
+                        String all = Storage.getReadableSize(length);
+
+                        holder.setProgressText(String.format("%s/%s", read, all));
+                    }
+                    break;
+            }
         }
     }
 

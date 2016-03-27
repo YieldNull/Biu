@@ -13,6 +13,7 @@ import android.util.Log;
 import com.bbbbiu.biu.gui.UploadActivity;
 import com.bbbbiu.biu.http.client.HttpConstants;
 import com.bbbbiu.biu.http.util.ProgressListener;
+import com.bbbbiu.biu.http.util.ProgressNotifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -105,7 +106,8 @@ public class UploadService extends Service implements ProgressListener {
         mCurrentFile = file;
         mCurrentProgress = 0;
 
-        Request request = HttpConstants.newFileUploadRequest(uid, file);
+        ProgressNotifier notifier = new ProgressNotifier(this, file.length());
+        Request request = HttpConstants.newFileUploadRequest(uid, file, notifier);
 
         Response response;
         ResponseBody body = null;
@@ -115,7 +117,7 @@ public class UploadService extends Service implements ProgressListener {
             response = HttpConstants.newHttpClient().newCall(request).execute();
             body = response.body();
         } catch (IOException e) {
-            Log.i(TAG, "Upload file failed. " + file.getName() + "  HTTP error" + e.toString());
+            Log.i(TAG, "Upload file failed. " + file.getName() + "  HTTP error " + e.toString(), e);
             return false;
         } finally {
             if (body != null) {

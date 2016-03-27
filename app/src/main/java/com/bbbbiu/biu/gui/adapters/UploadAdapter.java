@@ -44,8 +44,15 @@ public class UploadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         fileList.add(null); //Header
     }
 
-    public int getItemPosition(File fileItem) {
-        return fileList.indexOf(fileItem);
+    public int getItemPosition(String filePath) {
+        // 跳过header
+        for (int i = 1; i < fileList.size(); i++) {
+            File file = fileList.get(i);
+            if (file.getAbsolutePath().equals(filePath)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -88,6 +95,10 @@ public class UploadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public int getItemViewType(int position) {
 
         return position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
+    }
+
+    public File getItemAt(int position) {
+        return fileList.get(position);
     }
 
     public class FileItemViewHolder extends RecyclerView.ViewHolder {
