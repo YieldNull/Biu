@@ -9,11 +9,11 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.adapters.ApkAdapter;
-import com.bbbbiu.biu.gui.adapters.DividerItemDecoration;
-import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.ApkContentAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.util.Apk;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
-        return new DividerItemDecoration(this,DividerItemDecoration.VERTICAL_LIST);
+        return new HorizontalDividerItemDecoration.Builder(this).build();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     @Override
     protected ContentBaseAdapter onCreateContentAdapter() {
         initData();
-        return new ApkAdapter(ApkChooseActivity.this,apk_lists);
+        return new ApkContentAdapter(ApkChooseActivity.this,apk_lists);
     }
 
     @Override

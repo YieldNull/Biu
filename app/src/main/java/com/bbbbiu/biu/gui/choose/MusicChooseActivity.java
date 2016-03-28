@@ -6,11 +6,12 @@ import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.adapters.DividerItemDecoration;
-import com.bbbbiu.biu.gui.adapters.MusicAdapter;
-import com.bbbbiu.biu.gui.adapters.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.MusicContentAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.util.Music;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     public static String TAG = MusicChooseActivity.class.getSimpleName();
     @Override
     protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
-        return new DividerItemDecoration(this,DividerItemDecoration.VERTICAL_LIST);
+        return new HorizontalDividerItemDecoration.Builder(this).build();
     }
 
     @Override
@@ -35,7 +36,7 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     protected ContentBaseAdapter onCreateContentAdapter() {
         initList();
 
-        return new MusicAdapter(this,musicList);
+        return new MusicContentAdapter(this,musicList);
     }
 
     @Override
