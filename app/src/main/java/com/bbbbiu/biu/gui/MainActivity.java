@@ -39,6 +39,17 @@ public class MainActivity extends AppCompatActivity {
         ConnectComputerActivity.connectForDownload(this);
     }
 
+    @OnClick(R.id.fbtn_receive_ios)
+    void receiveApple() {
+        actionMenu.toggle(false);
+        ConnectAppleActivity.connectForDownload(this);
+    }
+
+    @OnClick(R.id.fbtn_receive_android)
+    void receiveAndroid() {
+        actionMenu.toggle(false);
+        startActivity(new Intent(this, ConnectAndroidActivity.class));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,4 +104,5 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // TODO check 在任何需要使用wifi的情况下，wifi是否可用？是不是要自动打开Wifi？
 }

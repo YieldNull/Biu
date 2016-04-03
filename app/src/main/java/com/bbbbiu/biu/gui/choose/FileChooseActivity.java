@@ -8,6 +8,7 @@ import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.ConnectComputerActivity;
+import com.bbbbiu.biu.gui.ConnectAppleActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
@@ -19,24 +20,13 @@ import java.io.File;
 import java.util.List;
 
 public class FileChooseActivity extends ChooseBaseActivity {
-
-    public static final String INTENT_EXTRA_ROOT_FILE_PATH = "com.bbbbiu.biu.FileChooseActivity.INTENT_EXTRA_ROOT_FILE_PATH";
-
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
+    public static final String EXTRA_ROOT_FILE_PATH = "com.bbbbiu.biu.FileChooseActivity.extra.ROOT_FILE_PATH";
 
     private FileContentAdapter mFileAdapter;
 
     private int chosenFileCount;
-
-    @SuppressWarnings("ConstantConditions")
-    private void setTitle() {
-        if (chosenFileCount == 0) {
-            getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
-        } else {
-            getSupportActionBar().setTitle(String.valueOf(chosenFileCount));
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,7 +101,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
         Bundle bundle = getIntent().getExtras();
         File rootDir = null;
         if (bundle != null) {
-            String path = bundle.getString(INTENT_EXTRA_ROOT_FILE_PATH);
+            String path = bundle.getString(EXTRA_ROOT_FILE_PATH);
             if (path == null) {
                 throw new RuntimeException("Root file path can not be null");
             }
@@ -147,6 +137,12 @@ public class FileChooseActivity extends ChooseBaseActivity {
     @Override
     protected void onSendIOSClicked() {
 
+        List<File> files = mFileAdapter.getChosenFiles();
+        Preference.storeFilesToSend(this, files);
+
+        Log.i(TAG, "Sending files to android. File Amount " + files.size());
+
+        ConnectAppleActivity.connectForUpload(this);
     }
 
     @Override
@@ -163,5 +159,14 @@ public class FileChooseActivity extends ChooseBaseActivity {
         Log.i(TAG, "Sending files to computer. File Amount " + files.size());
 
         ConnectComputerActivity.connectForUpload(this);
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void setTitle() {
+        if (chosenFileCount == 0) {
+            getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
+        } else {
+            getSupportActionBar().setTitle(String.valueOf(chosenFileCount));
+        }
     }
 }

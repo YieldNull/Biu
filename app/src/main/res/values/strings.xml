@@ -55,5 +55,6 @@
 
     <string name="net_server_error">服务器无响应，请稍后再试</string>
     <string name="hint_choose_file_required">请先选择文件</string>
+    <string name="title_activity_connect_android">ConnectAndroidActivity</string>
 
 </resources>

@@ -244,7 +244,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, FileChooseActivity.class);
-                    intent.putExtra(FileChooseActivity.INTENT_EXTRA_ROOT_FILE_PATH, finalFile2Enter.getAbsolutePath());
+                    intent.putExtra(FileChooseActivity.EXTRA_ROOT_FILE_PATH, finalFile2Enter.getAbsolutePath());
                     context.startActivity(intent);
                 }
             });

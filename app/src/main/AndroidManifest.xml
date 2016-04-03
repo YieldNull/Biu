@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bbbbiu.biu">
 
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"  />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -24,13 +27,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".gui.QRCodeShareActivity" />
 
         <service
             android:name=".service.HttpdService"
             android:enabled="true"
             android:exported="false" />
-
         <service
             android:name=".service.PollingService"
             android:enabled="true"
@@ -74,20 +75,24 @@
             android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.DownloadActivity"
-            android:label="@string/title_activity_download"
+            android:name=".gui.ConnectAppleActivity"
+            android:label="@string/title_activity_qrcode_scan"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
         <activity
             android:name=".gui.ConnectComputerActivity"
             android:label="@string/title_activity_connect_computer"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
+        <activity
+            android:name=".gui.DownloadActivity"
+            android:label="@string/title_activity_download"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".gui.UploadActivity"
             android:label="@string/title_activity_upload"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.ConnectAndroidActivity"
+            android:label="@string/title_activity_connect_android"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
