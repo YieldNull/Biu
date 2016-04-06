@@ -3,6 +3,7 @@ package com.bbbbiu.biu.gui;
 import android.net.wifi.WifiConfiguration;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -14,9 +15,8 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import butterknife.ButterKnife;
 
-public class ConnectAndroidActivity extends AppCompatActivity {
-
-    private static final String TAG = ConnectAndroidActivity.class.getSimpleName();
+public class ReceiveAndroidActivity extends AppCompatActivity {
+    private static final String TAG = ReceiveAndroidActivity.class.getSimpleName();
 
     private WifiApManager mApManager;
     private WifiConfiguration mApConfig;
@@ -25,7 +25,7 @@ public class ConnectAndroidActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_connect_android);
+        setContentView(R.layout.activity_receive_android);
 
         ButterKnife.bind(this);
 
@@ -45,29 +45,27 @@ public class ConnectAndroidActivity extends AppCompatActivity {
         mApManager = new WifiApManager(this);
 
         mApConfig = new WifiConfiguration();
-        mApConfig.status = WifiConfiguration.Status.DISABLED;
-        mApConfig.priority = 100;
-        mApConfig.SSID = "bbbbiu.com";
+        mApConfig.SSID = WifiApManager.AP_SSID;
+        mApConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
-        createHotspot();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                createHotspot();
+            }
+        }, 1000);
+
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
         mApManager.setWifiApEnabled(mApConfig, false);
     }
 
-
     protected void createHotspot() {
-        boolean succeed;
-        if (mApManager.getWifiApState() == WifiApManager.WIFI_AP_STATE_ENABLED) {
-            succeed = mApManager.setWifiApConfiguration(mApConfig);
-        } else {
-            succeed = mApManager.setWifiApEnabled(mApConfig, true);
-        }
+        boolean succeed = mApManager.setWifiApEnabled(mApConfig, true);
 
-        Log.i(TAG, "Create Wifi Access Point: succeeded:" + String.valueOf(succeed));
+        Log.i(TAG, "Create Wifi Access Point: Succeeded: " + String.valueOf(succeed));
     }
 }

@@ -2,14 +2,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bbbbiu.biu">
 
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"  />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <application
         android:allowBackup="true"
@@ -47,7 +50,7 @@
 
         <activity
             android:name=".gui.choose.FileChooseActivity"
-            android:label="fuck"
+            android:label="@string/title_activity_choose_file"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".gui.choose.ImageChooseActivity"
@@ -91,9 +94,13 @@
             android:label="@string/title_activity_upload"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.ConnectAndroidActivity"
-            android:label="@string/title_activity_connect_android"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:name=".gui.SendAndroidActivity"
+            android:label="@string/title_activity_send_android"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.ReceiveAndroidActivity"
+            android:label="@string/title_activity_receive_android"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

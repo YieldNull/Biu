@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui.choose;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.MenuItem;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.ConnectComputerActivity;
 import com.bbbbiu.biu.gui.ConnectAppleActivity;
+import com.bbbbiu.biu.gui.SendAndroidActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
@@ -147,7 +149,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected void onSendAndroidClicked() {
-
+        startActivity(new Intent(this, SendAndroidActivity.class));
     }
 
     @Override

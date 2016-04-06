@@ -3,22 +3,23 @@ package com.bbbbiu.biu.p2p;
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
 import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.util.ArrayList;
 
 /**
  * 使用反射机制使{@link WifiManager}中隐藏的关于WifiAp的方法可见。
- * <p/>
- * 增加恢复之前wifi状态的功能
+ * <p>
+ * 增加功能：
+ * 1.恢复开热点之前wifi状态
+ * 2.HTC开热点时的API reflection
  */
 public class WifiApManager {
+    private static final String TAG = WifiApManager.class.getSimpleName();
+
+    public static final String AP_SSID = "bbbbiu.com";
+    
     public static final int WIFI_AP_STATE_DISABLING = 10;
     public static final int WIFI_AP_STATE_DISABLED = 11;
     public static final int WIFI_AP_STATE_ENABLING = 12;
@@ -31,11 +32,20 @@ public class WifiApManager {
 
     private int mWifiState;
 
+    private boolean isHtc = false;
+
     public WifiApManager(Context context) {
         this.context = context;
         mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
 
         mWifiState = mWifiManager.getWifiState();
+
+        // check whether this is a HTC device
+        try {
+            Field field = WifiConfiguration.class.getDeclaredField("mWifiApProfile");
+            isHtc = field != null;
+        } catch (Exception ignore) {
+        }
     }
 
     /**
@@ -59,11 +69,14 @@ public class WifiApManager {
      */
     public boolean setWifiApEnabled(WifiConfiguration wifiConfig, boolean enabled) {
         try {
-
             if (enabled) {
                 mWifiManager.setWifiEnabled(false); // 首先关闭Wifi连接
             } else {
                 restoreWifiState();
+            }
+
+            if (isHtc) {
+                setupHtcWifiConfiguration(wifiConfig);
             }
 
             // reflect
@@ -113,7 +126,13 @@ public class WifiApManager {
     public WifiConfiguration getWifiApConfiguration() {
         try {
             Method method = mWifiManager.getClass().getMethod("getWifiApConfiguration");
-            return (WifiConfiguration) method.invoke(mWifiManager);
+            WifiConfiguration configuration = (WifiConfiguration) method.invoke(mWifiManager);
+
+            if (isHtc) {
+                configuration = getHtcWifiApConfiguration(configuration);
+            }
+            return configuration;
+
         } catch (Exception e) {
             Log.e(getClass().toString(), "", e);
             return null;
@@ -127,11 +146,84 @@ public class WifiApManager {
      */
     public boolean setWifiApConfiguration(WifiConfiguration wifiConfig) {
         try {
+            if (isHtc) {
+                setupHtcWifiConfiguration(wifiConfig);
+            }
             Method method = mWifiManager.getClass().getMethod("setWifiApConfiguration", WifiConfiguration.class);
             return (Boolean) method.invoke(mWifiManager, wifiConfig);
         } catch (Exception e) {
-            Log.e(getClass().toString(), "", e);
+            Log.i(TAG, "setWifiApConfiguration " + e.toString());
             return false;
         }
+    }
+
+    /**
+     * 设置HTC AP。默认设置为无密码
+     *
+     * @param config WifiConfiguration
+     */
+    private void setupHtcWifiConfiguration(WifiConfiguration config) {
+        try {
+            Object mWifiApProfileValue = getFieldValue(config, "mWifiApProfile");
+
+            if (mWifiApProfileValue != null) {
+                setFieldValue(mWifiApProfileValue, "SSID", config.SSID);
+                setFieldValue(mWifiApProfileValue, "BSSID", config.BSSID);
+                setFieldValue(mWifiApProfileValue, "secureType", "open");
+                setFieldValue(mWifiApProfileValue, "dhcpEnable", 1);
+            }
+        } catch (Exception e) {
+            Log.i(TAG, "setupHtcWifiConfiguration " + e.toString());
+        }
+    }
+
+    /**
+     * 获取HTC AP
+     *
+     * @param config WifiConfiguration
+     * @return
+     */
+    private WifiConfiguration getHtcWifiApConfiguration(WifiConfiguration config) {
+        try {
+            Object mWifiApProfileValue = getFieldValue(config, "mWifiApProfile");
+            if (mWifiApProfileValue != null) {
+                config.SSID = (String) getFieldValue(mWifiApProfileValue, "SSID");
+            }
+        } catch (Exception e) {
+            Log.i(TAG, "getHtcWifiApConfiguration " + e.toString());
+        }
+        return config;
+    }
+
+    /**
+     * 利用反射机制为 设置object 对应propertyName 的值为 value
+     *
+     * @param object
+     * @param propertyName
+     * @param value
+     * @throws IllegalAccessException
+     * @throws NoSuchFieldException
+     */
+    private void setFieldValue(Object object, String propertyName, Object value)
+            throws IllegalAccessException, NoSuchFieldException {
+        Field field = object.getClass().getDeclaredField(propertyName);
+        field.setAccessible(true);
+        field.set(object, value);
+    }
+
+    /**
+     * 利用反射机制为 设置object 对应propertyName 的值
+     *
+     * @param object
+     * @param propertyName
+     * @return
+     * @throws IllegalAccessException
+     * @throws NoSuchFieldException
+     */
+    private Object getFieldValue(Object object, String propertyName)
+            throws IllegalAccessException, NoSuchFieldException {
+        Field field = object.getClass().getDeclaredField(propertyName);
+        field.setAccessible(true);
+        return field.get(object);
     }
 }

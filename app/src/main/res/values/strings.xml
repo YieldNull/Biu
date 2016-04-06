@@ -39,13 +39,13 @@
     <string name="list_header_folder">文件夹</string>
     <string name="list_header_file">文件</string>
 
-    <string name="title_activity_choose">选择</string>
-    <string name="title_activity_choose_image">ChooseImageActivity</string>
-    <string name="title_activity_choose_video">ChooseVideoActivity</string>
-    <string name="title_activity_choose_music">ChooseMusicActivity</string>
-    <string name="title_activity_choose_document">ChooseDocumentActivity</string>
-    <string name="title_activity_choose_apk">ChooseApkActivity</string>
-    <string name="title_activity_history">HistoryActivity</string>
+    <string name="title_activity_choose">文件</string>
+    <string name="title_activity_choose_image">图片</string>
+    <string name="title_activity_choose_video">视频</string>
+    <string name="title_activity_choose_music">音乐</string>
+    <string name="title_activity_choose_document">文档</string>
+    <string name="title_activity_choose_apk">APK</string>
+    <string name="title_activity_history">历史</string>
 
     <string name="title_activity_upload">正在上传</string>
     <string name="title_activity_connect_computer">连接电脑</string>
@@ -55,6 +55,8 @@
 
     <string name="net_server_error">服务器无响应，请稍后再试</string>
     <string name="hint_choose_file_required">请先选择文件</string>
-    <string name="title_activity_connect_android">ConnectAndroidActivity</string>
+    <string name="title_activity_send_android">发送文件</string>
+    <string name="title_activity_receive_android">接收文件</string>
+    <string name="title_activity_choose_file">选择文件</string>
 
 </resources>
