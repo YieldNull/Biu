@@ -12,7 +12,7 @@ import com.bbbbiu.biu.http.server.upload.FileItemFactory;
 import com.bbbbiu.biu.http.server.upload.FileUpload;
 import com.bbbbiu.biu.http.server.upload.exceptions.FileUploadException;
 import com.bbbbiu.biu.http.util.HtmlReader;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.util.List;
@@ -38,7 +38,7 @@ public class UploadServlet extends HttpServlet {
 
     @Override
     public HttpResponse doPost(HttpRequest request) {
-        File downloadDir = Storage.getDownloadDir(context);
+        File downloadDir = StorageUtil.getDownloadDir(context);
 
         //TODO 判断可用空间大小
         FileItemFactory factory = new FileItemFactory(0, downloadDir);

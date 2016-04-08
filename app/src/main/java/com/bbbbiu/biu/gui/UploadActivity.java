@@ -15,14 +15,12 @@ import android.util.Log;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.DownloadAdapter;
 import com.bbbbiu.biu.gui.adapters.UploadAdapter;
 import com.bbbbiu.biu.service.UploadService;
-import com.bbbbiu.biu.util.Preference;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
-import java.io.File;
 import java.util.Set;
 
 import butterknife.Bind;
@@ -77,8 +75,8 @@ public class UploadActivity extends AppCompatActivity {
 
                     if (holder != null) {
                         holder.getProgressBar().setProgress(progress);
-                        String read = Storage.getReadableSize((long) (length * progress * 0.01));
-                        String all = Storage.getReadableSize(length);
+                        String read = StorageUtil.getReadableSize((long) (length * progress * 0.01));
+                        String all = StorageUtil.getReadableSize(length);
 
                         holder.setProgressText(String.format("%s/%s", read, all));
                     }
@@ -109,7 +107,7 @@ public class UploadActivity extends AppCompatActivity {
 
 
         uid = getIntent().getStringExtra(EXTRA_UID);
-        filePaths = Preference.getFilesToSend(this);
+        filePaths = PreferenceUtil.getFilesToSend(this);
 
 
         mAdapter = new UploadAdapter(this);

@@ -29,4 +29,8 @@
     <color name="upPanel_text">#232323</color>
     <color name="upPanel_icon_tint">#616161</color>
     <color name="upPanel_list_divider">#9E9E9E</color>
+
+    <color name="apk_package_name">@android:color/black</color>
+
+    <color name="loading_indicator">@color/fbtn</color>
 </resources>

@@ -20,7 +20,7 @@ import com.bbbbiu.biu.http.client.FileItem;
 import com.bbbbiu.biu.gui.adapters.DownloadAdapter;
 import com.bbbbiu.biu.service.DownloadService;
 import com.bbbbiu.biu.service.PollingService;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import java.util.ArrayList;
@@ -110,8 +110,8 @@ public class DownloadActivity extends AppCompatActivity {
                     if (holder != null) { // 文件太小，导致list还没完成更新，此处NullPointer
                         holder.getProgressBar().setProgress(progress);
 
-                        String read = Storage.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
-                        String all = Storage.getReadableSize(fileItem.getSize());
+                        String read = StorageUtil.getReadableSize((long) (fileItem.getSize() * progress * 0.01));
+                        String all = StorageUtil.getReadableSize(fileItem.getSize());
 
                         holder.setProgressText(String.format("%s/%s", read, all));
                     }

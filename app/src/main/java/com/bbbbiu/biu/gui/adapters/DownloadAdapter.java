@@ -11,11 +11,9 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.http.client.FileItem;
-import com.bbbbiu.biu.http.util.ProgressListener;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import butterknife.Bind;
@@ -70,7 +68,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             FileItem fileItem = fileList.get(position);
 
             holder.fileNameText.setText(fileItem.getName());
-            holder.progressText.setText(Storage.getReadableSize(fileItem.getSize()));
+            holder.progressText.setText(StorageUtil.getReadableSize(fileItem.getSize()));
             holder.progressBar.setMax(100);
             holder.progressBar.setProgress(0);
 

@@ -16,7 +16,7 @@ import com.bbbbiu.biu.http.client.HttpConstants;
 import com.bbbbiu.biu.http.util.ProgressListener;
 import com.bbbbiu.biu.http.util.ProgressNotifier;
 import com.bbbbiu.biu.http.util.Streams;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -101,7 +101,7 @@ public class DownloadService extends Service implements ProgressListener {
 
     private boolean downloadFile(FileItem fileItem) {
         Request request = HttpConstants.newFileDownloadRequest(fileItem.getUrl(), fileItem.getUid());
-        File reposition = Storage.getDownloadDir(getApplicationContext());
+        File reposition = StorageUtil.getDownloadDir(getApplicationContext());
         File destFile = new File(reposition, fileItem.getName());
 
         mCurrentFile = fileItem;

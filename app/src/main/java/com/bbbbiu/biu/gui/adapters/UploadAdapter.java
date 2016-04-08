@@ -10,7 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public class UploadAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             File file = fileList.get(position);
 
             holder.fileNameText.setText(file.getName());
-            holder.progressText.setText(Storage.getReadableSize(file.length()));
+            holder.progressText.setText(StorageUtil.getReadableSize(file.length()));
             holder.progressBar.setMax(100);
             holder.progressBar.setProgress(0);
 

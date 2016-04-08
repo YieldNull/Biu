@@ -33,10 +33,20 @@
         </android.support.design.widget.AppBarLayout>
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView_choosing"
+            android:id="@+id/recyclerView_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:scrollbars="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/loadingIndicatorView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:indicator="BallPulse"
+            app:indicator_color="@color/loading_indicator" />
 
         <include layout="@layout/floating_button_send" />
 

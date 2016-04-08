@@ -2,27 +2,33 @@ package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.util.Music;
+import com.bbbbiu.biu.util.SearchUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by fangdongliang on 16/3/26.
  */
 public class MusicContentAdapter extends ContentBaseAdapter {
+    private static final String TAG = MusicContentAdapter.class.getSimpleName();
     Context mContext;
     LayoutInflater mInflater;
     List<Music> music_list;
     Music music;
 
     public MusicContentAdapter(Context context, List<Music> mlist) {
+        super(context);
+
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
         music_list = mlist;
@@ -66,5 +72,45 @@ public class MusicContentAdapter extends ContentBaseAdapter {
             tv_author = (TextView) itemView.findViewById(R.id.music_singer);
             tv_length = (TextView) itemView.findViewById(R.id.music_length);
         }
+    }
+
+    /**
+     * Created by fangdongliang on 16/3/26.
+     */
+    public static class Music {
+        private String name;
+        private String author;
+        private String length;
+
+        public Music(String name, String author, String length) {
+            this.name = name;
+            this.author = author;
+            this.length = length;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setLength(String length) {
+            this.length = length;
+        }
+
+        public void setAuthor(String author) {
+            this.author = author;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getLength() {
+            return length;
+        }
+
     }
 }

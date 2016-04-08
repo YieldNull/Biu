@@ -12,16 +12,18 @@ import com.bbbbiu.biu.gui.ConnectComputerActivity;
 import com.bbbbiu.biu.gui.ConnectAppleActivity;
 import com.bbbbiu.biu.gui.SendAndroidActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapters.choose.OnChangeDirListener;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FilePanelAdapter;
-import com.bbbbiu.biu.util.Preference;
+import com.bbbbiu.biu.util.PreferenceUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 import java.util.List;
+import java.util.Stack;
 
-public class FileChooseActivity extends ChooseBaseActivity {
+public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDirListener {
     private static final String TAG = FileChooseActivity.class.getSimpleName();
 
     public static final String EXTRA_ROOT_FILE_PATH = "com.bbbbiu.biu.FileChooseActivity.extra.ROOT_FILE_PATH";
@@ -30,11 +32,17 @@ public class FileChooseActivity extends ChooseBaseActivity {
 
     private int chosenFileCount;
 
+    /**
+     * Stack of 进入的文件夹
+     */
+    private Stack<File> mDirStack = new Stack<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mFileAdapter = (FileContentAdapter) super.mContentAdapter;
+        mDirStack.add(mFileAdapter.getCurrentDir());
     }
 
     @Override
@@ -72,13 +80,6 @@ public class FileChooseActivity extends ChooseBaseActivity {
                 break;
         }
         return false;
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (!mFileAdapter.quitDir()) {
-            super.onBackPressed();
-        }
     }
 
     @Override
@@ -140,7 +141,7 @@ public class FileChooseActivity extends ChooseBaseActivity {
     protected void onSendIOSClicked() {
 
         List<File> files = mFileAdapter.getChosenFiles();
-        Preference.storeFilesToSend(this, files);
+        PreferenceUtil.storeFilesToSend(this, files);
 
         Log.i(TAG, "Sending files to android. File Amount " + files.size());
 
@@ -156,11 +157,40 @@ public class FileChooseActivity extends ChooseBaseActivity {
     protected void onSendComputerClicked() {
 
         List<File> files = mFileAdapter.getChosenFiles();
-        Preference.storeFilesToSend(this, files);
+        PreferenceUtil.storeFilesToSend(this, files);
 
         Log.i(TAG, "Sending files to computer. File Amount " + files.size());
 
         ConnectComputerActivity.connectForUpload(this);
+    }
+
+    @Override
+    public void onEnterDir(File dir) {
+        // adapter.notifyDatasetChanged()只改变数据，不改变滑动的位置，卧槽
+        mDirStack.add(dir);
+        mFileAdapter.setCurrentDir(dir);
+        mFileAdapter.cancelPicassoTask();
+
+        mContentRecyclerView.swapAdapter(mFileAdapter, true);
+    }
+
+
+    @Override
+    public void onExitDir(File dir) {
+        mDirStack.pop();
+        mFileAdapter.setCurrentDir(mDirStack.peek());
+        mFileAdapter.cancelPicassoTask();
+
+        mContentRecyclerView.swapAdapter(mFileAdapter, true);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mDirStack.size() == 1) {
+            super.onBackPressed();
+        } else {
+            onExitDir(null);
+        }
     }
 
     @SuppressWarnings("ConstantConditions")

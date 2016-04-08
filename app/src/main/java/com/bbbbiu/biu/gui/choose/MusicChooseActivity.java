@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.adapters.choose.MusicContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.util.Music;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -19,8 +18,8 @@ import java.util.List;
 public class MusicChooseActivity extends ChooseBaseActivity{
 
 
-    private List<Music> musicList;
-    private Music music;
+    private List<MusicContentAdapter.Music> musicList;
+    private MusicContentAdapter.Music music;
     public static String TAG = MusicChooseActivity.class.getSimpleName();
     @Override
     protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
@@ -61,9 +60,9 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     private void initList() {
         getMusicInfo(MusicChooseActivity.this);
     }
-    private  List<Music> getMusicInfo(Context context)
+    private  List<MusicContentAdapter.Music> getMusicInfo(Context context)
     {
-        musicList = new ArrayList<Music>();
+        musicList = new ArrayList<>();
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null,
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER
@@ -86,7 +85,7 @@ public class MusicChooseActivity extends ChooseBaseActivity{
             duration = formatTime(time);
             Log.d(TAG,title+" : " + path );
 
-            music = new Music(title,author,duration);
+            music = new MusicContentAdapter.Music(title,author,duration);
             musicList.add(music);
 
 

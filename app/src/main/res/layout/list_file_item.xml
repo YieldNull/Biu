@@ -9,8 +9,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_centerHorizontal="true"
         android:layout_margin="16dp"
-        android:background="@drawable/shape_file_icon_bkg"
+        android:adjustViewBounds="true"
+        android:maxHeight="44dp"
+        android:maxWidth="44dp"
         android:padding="10dp"
         android:src="@drawable/ic_type_folder" />
 

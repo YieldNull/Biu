@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,11 +11,11 @@ import java.util.Set;
 /**
  * Created by YieldNull at 3/26/16
  */
-public class Preference {
-    private static final String TAG = Preference.class.getSimpleName();
+public class PreferenceUtil {
+    private static final String TAG = PreferenceUtil.class.getSimpleName();
 
     private static final String SCHEMA_FILES_TO_SEND = "FilesToSend";
-    private static final String KEY_FILE_PATHS_TO_SEND = "com.bbbbiu.biu.util.Preference.key.FILE_PATHS_TO_SEND";
+    private static final String KEY_FILE_PATHS_TO_SEND = "com.bbbbiu.biu.util.PreferenceUtil.key.FILE_PATHS_TO_SEND";
 
 
     /**

@@ -21,7 +21,7 @@ import com.bbbbiu.biu.gui.choose.FileChooseActivity;
 import com.bbbbiu.biu.gui.choose.ImageChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
 import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
-import com.bbbbiu.biu.util.Storage;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -39,8 +39,6 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private ArrayList<Integer[]> nameImgMap;
     private Context context;
 
-    private int externalDirCount;
-    private boolean hasRealExternal;
 
     public MainAdapter(Context context) {
         this.context = context;
@@ -56,17 +54,9 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         nameImgMap.add(new Integer[]{R.string.cate_trash, R.drawable.ic_cate_trash});
         nameImgMap.add(new Integer[]{R.string.cate_storage, R.drawable.ic_cate_phone});
 
-        externalDirCount = Storage.getExternalDirCount(context);
-        Log.d(TAG, "External Count" + String.valueOf(externalDirCount));
 
-        if (externalDirCount == 2) {
-            hasRealExternal = true;
+        if(StorageUtil.hasRealExternal(context)){
             nameImgMap.add(new Integer[]{R.string.cate_sdcard, R.drawable.ic_cate_sdcard});
-        } else if (externalDirCount == 1) {
-            if (!Environment.getExternalStorageDirectory().getAbsolutePath().contains("/emulated")) {
-                hasRealExternal = true;
-                nameImgMap.add(new Integer[]{R.string.cate_sdcard, R.drawable.ic_cate_sdcard});
-            }
         }
     }
 
@@ -197,54 +187,16 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public void setPercentage(int position) {
             int stringId = getStringId(position);
-            File file = null;
-            File file2Enter = null;
-
-            if (stringId == R.string.cate_storage) {
-                if (externalDirCount == 2) {  // 有两个外置，则用第一个表示手机存储，点击进入第一个外置
-                    file = Environment.getExternalStorageDirectory();
-                    file2Enter = file;
-                } else {
-                    file = context.getFilesDir();
-                    if (externalDirCount == 1 && (!hasRealExternal)) {  // 有一个外置,但是不是真的外置,emulated
-                        file2Enter = Environment.getExternalStorageDirectory();// 点击进入外置
-                    } else {
-
-                        // "/storage“ 目录里面有一些文件夹，很多是符号链接的
-                        // 什么 usb emulated sdcard0 sdcard1 emmc等
-                        File[] storage = new File("/storage").listFiles();
-                        for (File f : storage) {
-                            if ((f.canRead()) && (f.listFiles().length != 0) && (!f.getName().toLowerCase().contains("sdcard"))) {
-                                file2Enter = f;
-                                break;
-                            }
-                        }
-                        if (file2Enter == null) {
-                            file2Enter = new File("/");
-                        }
-                    }
-                }
-            } else if (stringId == R.string.cate_sdcard) {
-                if (externalDirCount == 2) {
-                    file = Storage.getSecondaryExternalDir(context);// 有两个外置，进入第二个
-                    file2Enter = file.getParentFile().getParentFile().getParentFile().getParentFile();
-                } else {
-                    file = Environment.getExternalStorageDirectory();// 有一个外置，进入第一个
-                    file2Enter = file;
-                }
-            }
-
-            Log.d(TAG, "file measure " + file.getAbsolutePath());
-            Log.d(TAG, "file enter " + file2Enter.getAbsolutePath());
+            int type = stringId == R.string.cate_storage ? StorageUtil.TYPE_INTERNAL : StorageUtil.TYPE_EXTERNAL;
+            final File file = StorageUtil.getRootDir(context, type);
 
             setStoragePercentage(file);
 
-            final File finalFile2Enter = file2Enter;
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(context, FileChooseActivity.class);
-                    intent.putExtra(FileChooseActivity.EXTRA_ROOT_FILE_PATH, finalFile2Enter.getAbsolutePath());
+                    intent.putExtra(FileChooseActivity.EXTRA_ROOT_FILE_PATH, file.getAbsolutePath());
                     context.startActivity(intent);
                 }
             });
@@ -257,7 +209,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             progressBar.setMax(100);
             progressBar.setProgress((int) (((total - free) / (total * 1.0)) * 100));
 
-            String percentage = Storage.getReadableSize(total - free) + "/" + Storage.getReadableSize(total);
+            String percentage = StorageUtil.getReadableSize(total - free) + "/" + StorageUtil.getReadableSize(total);
             storageText.setText(percentage);
         }
     }
