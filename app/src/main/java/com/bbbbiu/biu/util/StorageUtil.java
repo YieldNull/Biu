@@ -25,6 +25,8 @@ public class StorageUtil {
     public static final int TYPE_INTERNAL = 0;
     public static final int TYPE_EXTERNAL = 1;
 
+    public static final String PATH_STORAGE = "/storage";
+    public static final String PATH_EMULATED = "/emulated";
 
     public static final List<String> EXTENSION_APK = Collections.singletonList("apk");
 
@@ -145,7 +147,7 @@ public class StorageUtil {
         if (externalDirCount == 2) {
             return true;
         } else if (externalDirCount == 1) {
-            if (!Environment.getExternalStorageDirectory().getAbsolutePath().contains("/emulated")) {
+            if (!Environment.getExternalStorageDirectory().getAbsolutePath().contains(PATH_EMULATED)) {
                 return true;
             }
         }
@@ -154,7 +156,7 @@ public class StorageUtil {
 
     /**
      * 获取手机储存或外置储存的根目录。
-     * 如果手机储存有虚拟的存储卡，则返回其根目录，没有则返回File(“/”)
+     * 如果手机储存有虚拟的存储卡，则返回其根目录，没有则返回File(“/storage”)
      *
      * @param context context
      * @param type    {@value TYPE_EXTERNAL,TYPE_INTERNAL}
@@ -174,7 +176,7 @@ public class StorageUtil {
 
                     // "/storage“ 目录里面有一些文件夹，很多是符号链接的
                     // 什么 usb emulated sdcard0 sdcard1 emmc等
-                    File[] storage = new File("/storage").listFiles();
+                    File[] storage = new File(PATH_STORAGE).listFiles();
                     for (File f : storage) {
                         if ((f.canRead()) && (f.listFiles().length != 0) && (!f.getName().toLowerCase().contains("sdcard"))) {
                             root = f;
@@ -182,7 +184,7 @@ public class StorageUtil {
                         }
                     }
                     if (root == null) {
-                        root = new File("/");
+                        root = new File(PATH_STORAGE); // 让用户自己选进入哪个吧
                     }
                 }
             }
@@ -248,7 +250,7 @@ public class StorageUtil {
     }
 
     /**
-     * 获取文件扩展名。
+     * 获取文件扩展名。lowerCase
      *
      * @param filename 文件名或路径
      * @return 没有则返回空串“”
@@ -265,7 +267,7 @@ public class StorageUtil {
         if (index == -1) {
             return "";
         } else {
-            return filename.substring(index + 1);
+            return filename.substring(index + 1).toLowerCase();
         }
     }
 

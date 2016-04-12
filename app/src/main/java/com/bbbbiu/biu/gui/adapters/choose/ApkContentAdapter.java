@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.util.PreferenceUtil;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
@@ -171,7 +171,24 @@ public class ApkContentAdapter extends ContentBaseAdapter {
      * 扫描未安装
      */
     private void scanNotInstalled() {
-        Set<String> set = SearchUtil.searchFile(context, SearchUtil.TYPE_APK);
+        Log.i(TAG, "Read standalone apk files from SharedPreference");
+
+        Set<String> set = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
+
+        if (set == null) {
+            Log.i(TAG, "No apk files recorded in SharedPreference. Start scan disk");
+
+            SearchUtil.scanDisk(context);
+            set = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
+        }
+
+        if (set == null) {
+            Log.i(TAG,"No standalone apk files on disk");
+            return;
+        }
+
+        Log.i(TAG, "Got standalone apk files amount: " + set.size());
+
         for (String path : set) {
 
             String name = getApkName(path, true);

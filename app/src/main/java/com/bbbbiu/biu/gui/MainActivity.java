@@ -1,5 +1,8 @@
 package com.bbbbiu.biu.gui;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +16,7 @@ import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.MainAdapter;
+import com.bbbbiu.biu.service.FileScanService;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -84,6 +88,8 @@ public class MainActivity extends AppCompatActivity {
 
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
+
+        FileScanService.scheduleAlarm(this);
     }
 
 
@@ -103,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+
 
     // TODO check 在任何需要使用wifi的情况下，wifi是否可用？是不是要自动打开Wifi？
 }
