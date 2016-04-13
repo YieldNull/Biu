@@ -79,7 +79,7 @@ public class DownloadActivity extends AppCompatActivity {
                     DownloadService.startDownload(DownloadActivity.this, fileItem);
                 }
             } else {
-                Toast.makeText(DownloadActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DownloadActivity.this, R.string.hint_net_server_error, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -258,9 +258,9 @@ public class FileContentAdapter extends ContentBaseAdapter {
         if (viewType == VIEW_TYPE_HEADER) {
             HeaderViewHolder holder = (HeaderViewHolder) h;
             if (position == 0 && dirs.length > 0) {
-                holder.headerText.setText(context.getString(R.string.list_header_folder));
+                holder.headerText.setText(context.getString(R.string.file_header_folder));
             } else {
-                holder.headerText.setText(context.getString(R.string.list_header_file));
+                holder.headerText.setText(context.getString(R.string.file_header_file));
             }
         } else {
             ItemViewHolder holder = (ItemViewHolder) h;
@@ -282,7 +282,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
                     }
                 }).length;
 
-                holder.fileInfoTextView.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.list_header_file), itemCount));
+                holder.fileInfoTextView.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.file_header_file), itemCount));
                 holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
 
             } else { // 文件

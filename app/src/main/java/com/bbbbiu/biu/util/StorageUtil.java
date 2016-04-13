@@ -27,6 +27,7 @@ public class StorageUtil {
 
     public static final String PATH_STORAGE = "/storage";
     public static final String PATH_EMULATED = "/emulated";
+    public static final String PATH_LEGACY = "/storage/emulated/legacy";
 
     public static final List<String> EXTENSION_APK = Collections.singletonList("apk");
 
@@ -171,7 +172,7 @@ public class StorageUtil {
                 root = Environment.getExternalStorageDirectory();
             } else {
                 if (externalDirCount == 1 && (!hasRealExternal(context))) {  // 有一个外置,但是不是真的外置,emulated
-                    root = Environment.getExternalStorageDirectory();// 点击进入外置
+                    root = Environment.getExternalStorageDirectory();//外置
                 } else {
 
                     // "/storage“ 目录里面有一些文件夹，很多是符号链接的

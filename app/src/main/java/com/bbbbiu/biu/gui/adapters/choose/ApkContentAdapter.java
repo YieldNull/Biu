@@ -37,24 +37,27 @@ import butterknife.ButterKnife;
 
 /**
  * Created by fangdongliang on 16/3/24.
+ * <p/>
+ * Update by YiledNull
  */
 public class ApkContentAdapter extends ContentBaseAdapter {
     private static final String TAG = ApkContentAdapter.class.getSimpleName();
 
     private Context context;
+    private PackageManager mPackageManager;
 
     private List<Apk> mApkList = new ArrayList<>();
+
     private List<Apk> mSystemApkList = new ArrayList<>();
     private List<Apk> mNormalApkList = new ArrayList<>();
-    private List<Apk> mNotInstalledApkList = new ArrayList<>();
+    private List<Apk> mStandaloneApkList = new ArrayList<>();
 
     private List<File> mChosenFiles = new ArrayList<>();
 
-    private PackageManager mPackageManager;
 
     private Picasso mPicasso;
-    public static final String PICASSO_SCHEMA_APP = "app-icon";
-    public static final String PICASSO_TAG = "tag-img";
+    private static final String PICASSO_SCHEMA_APP = "app-icon"; // 处理自定义请求
+    private static final String PICASSO_TAG = "tag-img"; //所有请求加TAG，退出时cancel all
 
     // 默认升序排列
     private Comparator<Apk> mComparator = new Comparator<Apk>() {
@@ -68,6 +71,8 @@ public class ApkContentAdapter extends ContentBaseAdapter {
 
     /**
      * Created by fangdongliang on 16/3/24.
+     * <p/>
+     * Update by YiledNull
      */
     class Apk {
         String name;
@@ -82,39 +87,60 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     public ApkContentAdapter(final AppCompatActivity context) {
         super(context);
         this.context = context;
+        mPackageManager = context.getPackageManager();
+
 
         Picasso.Builder builder = new Picasso.Builder(context);
         builder.addRequestHandler(new AppIconRequestHandler());
         mPicasso = builder.build();
 
-        notifyStartLoadingData();
+        notifyStartLoadingData(); // 显示正在加载的动画
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                scanInstalled();
+                if (readApkList()) {
+                    context.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyDataSetChanged();
+                            notifyFinishLoadingData(); // 取消加载动画
+                        }
+                    });
+                } else {
+                    clearAllRecord();
 
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyFinishLoadingData();
-                        notifyDataSetChanged();
-                    }
-                });
-            }
-        }).start();
+                    // 通过包管理器扫描已安装应用
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scanInstalledApk();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                scanNotInstalled();
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyFinishLoadingData(); // 取消加载动画
+                                    notifyDataSetChanged();
+                                }
+                            });
+                        }
+                    }).start();
 
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                    }
-                });
+                    // 扫描独立的APK文件，一定会比上一个线程后结束？
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            scanStandaloneApk();
+
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyDataSetChanged();
+                                }
+                            });
+                        }
+                    }).start();
+                }
             }
         }).start();
     }
@@ -124,36 +150,54 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         mPicasso.cancelTag(PICASSO_TAG);
     }
 
+
     /**
-     * 扫描已安装
+     * 从持久化储存中读取之前扫描的APK列表
+     *
+     * @return 之前是否有扫描
      */
-    private void scanInstalled() {
-        mPackageManager = context.getPackageManager();
+    private boolean readApkList() {
+        return readInstalledApk() && readStandaloneApk(); // 注意顺序，此为显示顺序
+    }
 
-        List<PackageInfo> infoList = mPackageManager.getInstalledPackages(0);
-        for (PackageInfo info : infoList) {
-            if ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0 &&
-                    (info.applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0) {
-                continue;
-            }
+    /**
+     * 从持久化储存中读取之前扫描的已安装的APK列表
+     *
+     * @return 之前是否有扫描
+     */
+    private boolean readInstalledApk() {
+        Log.i(TAG, "Reading installed apk paths from SharedPreferences");
 
-            String name = (String) mPackageManager.getApplicationLabel(info.applicationInfo);
-            String path = info.applicationInfo.sourceDir;
+        Set<String> normal = PreferenceUtil.getInstalledNormalApk(context);
+        Set<String> system = PreferenceUtil.getInstalledSysApk(context);
 
-            Apk apk = new Apk(name, path);
+        if ((normal == null) || (system == null)) {
+            Log.i(TAG, "Has not scanned before");
+            return false;
+        }
 
-            if ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0) {
-                mSystemApkList.add(apk);
-            } else {
-                mNormalApkList.add(apk);
+        for (String path : normal) {
+            String name = getApkName(path);
+
+            if (name != null) {
+                mNormalApkList.add(new Apk(name, path));
             }
         }
 
+        for (String path : system) {
+            String name = getApkName(path);
 
+            if (name != null) {
+                mSystemApkList.add(new Apk(name, path));
+            }
+        }
+
+        // 排序
         Collections.sort(mSystemApkList, mComparator);
         Collections.sort(mNormalApkList, mComparator);
 
-
+        // 注意顺序，此为显示顺序
+        // null as header placeholder
         if (mNormalApkList.size() > 0) {
             mApkList.add(null);
             mApkList.addAll(mNormalApkList);
@@ -164,46 +208,79 @@ public class ApkContentAdapter extends ContentBaseAdapter {
             mApkList.addAll(mSystemApkList);
         }
 
-        Log.i(TAG, "Installed APK amount: " + mApkList.size());
+        Log.i(TAG, "Got installed apk files: " + (mSystemApkList.size() + mNormalApkList.size()));
+
+        return true;
     }
 
     /**
-     * 扫描未安装
+     * 从持久化储存中读取之前扫描的独立的APK列表
+     *
+     * @return 之前是否有扫描
      */
-    private void scanNotInstalled() {
-        Log.i(TAG, "Read standalone apk files from SharedPreference");
+    private boolean readStandaloneApk() {
+        Log.i(TAG, "Reading standalone apk paths from SharedPreferences");
 
-        Set<String> set = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
-
-        if (set == null) {
-            Log.i(TAG, "No apk files recorded in SharedPreference. Start scan disk");
-
-            SearchUtil.scanDisk(context);
-            set = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
+        Set<String> standalone = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
+        if (standalone == null) {
+            Log.i(TAG, "Has not scanned before");
+            return false;
         }
 
-        if (set == null) {
-            Log.i(TAG,"No standalone apk files on disk");
-            return;
-        }
+        for (String path : standalone) {
+            if (!isAppInstalled(path)) {
+                String name = getApkName(path);
 
-        Log.i(TAG, "Got standalone apk files amount: " + set.size());
-
-        for (String path : set) {
-
-            String name = getApkName(path, true);
-
-            if (name != null) {
-                mNotInstalledApkList.add(new Apk(name, path));
+                if (name != null) {
+                    mStandaloneApkList.add(new Apk(name, path));
+                }
             }
         }
 
-        Collections.sort(mNotInstalledApkList, mComparator);
-
-        if (mNotInstalledApkList.size() > 0) {
+        Collections.sort(mStandaloneApkList, mComparator);
+        if (mStandaloneApkList.size() > 0) {
             mApkList.add(null);
-            mApkList.addAll(mNotInstalledApkList);
+            mApkList.addAll(mStandaloneApkList);
         }
+
+        Log.i(TAG, "Got standalone apk files: " + mStandaloneApkList.size());
+
+        return true;
+    }
+
+    /**
+     * 扫描已安装，并将扫描结果持久化
+     */
+    private void scanInstalledApk() {
+        Log.i(TAG, "Scanning installed APK");
+
+        SearchUtil.scanApkInstalled(context);
+        readInstalledApk();
+
+        Log.i(TAG, "Installed APK amount: " + (mSystemApkList.size() + mNormalApkList.size()));
+    }
+
+
+    /**
+     * 扫描未安装，并将扫描结果持久化
+     */
+    private void scanStandaloneApk() {
+        Log.i(TAG, "Scanning standalone APK");
+
+        SearchUtil.scanDisk(context);
+        readStandaloneApk();
+
+        Log.i(TAG, "Got standalone apk files amount: " + mStandaloneApkList.size());
+    }
+
+    /**
+     * 清除所有记录的APK
+     */
+    private void clearAllRecord() {
+        mApkList.clear();
+        mNormalApkList.clear();
+        mSystemApkList.clear();
+        mStandaloneApkList.clear();
     }
 
     private Apk getApkAt(int position) {
@@ -244,11 +321,11 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_HEADER) {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
             if (mSystemApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText("系统");
+                holder.headerText.setText(context.getString(R.string.apk_header_system));
             } else if (mNormalApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText("已安装");
+                holder.headerText.setText(context.getString(R.string.apk_header_normal));
             } else {
-                holder.headerText.setText("未安装");
+                holder.headerText.setText(context.getString(R.string.apk_header_standalone));
             }
         } else {
             ApkViewHolder holder = (ApkViewHolder) hd;
@@ -267,6 +344,9 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     }
 
 
+    /***
+     * APK item placeholder
+     */
     class ApkViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.imageView)
         ImageView apkIconImage;
@@ -298,13 +378,22 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         public Result load(Request request, int networkPolicy) throws IOException {
             String path = request.uri.toString().replace(PICASSO_SCHEMA_APP + ":", "");
 
-            Bitmap bitmap = getApkIcon(path, false);
+            Bitmap bitmap = getApkIcon(path);
 
             return new Result(bitmap, Picasso.LoadedFrom.DISK);
         }
     }
 
-    private boolean isAppInstalled(String packageName) {
+    /**
+     * 根据应用路径判断其是否已安装
+     *
+     * @param path 包名
+     * @return 安装与否
+     */
+    private boolean isAppInstalled(String path) {
+        PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        String packageName = packageInfo.packageName;
+
         boolean installed;
         try {
             mPackageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
@@ -315,14 +404,17 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         return installed;
     }
 
-    private String getApkName(String path, boolean requireNotInstall) {
+    /**
+     * 根据APK文件的路径获取其应用名称
+     *
+     * @param path 文件路径
+     * @return 应用名称
+     */
+    private String getApkName(String path) {
         PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
 
         String name = null;
         if (packageInfo != null) {
-            if (requireNotInstall && isAppInstalled(packageInfo.packageName)) {
-                return null;
-            }
 
             ApplicationInfo appInfo = packageInfo.applicationInfo;
 
@@ -333,13 +425,16 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         return name;
     }
 
-    private Bitmap getApkIcon(String path, boolean requireNotInstall) {
+    /**
+     * 根据APK文件的路径获取其ICON
+     *
+     * @param path 文件路径
+     * @return ICON as Bitmap or null
+     */
+    private Bitmap getApkIcon(String path) {
         PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
 
         if (packageInfo != null) {
-            if (requireNotInstall && isAppInstalled(packageInfo.packageName)) {
-                return null;
-            }
 
             ApplicationInfo appInfo = packageInfo.applicationInfo;
             appInfo.sourceDir = path;

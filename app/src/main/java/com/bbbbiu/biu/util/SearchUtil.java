@@ -1,6 +1,10 @@
 package com.bbbbiu.biu.util;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.common.collect.ImmutableMap;
@@ -67,19 +71,70 @@ public class SearchUtil {
 
 
     /**
-     * 全盘扫描各种文件类型，存入数据库
+     * 全盘扫描各种文件类型，并持久化
      */
     public static void scanDisk(Context context) {
-        Log.i(TAG, "Start scanning disk");
+        Log.i(TAG, currentThread() + "Start scanning disk");
 
-        Map<Integer, Set<String>> result = BFSSearch(new File(StorageUtil.PATH_STORAGE),
-                typeExtensionMap.keySet().toArray(new Integer[typeExtensionMap.size()]));
+        Integer[] typeArr = typeExtensionMap.keySet().toArray(new Integer[typeExtensionMap.size()]);
+
+        int count = StorageUtil.getExternalDirCount(context);
+        Map<Integer, Set<String>> result;
+
+        if (count == 0) {
+            result = BFSSearch(new File(StorageUtil.PATH_STORAGE), typeArr);
+        } else if (count == 1) {
+            result = BFSSearch(StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL), typeArr);
+        } else {
+            result = BFSSearch(StorageUtil.getRootDir(context, StorageUtil.TYPE_INTERNAL), typeArr);
+            BFSSearch(result, StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL), typeArr);
+        }
+
 
         for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
             PreferenceUtil.storeFileToCategory(context, cateEntry.getKey(), cateEntry.getValue());
         }
 
-        Log.i(TAG, "Store files to SharedPreference");
+        Log.i(TAG, currentThread() + "Store files to SharedPreference");
+    }
+
+    /**
+     * 扫描已安装的APK列表，并持久化
+     * <p/>
+     * 包括更新过的系统应用以及用户安装的普通应用
+     *
+     * @param context context
+     */
+    public static void scanApkInstalled(Context context) {
+        Log.i(TAG, currentThread() + "Start scanning installed apk");
+
+        PackageManager manager = context.getPackageManager();
+        Set<String> sysApkSet = new HashSet<>();
+        Set<String> normalApkSet = new HashSet<>();
+
+
+        List<PackageInfo> infoList = manager.getInstalledPackages(0);
+        for (PackageInfo info : infoList) {
+
+            // 获取已更新的系统应用
+            if ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0 &&
+                    (info.applicationInfo.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 0) {
+                continue;
+            }
+
+            String path = info.applicationInfo.sourceDir;
+
+
+            if ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0) {
+                sysApkSet.add(path);
+            } else {
+                normalApkSet.add(path);
+            }
+        }
+
+        PreferenceUtil.storeApkInstalled(context, sysApkSet, normalApkSet);
+
+        Log.i(TAG, currentThread() + "Store apk paths to SharedPreference");
     }
 
     /**
@@ -101,20 +156,33 @@ public class SearchUtil {
      * @return 各种文件类型对应的文件路径集合
      */
     private static Map<Integer, Set<String>> BFSSearch(File root, Integer... typeList) {
-        Log.i(TAG, "Start scanning all files under \"" + root.getAbsolutePath() + "\"");
+        HashMap<Integer, Set<String>> destMap = new HashMap<>();
+        BFSSearch(destMap, root, typeList);
+        return destMap;
+    }
 
-        HashMap<Integer, Set<String>> resultMap = new HashMap<>();
+    /**
+     * 在指定目录下，宽度优先搜索指定类型的文件。将结果存入destMap
+     *
+     * @param destMap  结果将存入此Map
+     * @param root     根目录
+     * @param typeList 文件类型
+     */
+    private static void BFSSearch(@NonNull Map<Integer, Set<String>> destMap, @NonNull File root, Integer... typeList) {
+        Log.i(TAG, currentThread() + "Start scanning all files under \"" + root.getAbsolutePath() + "\"");
+
         HashMap<String, Integer> extensionMap = new HashMap<>();
 
         for (int type : typeList) {
-            Set<String> pathSet = new HashSet<>();
-            resultMap.put(type, pathSet);
+            if (destMap.get(type) == null) {
+                Set<String> pathSet = new HashSet<>();
+                destMap.put(type, pathSet);
+            }
 
             for (String ext : getFileTypeExtension(type)) {
                 extensionMap.put(ext, type);
             }
         }
-
 
         // BFS
         Queue<File> queue = new LinkedList<>();
@@ -128,7 +196,20 @@ public class SearchUtil {
             }
 
             if (f.isDirectory()) {
-                Collections.addAll(queue, f.listFiles());
+                // 获取Canonical Path
+                Set<File> subFiles = new HashSet<>();
+                for (File file : f.listFiles()) {
+                    try {
+                        String cp = file.getCanonicalPath();
+                        if (!cp.equals(StorageUtil.PATH_LEGACY)) { // 排除 LEGACY
+                            subFiles.add(new File(cp));
+                        }
+                    } catch (IOException e) {
+                        Log.w(TAG, e);
+                    }
+                }
+                queue.addAll(subFiles);
+
             } else {
                 String path = "";
                 try {
@@ -142,15 +223,14 @@ public class SearchUtil {
 
                 // 判断大小
                 if (type != null && hasMatchThreshold(type, f.length())) {
-                    resultMap.get(type).add(path);//加入指定类别
-
+                    destMap.get(type).add(path);//加入指定类别
                 }
             }
         }
 
-        Log.i(TAG, "Finish scanning");
-        return resultMap;
+        Log.i(TAG, currentThread() + "Finish scanning");
     }
+
 
     /**
      * 获取指定文件类型的后缀名列表
@@ -183,5 +263,9 @@ public class SearchUtil {
         Long threshold = typeThresholdMap.get(type);
 
         return threshold == null || size >= threshold;
+    }
+
+    private static String currentThread() {
+        return "[" + Thread.currentThread().getName() + "] ";
     }
 }

@@ -23,7 +23,7 @@ public class FileScanService extends IntentService {
     /**
      * 启动服务
      *
-     * @param context
+     * @param context context
      */
     public static void startScan(Context context) {
         Intent intent = new Intent(context, FileScanService.class);
@@ -37,6 +37,7 @@ public class FileScanService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             SearchUtil.scanDisk(this);
+            SearchUtil.scanApkInstalled(this);
         }
     }
 
@@ -51,7 +52,7 @@ public class FileScanService extends IntentService {
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "Received alarm. Starting FileScanService");
 
-            FileScanService.startScan(context);// 启动服务
+            FileScanService.startScan(context);// 启动服务，接收Alarm或者Boot BroadCast
         }
     }
 

@@ -97,7 +97,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
 
                     case MSG_SERVER_ERROR:
                         Log.i(TAG, "Server error. Stop retrying");
-                        Toast.makeText(QRCodeScanActivity.this, R.string.net_server_error, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(QRCodeScanActivity.this, R.string.hint_net_server_error, Toast.LENGTH_SHORT).show();
                         break;
                 }
                 return false;

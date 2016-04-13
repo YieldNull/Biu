@@ -1,11 +1,27 @@
 <resources>
     <string name="app_name">比鼬</string>
 
-    <!--********************MainActivity****************-->
+    <string name="title_activity_choose">文件</string>
+    <string name="title_activity_choose_image">图片</string>
+    <string name="title_activity_choose_video">视频</string>
+    <string name="title_activity_choose_music">音乐</string>
+    <string name="title_activity_choose_document">文档</string>
+    <string name="title_activity_choose_apk">APK</string>
+    <string name="title_activity_history">历史</string>
+    <string name="title_activity_upload">正在上传</string>
+    <string name="title_activity_connect_computer">连接电脑</string>
+    <string name="title_activity_qrcode_scan">扫描二维码</string>
+    <string name="title_activity_download">正在下载</string>
+    <string name="title_activity_send_android">发送文件</string>
+    <string name="title_activity_receive_android">接收文件</string>
+    <string name="title_activity_choose_file">选择文件</string>
 
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
     <string name="action_history">历史</string>
+    <string name="action_select_all">全选</string>
+    <string name="action_choosing_dismiss">清除选择</string>
+
 
     <string name="cate_image">图片</string>
     <string name="cate_music">音乐</string>
@@ -18,15 +34,15 @@
     <string name="cate_storage">内存设备</string>
     <string name="cate_sdcard">SD卡</string>
 
-
     <string name="fbtn_receive">接收文件从</string>
     <string name="fbtn_send">发送文件到</string>
     <string name="fbtn_android">安卓</string>
     <string name="fbtn_computer">电脑</string>
     <string name="fbtn_ios">苹果</string>
 
-    <string name="action_select_all">全选</string>
-    <string name="action_choosing_dismiss">清除选择</string>
+
+    <string name="file_header_folder">文件夹</string>
+    <string name="file_header_file">文件</string>
 
     <string name="file_option_open">打开</string>
     <string name="file_option_rename">重命名</string>
@@ -35,28 +51,13 @@
     <string name="file_option_delete">删除</string>
     <string name="file_option_info">详情</string>
 
-
-    <string name="list_header_folder">文件夹</string>
-    <string name="list_header_file">文件</string>
-
-    <string name="title_activity_choose">文件</string>
-    <string name="title_activity_choose_image">图片</string>
-    <string name="title_activity_choose_video">视频</string>
-    <string name="title_activity_choose_music">音乐</string>
-    <string name="title_activity_choose_document">文档</string>
-    <string name="title_activity_choose_apk">APK</string>
-    <string name="title_activity_history">历史</string>
-
-    <string name="title_activity_upload">正在上传</string>
-    <string name="title_activity_connect_computer">连接电脑</string>
-    <string name="title_activity_qrcode_scan">扫描二维码</string>
-    <string name="title_activity_download">正在下载</string>
+    <string name="apk_header_normal">已安装</string>
+    <string name="apk_header_system">系统应用</string>
+    <string name="apk_header_standalone">未安装</string>
 
 
-    <string name="net_server_error">服务器无响应，请稍后再试</string>
+    <string name="hint_net_server_error">服务器无响应，请稍后再试</string>
     <string name="hint_choose_file_required">请先选择文件</string>
-    <string name="title_activity_send_android">发送文件</string>
-    <string name="title_activity_receive_android">接收文件</string>
-    <string name="title_activity_choose_file">选择文件</string>
+
 
 </resources>
