@@ -1,8 +1,6 @@
 package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,7 +17,7 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
-import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.DBUtil;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
@@ -40,7 +38,7 @@ import butterknife.ButterKnife;
 
 /**
  * Created by fangdongliang on 16/3/24.
- * <p>
+ * <p/>
  * Update by YiledNull
  */
 public class ApkContentAdapter extends ContentBaseAdapter {
@@ -74,7 +72,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
 
     /**
      * Created by fangdongliang on 16/3/24.
-     * <p>
+     * <p/>
      * Update by YiledNull
      */
     class Apk {
@@ -185,8 +183,8 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     private boolean readInstalledApk() {
         Log.i(TAG, "Reading installed apk paths from SharedPreferences");
 
-        Set<String> normal = PreferenceUtil.getInstalledNormalApk(context);
-        Set<String> system = PreferenceUtil.getInstalledSysApk(context);
+        Set<String> normal = DBUtil.getInstalledNormalApk();
+        Set<String> system = DBUtil.getInstalledSysApk();
 
         if ((normal == null) || (system == null)) {
             Log.i(TAG, "Has not scanned before");
@@ -238,7 +236,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     private boolean readStandaloneApk() {
         Log.i(TAG, "Reading standalone apk paths from SharedPreferences");
 
-        Set<String> standalone = PreferenceUtil.getFileFromCategory(context, SearchUtil.TYPE_APK);
+        Set<String> standalone = DBUtil.getFileFromCategory(SearchUtil.TYPE_APK);
         if (standalone == null) {
             Log.i(TAG, "Has not scanned before");
             return false;

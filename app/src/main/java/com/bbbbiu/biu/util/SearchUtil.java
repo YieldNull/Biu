@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -27,7 +26,6 @@ import java.util.Set;
 public class SearchUtil {
     private static final String TAG = SearchUtil.class.getSimpleName();
 
-    public static final int TYPE_APK = 0;
     public static final int TYPE_MUSIC = 1;
     public static final int TYPE_VIDEO = 2;
     public static final int TYPE_IMG = 3;
@@ -37,6 +35,9 @@ public class SearchUtil {
     public static final int TYPE_EXCEL = 7;
     public static final int TYPE_PPT = 8;
     public static final int TYPE_PDF = 9;
+    public static final int TYPE_APK = 10;
+    public static final int TYPE_APK_SYS = 11;
+    public static final int TYPE_APK_NORMAL = 12;
 
     /**
      * 文件类型与后缀名
@@ -92,10 +93,10 @@ public class SearchUtil {
 
 
         for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
-            PreferenceUtil.storeFileToCategory(context, cateEntry.getKey(), cateEntry.getValue());
+            DBUtil.storeFileToCategory(cateEntry.getKey(), cateEntry.getValue());
         }
 
-        Log.i(TAG, currentThread() + "Store files to SharedPreference");
+        Log.i(TAG, currentThread() + "Store files to Database");
     }
 
     /**
@@ -132,9 +133,9 @@ public class SearchUtil {
             }
         }
 
-        PreferenceUtil.storeApkInstalled(context, sysApkSet, normalApkSet);
+        DBUtil.storeApkInstalled(sysApkSet, normalApkSet);
 
-        Log.i(TAG, currentThread() + "Store apk paths to SharedPreference");
+        Log.i(TAG, currentThread() + "Store apk paths to Database");
     }
 
     /**

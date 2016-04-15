@@ -293,7 +293,7 @@ public class StorageUtil {
      */
     public static boolean isAppInstalled(Context context, String path) {
         PackageManager manager = context.getPackageManager();
-        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, 0);
         if (packageInfo == null) {
             return true;
         }
@@ -302,7 +302,7 @@ public class StorageUtil {
 
         boolean installed;
         try {
-            manager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            manager.getPackageInfo(packageName, 0);
             installed = true;
         } catch (PackageManager.NameNotFoundException e) {
             installed = false;
@@ -312,7 +312,7 @@ public class StorageUtil {
 
     public static String getApkPackageName(Context context, String path) {
         PackageManager manager = context.getPackageManager();
-        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, 0);
         if (packageInfo == null) {
             return null;
         }
@@ -327,7 +327,7 @@ public class StorageUtil {
      */
     public static String getApkName(Context context, String path) {
         PackageManager manager = context.getPackageManager();
-        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, 0);
 
         String name = null;
         if (packageInfo != null) {
@@ -349,7 +349,7 @@ public class StorageUtil {
      */
     public static Drawable getApkIcon(Context context, String path) {
         PackageManager manager = context.getPackageManager();
-        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, 0);
 
         if (packageInfo != null) {
 
