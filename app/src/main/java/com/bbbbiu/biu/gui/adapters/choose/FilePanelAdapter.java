@@ -39,11 +39,11 @@ public class FilePanelAdapter extends PanelBaseAdapter {
     public FilePanelAdapter(Context context) {
         this.context = context;
 
-        operations.add(new Integer[]{R.string.file_option_info, R.drawable.ic_file_option_info});
-        operations.add(new Integer[]{R.string.file_option_rename, R.drawable.ic_file_option_rename});
-        operations.add(new Integer[]{R.string.file_option_move, R.drawable.ic_file_option_move});
-        operations.add(new Integer[]{R.string.file_option_copy, R.drawable.ic_file_option_copy});
-        operations.add(new Integer[]{R.string.file_option_delete, R.drawable.ic_file_option_delete});
+        operations.add(new Integer[]{R.string.file_option_info, R.drawable.ic_action_detail});
+        operations.add(new Integer[]{R.string.file_option_rename, R.drawable.ic_action_rename});
+        operations.add(new Integer[]{R.string.file_option_move, R.drawable.ic_action_move});
+        operations.add(new Integer[]{R.string.file_option_copy, R.drawable.ic_action_copy});
+        operations.add(new Integer[]{R.string.file_option_delete, R.drawable.ic_action_delete});
 
     }
 

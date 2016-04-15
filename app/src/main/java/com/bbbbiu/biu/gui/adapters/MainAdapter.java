@@ -2,7 +2,6 @@ package com.bbbbiu.biu.gui.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,13 +13,8 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ApkChooseActivity;
-import com.bbbbiu.biu.gui.choose.ArchiveChooseActivity;
-import com.bbbbiu.biu.gui.choose.DocumentChooseActivity;
-import com.bbbbiu.biu.gui.choose.DownloadChooseActivity;
 import com.bbbbiu.biu.gui.choose.FileChooseActivity;
-import com.bbbbiu.biu.gui.choose.ImageChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
-import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -50,12 +44,10 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         nameImgMap.add(new Integer[]{R.string.cate_document, R.drawable.ic_cate_document});
         nameImgMap.add(new Integer[]{R.string.cate_archive, R.drawable.ic_cate_archive});
         nameImgMap.add(new Integer[]{R.string.cate_apk, R.drawable.ic_cate_apk});
-        nameImgMap.add(new Integer[]{R.string.cate_download, R.drawable.ic_cate_download});
-        nameImgMap.add(new Integer[]{R.string.cate_trash, R.drawable.ic_cate_trash});
         nameImgMap.add(new Integer[]{R.string.cate_storage, R.drawable.ic_cate_phone});
 
 
-        if(StorageUtil.hasRealExternal(context)){
+        if (StorageUtil.hasRealExternal(context)) {
             nameImgMap.add(new Integer[]{R.string.cate_sdcard, R.drawable.ic_cate_sdcard});
         }
     }
@@ -94,28 +86,22 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     Class theClass = null;
                     switch (getStringId(position)) {
                         case R.string.cate_image:
-                            theClass = ImageChooseActivity.class;
+                            theClass = ApkChooseActivity.class;
                             break;
                         case R.string.cate_music:
                             theClass = MusicChooseActivity.class;
                             break;
                         case R.string.cate_video:
-                            theClass = VideoChooseActivity.class;
+                            theClass = ApkChooseActivity.class;
                             break;
                         case R.string.cate_document:
-                            theClass = DocumentChooseActivity.class;
+                            theClass = ApkChooseActivity.class;
                             break;
                         case R.string.cate_archive:
-                            theClass = ArchiveChooseActivity.class;
+                            theClass = ApkChooseActivity.class;
                             break;
                         case R.string.cate_apk:
                             theClass = ApkChooseActivity.class;
-                            break;
-                        case R.string.cate_download:
-                            theClass = DownloadChooseActivity.class;
-                            break;
-                        case R.string.cate_trash:
-                            theClass = null;
                             break;
                         default:
                             break;

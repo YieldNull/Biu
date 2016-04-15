@@ -14,8 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.choose.OnChoosingListener;
-import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
+import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
@@ -31,8 +30,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -47,8 +48,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
     private static final int THUMB_SIZE = (int) SizeUtil.convertDpToPixel(24);
 
     private Context context;
-    private OnChoosingListener mOnChoosingListener;
-    private OnItemOptionClickListener mOnItemOptionClickListener;
+
     private OnChangeDirListener mOnChangeDirListener;
 
     /**
@@ -72,7 +72,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
     /**
      * 已选择的文件
      */
-    private ArrayList<File> chosenFiles = new ArrayList<>(); // 没必要用Set吧？ 本来查出来的File就没有重复的啊
+    private Set<File> mChosenFiles = new HashSet<>();
 
     private boolean showHidden;
 
@@ -83,7 +83,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
     private static final String PICASOO_SCHEME_VIDEO = "video-icon";
     private static final String PICASSO_TAG = "tag-img";
 
-    public FileContentAdapter(Context context, File rootDir) {
+    public FileContentAdapter(ChooseBaseActivity context, File rootDir) {
         super(context);
 
         this.context = context;
@@ -93,8 +93,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
         mVideoPicasso = builder.build();
         mImgPicasso = Picasso.with(context);
 
-        mOnChoosingListener = (OnChoosingListener) context;
-        mOnItemOptionClickListener = (OnItemOptionClickListener) context;
         mOnChangeDirListener = (OnChangeDirListener) context;
 
         setCurrentDir(rootDir);
@@ -169,7 +167,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
      * @return 是否被选
      */
     public boolean isFileChosen(int position) {
-        return chosenFiles.contains(getFileAt(position));
+        return mChosenFiles.contains(getFileAt(position));
     }
 
 
@@ -183,11 +181,11 @@ public class FileContentAdapter extends ContentBaseAdapter {
         File file = getFileAt(position);
 
         if (chosen) {
-            mOnChoosingListener.onFileChosen(file);
-            chosenFiles.add(file);
+            mChosenFiles.add(file);
+            notifyFileChosen(file.getAbsolutePath());
         } else {
-            chosenFiles.remove(file);
-            mOnChoosingListener.onFileDismissed(file);
+            mChosenFiles.remove(file);
+            notifyFileDismissed(file.getAbsolutePath());
         }
         notifyDataSetChanged();
     }
@@ -195,22 +193,23 @@ public class FileContentAdapter extends ContentBaseAdapter {
     /**
      * 取消所有已选文件
      */
-    public void dismissChoosing() {
-        chosenFiles.clear();
+    @Override
+    public void setFileAllDismissed() {
+        mChosenFiles.clear();
         notifyDataSetChanged();
     }
 
     /**
      * 全选所有文件
      */
-    public int setFileAllChosen() {
+    @Override
+    public void setFileAllChosen() {
         for (File file : mFileList) {
             if (file != null) {
-                chosenFiles.add(file);
+                mChosenFiles.add(file);
             }
         }
         notifyDataSetChanged();
-        return mFileList.size();
     }
 
     @Override
@@ -220,8 +219,17 @@ public class FileContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public List<File> getChosenFiles() {
-        return chosenFiles;
+    public Set<String> getChosenFiles() {
+        Set<String> list = new HashSet<>();
+        for (File file : mChosenFiles) {
+            list.add(file.getAbsolutePath());
+        }
+        return list;
+    }
+
+    @Override
+    public int getChosenCount() {
+        return mChosenFiles.size();
     }
 
     @Override
@@ -302,7 +310,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
             holder.optionsImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mOnItemOptionClickListener.onFileOptionClick(file);
+                    notifyFileItemOptionClicked(file);
                 }
             });
 

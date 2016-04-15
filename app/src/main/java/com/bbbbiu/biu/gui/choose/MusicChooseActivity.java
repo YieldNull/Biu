@@ -32,6 +32,21 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     }
 
     @Override
+    protected int getNormalMenuId() {
+        return 0;
+    }
+
+    @Override
+    protected int getChosenMenuId() {
+        return 0;
+    }
+
+    @Override
+    protected String getNormalTitle() {
+        return null;
+    }
+
+    @Override
     protected ContentBaseAdapter onCreateContentAdapter() {
         initList();
 
@@ -49,12 +64,12 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     }
 
     @Override
-    public void onFileChosen(File file) {
+    public void onFileChosen(String filePath) {
 
     }
 
     @Override
-    public void onFileDismissed(File file) {
+    public void onFileDismissed(String filePath) {
 
     }
     private void initList() {
@@ -106,21 +121,6 @@ public class MusicChooseActivity extends ChooseBaseActivity{
         else if(sec.length()<=3)
             sec = "00"+sec;
         return min + ":" + sec.trim().substring(0,2);
-
-    }
-
-    @Override
-    protected void onSendIOSClicked() {
-
-    }
-
-    @Override
-    protected void onSendAndroidClicked() {
-
-    }
-
-    @Override
-    protected void onSendComputerClicked() {
 
     }
 }

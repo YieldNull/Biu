@@ -57,23 +57,13 @@ public class PreferenceUtil {
      * 因为发送文件到电脑要经过三个Activity，懒得传，因此就先持久化
      *
      * @param context context
-     * @param files   files
+     * @param files   文件路径列表
      */
-    public static void storeFilesToSend(Context context, List<File> files) {
+    public static void storeFilesToSend(Context context, Set<String> files) {
         SharedPreferences preferences = context.getSharedPreferences(SCHEMA_FILES_TO_SEND, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
-        //先清除之前的
-        editor.clear();
-        editor.apply();
-
-        // 加入当前的
-        HashSet<String> filePathSet = new HashSet<>();
-        for (File file : files) {
-            filePathSet.add(file.getAbsolutePath());
-        }
-
-        editor.putStringSet(KEY_FILE_PATHS_TO_SEND, filePathSet);
+        editor.putStringSet(KEY_FILE_PATHS_TO_SEND, files);
         editor.apply();
     }
 

@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.gui.choose;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -9,27 +10,31 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
-import android.widget.AbsListView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.ConnectAppleActivity;
+import com.bbbbiu.biu.gui.ConnectComputerActivity;
+import com.bbbbiu.biu.gui.SendAndroidActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.OnChangeDirListener;
 import com.bbbbiu.biu.gui.adapters.choose.OnLoadingDataListener;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
-import com.squareup.picasso.Picasso;
 import com.wang.avi.AVLoadingIndicatorView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
-import java.util.Stack;
+import java.util.List;
+import java.util.Set;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -37,17 +42,20 @@ import butterknife.OnClick;
 
 /**
  * 选各类文件的基类。
- * <p>
+ * <p/>
  * 各类文件选择共用一个布局文件“R.layout.activity_choose_base”
  * 界面中主内容为一个RecyclerView，记为 ContentRecyclerView
  * 底部有一个滑出菜单，也是RecyclerView，记为PanelRecyclerView
- * <p>
+ * <p/>
  * 有五个抽象方法，提供相应实现即可
  */
 public abstract class ChooseBaseActivity extends AppCompatActivity implements
         OnChoosingListener, OnItemOptionClickListener, OnLoadingDataListener {
-
     private static final String TAG = FileChooseActivity.class.getSimpleName();
+
+    private static final String ACTION_SEND_ANDROID = "Android";
+    private static final String ACTION_SEND_COMPUTER = "Computer";
+    private static final String ACTION_SEND_APPLE = "Apple";
 
     @Bind(R.id.sliding_layout)
     protected SlidingUpPanelLayout mSlidingUpPanelLayout;
@@ -76,29 +84,44 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
     @OnClick(R.id.fbtn_send_android)
     protected void clickSendAndroid() {
-        mFloatingActionMenu.toggle(false);
-        onSendAndroidClicked();
+        sendFile(ACTION_SEND_ANDROID);
     }
 
-    @OnClick(R.id.fbtn_send_ios)
-    protected void clickSendIOS() {
-        mFloatingActionMenu.toggle(false);
-        onSendIOSClicked();
+    @OnClick(R.id.fbtn_send_apple)
+    protected void clickSendApple() {
+        sendFile(ACTION_SEND_APPLE);
     }
 
     @OnClick(R.id.fbtn_send_computer)
     protected void clickSendComputer() {
-        mFloatingActionMenu.toggle(false);
-        onSendComputerClicked();
+        sendFile(ACTION_SEND_COMPUTER);
     }
 
+    /**
+     * 点击发送按钮
+     *
+     * @param action 发送给谁
+     */
+    private void sendFile(String action) {
+        mFloatingActionMenu.toggle(false);
 
-    protected abstract void onSendIOSClicked();
+        Set<String> files = mContentAdapter.getChosenFiles();
+        PreferenceUtil.storeFilesToSend(this, files);
 
-    protected abstract void onSendAndroidClicked();
+        switch (action) {
+            case ACTION_SEND_ANDROID:
+                startActivity(new Intent(this, SendAndroidActivity.class));
+                break;
+            case ACTION_SEND_COMPUTER:
+                ConnectComputerActivity.connectForUpload(this);
+                break;
+            default:
+                ConnectAppleActivity.connectForUpload(this);
+                break;
+        }
 
-    protected abstract void onSendComputerClicked();
-
+        Log.i(TAG, String.format("Sending files to %s. File Amount: %d", action, files.size()));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -161,7 +184,8 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 if (mContentAdapter.getChosenFiles().size() == 0) {
-                    Toast.makeText(ChooseBaseActivity.this, R.string.hint_choose_file_required, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ChooseBaseActivity.this, R.string.hint_choose_file_required,
+                            Toast.LENGTH_SHORT).show();
                 } else {
                     mFloatingActionMenu.toggle(true);
                 }
@@ -228,10 +252,157 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        mContentAdapter.cancelPicassoTask(); //取消加载图片任务
+        super.onBackPressed();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        if (mContentAdapter.getChosenCount() == 0) {
+            int id = getNormalMenuId();
+            if (id > 0) {
+                getMenuInflater().inflate(id, menu);
+            }
+        } else {
+            int id = getChosenMenuId();
+            if (id > 0) {
+                getMenuInflater().inflate(getChosenMenuId(), menu);
+            }
+        }
+        return true;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case android.R.id.home:
+                finish();
+                return true;
+
+            case R.id.action_choose_all:
+                mContentAdapter.setFileAllChosen();
+                invalidateOptionsMenu();
+                refreshTitle();
+                break;
+
+            case R.id.action_choosing_dismiss:
+                mContentAdapter.setFileAllDismissed();
+                invalidateOptionsMenu();
+                refreshTitle();
+                break;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 未选择文件时的menu id
+     *
+     * @return id。 0表示没有menu
+     */
+    protected abstract int getNormalMenuId();
+
+    /**
+     * 已选择文件时的menu id
+     *
+     * @return id。 0表示没有menu
+     */
+    protected abstract int getChosenMenuId();
+
+    /**
+     * 未选择文件时的title
+     *
+     * @return title
+     */
+    protected abstract String getNormalTitle();
+
+    /**
+     * Create Adapter for ContentRecyclerView
+     *
+     * @return ContentAdapter
+     */
+    protected abstract ContentBaseAdapter onCreateContentAdapter();
+
+    /**
+     * ContentRecyclerView 中各项内容的分割线
+     * <p/>
+     * 当LayoutManager使用LinearLayoutManager时，
+     * 返回 new HorizontalDividerItemDecoration.Builder(this).build();
+     * <p/>
+     * 当使用GridLayoutManager使，返回相应ItemDecoration
+     * <p/>
+     * 参见开源库 com.yqritc:recyclerview-flexibledivider
+     *
+     * @return 可以为空
+     */
+    protected abstract RecyclerView.ItemDecoration onCreateContentItemDecoration();
+
+
+    /**
+     * ContentRecyclerView对应的布局管理
+     * 必须使用本类中自定义的两种布局管理器
+     *
+     * @return ContentLinearLayoutManager or ContentGridLayoutManager
+     * @see ChooseBaseActivity.LinearContentLayoutManager
+     * @see ChooseBaseActivity.GridContentLayoutManager
+     */
+    protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
+
+
+    /**
+     * Create Adapter for PanelRecyclerView
+     * <p/>
+     * 当需要使用底部的滑出菜单时，创建相应的Adapter。
+     * Adapter必须继承PanelBaseAdapter
+     *
+     * @return adapter 可以为空，表示不使用底部的滑出菜单
+     * @see PanelBaseAdapter
+     */
+    protected abstract PanelBaseAdapter onCreatePanelAdapter();
+
+    /**
+     * 底部滑出菜单一般是每个文件都有的，当点击另一个文件的菜单时，
+     * 更新PanelRecyclerView的Adapter里面纪录的File即可。依具体实现而定
+     *
+     * @param file 滑出菜单对应的文件
+     */
+    protected abstract void onPanelRecyclerViewUpdate(File file);
+
+
+    @Override
+    public void onFileChosen(String filePath) {
+        if (mContentAdapter.getChosenCount() == 1) {
+            invalidateOptionsMenu();
+        }
+        refreshTitle();
+    }
+
+    @Override
+    public void onFileDismissed(String filePath) {
+        if (mContentAdapter.getChosenCount() == 0) {
+            invalidateOptionsMenu();
+        }
+        refreshTitle();
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    protected void refreshTitle() {
+        if (mContentAdapter.getChosenCount() == 0) {
+            getSupportActionBar().setTitle(getNormalTitle());
+        } else {
+            getSupportActionBar().setTitle(String.valueOf(mContentAdapter.getChosenCount()));
+        }
+    }
+
     /**
      * 底部滑出菜单一般是每个文件都有的，点击时传入对应的File
      * 然后更新PanelRecyclerView(更新对应的文件)
-     * <p>
+     * <p/>
      * 使用方法见 {@link FileContentAdapter}
      *
      * @param file 对应的文件
@@ -261,59 +432,6 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
     public void OnFinishLoadingData() {
         mLoadingIndicatorView.setVisibility(View.GONE);
     }
-
-
-    /**
-     * Create Adapter for ContentRecyclerView
-     *
-     * @return ContentAdapter
-     */
-    protected abstract ContentBaseAdapter onCreateContentAdapter();
-
-    /**
-     * ContentRecyclerView 中各项内容的分割线
-     * <p>
-     * 当LayoutManager使用LinearLayoutManager时，
-     * 返回 new HorizontalDividerItemDecoration.Builder(this).build();
-     * <p>
-     * 当使用GridLayoutManager使，返回相应ItemDecoration
-     * <p>
-     * 参见开源库 com.yqritc:recyclerview-flexibledivider
-     *
-     * @return 可以为空
-     */
-    protected abstract RecyclerView.ItemDecoration onCreateContentItemDecoration();
-
-
-    /**
-     * ContentRecyclerView对应的布局管理
-     * 必须使用本类中自定义的两种布局管理器
-     *
-     * @return ContentLinearLayoutManager or ContentGridLayoutManager
-     * @see ChooseBaseActivity.LinearContentLayoutManager
-     * @see ChooseBaseActivity.GridContentLayoutManager
-     */
-    protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
-
-
-    /**
-     * Create Adapter for PanelRecyclerView
-     * <p>
-     * 当需要使用底部的滑出菜单时，创建相应的Adapter。
-     * Adapter必须继承PanelBaseAdapter
-     *
-     * @return adapter 可以为空，表示不使用底部的滑出菜单
-     * @see PanelBaseAdapter
-     */
-    protected abstract PanelBaseAdapter onCreatePanelAdapter();
-
-    /**
-     * 底部滑出菜单一般是每个文件都有的，当点击另一个文件的菜单时，
-     * 更新PanelRecyclerView的Adapter里面纪录的File即可。依具体实现而定
-     *
-     * @param file 滑出菜单对应的文件
-     */
-    protected abstract void onPanelRecyclerViewUpdate(File file);
 
 
     /**

@@ -2,6 +2,7 @@ package com.bbbbiu.biu.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -211,14 +212,12 @@ public class StorageUtil {
     public static Drawable getFileIcon(Context context, File file) {
         String extension = getFileExtension(file.getAbsolutePath()).toLowerCase();
 
-        if (extension.equals("apk")) {
-            PackageManager pm = context.getPackageManager();
-            PackageInfo info = pm.getPackageArchiveInfo(file.getAbsolutePath(), 0);
-            try {
-                return pm.getApplicationIcon(info.packageName);
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.w(TAG, e.toString());
+        if (EXTENSION_APK.contains(extension)) {
+            Drawable drawable = getApkIcon(context, file.getAbsolutePath());
+            if (drawable == null) {
                 return context.getResources().getDrawable(R.drawable.ic_type_apk);
+            } else {
+                return drawable;
             }
         }
 
@@ -284,5 +283,82 @@ public class StorageUtil {
      */
     public static boolean isImgFile(String path) {
         return EXTENSION_IMG.contains(getFileExtension(path));
+    }
+
+    /**
+     * 根据应用路径判断其是否已安装
+     *
+     * @param path 路径
+     * @return 安装与否
+     */
+    public static boolean isAppInstalled(Context context, String path) {
+        PackageManager manager = context.getPackageManager();
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        if (packageInfo == null) {
+            return true;
+        }
+
+        String packageName = packageInfo.packageName;
+
+        boolean installed;
+        try {
+            manager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            installed = true;
+        } catch (PackageManager.NameNotFoundException e) {
+            installed = false;
+        }
+        return installed;
+    }
+
+    public static String getApkPackageName(Context context, String path) {
+        PackageManager manager = context.getPackageManager();
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+        if (packageInfo == null) {
+            return null;
+        }
+        return packageInfo.packageName;
+    }
+
+    /**
+     * 根据APK文件的路径获取其应用名称
+     *
+     * @param path 文件路径
+     * @return 应用名称
+     */
+    public static String getApkName(Context context, String path) {
+        PackageManager manager = context.getPackageManager();
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+
+        String name = null;
+        if (packageInfo != null) {
+
+            ApplicationInfo appInfo = packageInfo.applicationInfo;
+
+            appInfo.sourceDir = path;
+            appInfo.publicSourceDir = path;
+            name = (String) manager.getApplicationLabel(packageInfo.applicationInfo);
+        }
+        return name;
+    }
+
+    /**
+     * 根据APK文件的路径获取其ICON
+     *
+     * @param path 文件路径
+     * @return ICON as Bitmap or null
+     */
+    public static Drawable getApkIcon(Context context, String path) {
+        PackageManager manager = context.getPackageManager();
+        PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
+
+        if (packageInfo != null) {
+
+            ApplicationInfo appInfo = packageInfo.applicationInfo;
+            appInfo.sourceDir = path;
+            appInfo.publicSourceDir = path;
+
+            return manager.getApplicationIcon(appInfo);
+        }
+        return null;
     }
 }

@@ -25,6 +25,9 @@
     <color name="file_icon_chosen">#4285f4</color>
     <color name="file_item_chosen">#f1f6fe</color>
 
+    <color name="apk_chosen_shape">@color/fbtn</color>
+    <color name="apk_chosen_bkg">#DD9E9E9E</color>
+
     <color name="upPanel">@android:color/white</color>
     <color name="upPanel_text">#232323</color>
     <color name="upPanel_icon_tint">#616161</color>

@@ -2,17 +2,14 @@ package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.util.SearchUtil;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 
-import java.io.File;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +23,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     List<Music> music_list;
     Music music;
 
-    public MusicContentAdapter(Context context, List<Music> mlist) {
+    public MusicContentAdapter(ChooseBaseActivity context, List<Music> mlist) {
         super(context);
 
         mContext = context;
@@ -56,8 +53,23 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public List<File> getChosenFiles() {
+    public Set<String> getChosenFiles() {
         return null;
+    }
+
+    @Override
+    public int getChosenCount() {
+        return 0;
+    }
+
+    @Override
+    public void setFileAllChosen() {
+
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {

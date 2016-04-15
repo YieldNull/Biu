@@ -7,9 +7,10 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +40,7 @@ import butterknife.ButterKnife;
 
 /**
  * Created by fangdongliang on 16/3/24.
- * <p/>
+ * <p>
  * Update by YiledNull
  */
 public class ApkContentAdapter extends ContentBaseAdapter {
@@ -52,8 +55,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     private List<Apk> mNormalApkList = new ArrayList<>();
     private List<Apk> mStandaloneApkList = new ArrayList<>();
 
-    private List<File> mChosenFiles = new ArrayList<>();
-
+    private List<Apk> mChosenApks = new ArrayList<>();
 
     private Picasso mPicasso;
     private static final String PICASSO_SCHEMA_APP = "app-icon"; // 处理自定义请求
@@ -69,9 +71,10 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         }
     };
 
+
     /**
      * Created by fangdongliang on 16/3/24.
-     * <p/>
+     * <p>
      * Update by YiledNull
      */
     class Apk {
@@ -82,9 +85,23 @@ public class ApkContentAdapter extends ContentBaseAdapter {
             this.name = name;
             this.path = path;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof Apk && o.hashCode() == hashCode();
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
+
+        public File getFile() {
+            return new File(path);
+        }
     }
 
-    public ApkContentAdapter(final AppCompatActivity context) {
+    public ApkContentAdapter(final ChooseBaseActivity context) {
         super(context);
         this.context = context;
         mPackageManager = context.getPackageManager();
@@ -177,7 +194,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         }
 
         for (String path : normal) {
-            String name = getApkName(path);
+            String name = StorageUtil.getApkName(context, path);
 
             if (name != null) {
                 mNormalApkList.add(new Apk(name, path));
@@ -185,7 +202,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         }
 
         for (String path : system) {
-            String name = getApkName(path);
+            String name = StorageUtil.getApkName(context, path);
 
             if (name != null) {
                 mSystemApkList.add(new Apk(name, path));
@@ -228,8 +245,8 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         }
 
         for (String path : standalone) {
-            if (!isAppInstalled(path)) {
-                String name = getApkName(path);
+            if (!StorageUtil.isAppInstalled(context, path)) {
+                String name = StorageUtil.getApkName(context, path);
 
                 if (name != null) {
                     mStandaloneApkList.add(new Apk(name, path));
@@ -288,11 +305,6 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public List<File> getChosenFiles() {
-        return mChosenFiles;
-    }
-
-    @Override
     public int getItemCount() {
         return mApkList.size();
     }
@@ -328,19 +340,106 @@ public class ApkContentAdapter extends ContentBaseAdapter {
                 holder.headerText.setText(context.getString(R.string.apk_header_standalone));
             }
         } else {
-            ApkViewHolder holder = (ApkViewHolder) hd;
+            final ApkViewHolder holder = (ApkViewHolder) hd;
+            final Apk apk = mApkList.get(position);
 
-            Apk apk = mApkList.get(position);
+            // 应用名
             holder.apkNameText.setText(apk.name);
 
+            // 文件大小
             File apkFile = new File(apk.path);
             long size = apkFile.length();
             holder.apkSize.setText(StorageUtil.getReadableSize(size));
 
+            // 加载图标
             mPicasso.load(PICASSO_SCHEMA_APP + ":" + apk.path)
                     .tag(PICASSO_TAG)
                     .into(holder.apkIconImage);
+
+            final CardView cardView = (CardView) holder.itemView;
+
+            if (mChosenApks.contains(apk)) {
+                cardView.setForeground(context.getResources().getDrawable(R.drawable.ic_apk_chosen));
+                cardView.setForegroundGravity(Gravity.TOP | Gravity.RIGHT);
+            } else {
+                cardView.setForeground(null);
+            }
+
+            // 监听选择
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onApkClicked(apk);
+                }
+            });
         }
+    }
+
+    @Override
+    public Set<String> getChosenFiles() {
+        Set<String> files = new HashSet<>();
+        for (Apk apk : mChosenApks) {
+            files.add(apk.path);
+        }
+        return files;
+    }
+
+    @Override
+    public int getChosenCount() {
+        return mChosenApks.size();
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        for (Apk apk : mApkList) {
+            if (apk != null) { // 去掉placeholder
+                mChosenApks.add(apk);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+        mChosenApks.clear();
+        notifyDataSetChanged();
+    }
+
+
+    /**
+     * 卸载或删除应用
+     *
+     * @param path 路径
+     */
+    public void deleteApk(String path) {
+        Apk apk = new Apk("", path);
+
+        mChosenApks.remove(apk);
+
+        mNormalApkList.remove(apk);
+        mSystemApkList.remove(apk);
+        mStandaloneApkList.remove(apk);
+
+        mApkList.remove(apk);
+
+        notifyDataSetChanged();
+    }
+
+    /**
+     * APK 被点击
+     *
+     * @param apk apk
+     */
+    private void onApkClicked(Apk apk) {
+        if (mChosenApks.contains(apk)) {
+            mChosenApks.remove(apk);
+            notifyFileDismissed(apk.path);
+        } else {
+            mChosenApks.add(apk);
+            notifyFileChosen(apk.path);
+        }
+
+        notifyDataSetChanged();
     }
 
 
@@ -378,73 +477,12 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         public Result load(Request request, int networkPolicy) throws IOException {
             String path = request.uri.toString().replace(PICASSO_SCHEMA_APP + ":", "");
 
-            Bitmap bitmap = getApkIcon(path);
+            Drawable drawable = StorageUtil.getApkIcon(context, path);
+            Bitmap bitmap = drawable != null ? ((BitmapDrawable) drawable).getBitmap() : null;
 
             return new Result(bitmap, Picasso.LoadedFrom.DISK);
         }
     }
 
-    /**
-     * 根据应用路径判断其是否已安装
-     *
-     * @param path 包名
-     * @return 安装与否
-     */
-    private boolean isAppInstalled(String path) {
-        PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
-        String packageName = packageInfo.packageName;
-
-        boolean installed;
-        try {
-            mPackageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-            installed = true;
-        } catch (PackageManager.NameNotFoundException e) {
-            installed = false;
-        }
-        return installed;
-    }
-
-    /**
-     * 根据APK文件的路径获取其应用名称
-     *
-     * @param path 文件路径
-     * @return 应用名称
-     */
-    private String getApkName(String path) {
-        PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
-
-        String name = null;
-        if (packageInfo != null) {
-
-            ApplicationInfo appInfo = packageInfo.applicationInfo;
-
-            appInfo.sourceDir = path;
-            appInfo.publicSourceDir = path;
-            name = (String) mPackageManager.getApplicationLabel(packageInfo.applicationInfo);
-        }
-        return name;
-    }
-
-    /**
-     * 根据APK文件的路径获取其ICON
-     *
-     * @param path 文件路径
-     * @return ICON as Bitmap or null
-     */
-    private Bitmap getApkIcon(String path) {
-        PackageInfo packageInfo = mPackageManager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
-
-        if (packageInfo != null) {
-
-            ApplicationInfo appInfo = packageInfo.applicationInfo;
-            appInfo.sourceDir = path;
-            appInfo.publicSourceDir = path;
-
-            Drawable drawable = mPackageManager.getApplicationIcon(appInfo);
-
-            return drawable != null ? ((BitmapDrawable) drawable).getBitmap() : null;
-        }
-        return null;
-    }
 }
 

@@ -1,26 +1,16 @@
 package com.bbbbiu.biu.gui.choose;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.ConnectComputerActivity;
-import com.bbbbiu.biu.gui.ConnectAppleActivity;
-import com.bbbbiu.biu.gui.SendAndroidActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.OnChangeDirListener;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FilePanelAdapter;
-import com.bbbbiu.biu.util.PreferenceUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
-import java.util.List;
 import java.util.Stack;
 
 public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDirListener {
@@ -29,8 +19,6 @@ public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDi
     public static final String EXTRA_ROOT_FILE_PATH = "com.bbbbiu.biu.FileChooseActivity.extra.ROOT_FILE_PATH";
 
     private FileContentAdapter mFileAdapter;
-
-    private int chosenFileCount;
 
     /**
      * Stack of 进入的文件夹
@@ -45,59 +33,22 @@ public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDi
         mDirStack.add(mFileAdapter.getCurrentDir());
     }
 
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        if (chosenFileCount == 0) {
-            getMenuInflater().inflate(R.menu.file_choose, menu);
-        } else {
-            getMenuInflater().inflate(R.menu.file_chosen, menu);
-        }
-        return true;
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        switch (id) {
-            case android.R.id.home:
-                finish();
-                return true;
-
-            case R.id.action_choose_all:
-                chosenFileCount = mFileAdapter.setFileAllChosen();
-                invalidateOptionsMenu();
-                setTitle();
-                break;
-
-            case R.id.action_choosing_dismiss:
-                mFileAdapter.dismissChoosing();
-                chosenFileCount = 0;
-                invalidateOptionsMenu();
-                getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
-                break;
-            default:
-                break;
-        }
-        return false;
+    protected int getNormalMenuId() {
+        return R.menu.file_choose;
     }
 
     @Override
-    public void onFileChosen(File file) {
-        if (chosenFileCount++ == 0) {
-            invalidateOptionsMenu();
-        }
-        setTitle();
-
+    protected int getChosenMenuId() {
+        return R.menu.file_chosen;
     }
 
     @Override
-    public void onFileDismissed(File file) {
-        if (--chosenFileCount == 0) {
-            invalidateOptionsMenu();
-        }
-        setTitle();
+    protected String getNormalTitle() {
+        return getString(R.string.title_activity_choose_file);
     }
+
 
     @Override
     protected ContentBaseAdapter onCreateContentAdapter() {
@@ -137,32 +88,6 @@ public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDi
         adapter.notifyDataSetChanged();
     }
 
-    @Override
-    protected void onSendIOSClicked() {
-
-        List<File> files = mFileAdapter.getChosenFiles();
-        PreferenceUtil.storeFilesToSend(this, files);
-
-        Log.i(TAG, "Sending files to android. File Amount " + files.size());
-
-        ConnectAppleActivity.connectForUpload(this);
-    }
-
-    @Override
-    protected void onSendAndroidClicked() {
-        startActivity(new Intent(this, SendAndroidActivity.class));
-    }
-
-    @Override
-    protected void onSendComputerClicked() {
-
-        List<File> files = mFileAdapter.getChosenFiles();
-        PreferenceUtil.storeFilesToSend(this, files);
-
-        Log.i(TAG, "Sending files to computer. File Amount " + files.size());
-
-        ConnectComputerActivity.connectForUpload(this);
-    }
 
     @Override
     public void onEnterDir(File dir) {
@@ -193,12 +118,4 @@ public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDi
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
-    private void setTitle() {
-        if (chosenFileCount == 0) {
-            getSupportActionBar().setTitle(getString(R.string.title_activity_choose));
-        } else {
-            getSupportActionBar().setTitle(String.valueOf(chosenFileCount));
-        }
-    }
 }
