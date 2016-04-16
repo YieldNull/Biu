@@ -205,14 +205,26 @@ public class SearchUtil {
         while (!queue.isEmpty()) {
             File f = queue.remove();
 
-            if (!f.canRead()) {
+            if (!f.canRead() || f.isHidden()) { // 不扫描隐藏文件以及不可读的文件
                 continue;
             }
 
             if (f.isDirectory()) {
+                // 不知道为什么，空文件夹会返回null "/storage/emulated/0/baidu/pushservice"
+                File[] files = f.listFiles();
+                if (files == null) {
+                    continue;
+                }
+
                 // 获取Canonical Path
                 Set<File> subFiles = new HashSet<>();
-                for (File file : f.listFiles()) {
+
+
+                for (File file : files) {
+                    if (f.isHidden()) {
+                        continue;
+                    }
+
                     try {
                         String cp = file.getCanonicalPath();
                         if (!cp.equals(StorageUtil.PATH_LEGACY)) { // 排除 LEGACY
