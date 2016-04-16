@@ -17,10 +17,10 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.choose.ApkContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.db.ApkItem;
 
 import java.io.File;
-import java.util.PriorityQueue;
+import java.util.LinkedList;
 import java.util.Queue;
 
 /**
@@ -39,8 +39,8 @@ public class ApkChooseActivity extends ChooseBaseActivity {
 
     private ApkContentAdapter mApkAdapter;
 
-    private Queue<String> mApkToUninstallQueue = new PriorityQueue<>();
-    private Queue<String> mApkToDeleteQueue = new PriorityQueue<>();
+    private Queue<ApkItem> mApkToUninstallQueue = new LinkedList<>();
+    private Queue<ApkItem> mApkToDeleteQueue = new LinkedList<>();
     private Handler mHandler;
 
     @Override
@@ -72,11 +72,11 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_delete:
-                for (String path : mContentAdapter.getChosenFiles()) {
-                    if (StorageUtil.isAppInstalled(this, path)) {
-                        mApkToUninstallQueue.add(path);
+                for (ApkItem apkItem : mApkAdapter.getChosenApks()) {
+                    if (apkItem.isInstalled(this)) {
+                        mApkToUninstallQueue.add(apkItem);
                     } else {
-                        mApkToDeleteQueue.add(path);
+                        mApkToDeleteQueue.add(apkItem);
                     }
                 }
                 mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
@@ -90,17 +90,17 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     /**
      * 删除APK安装包
      *
-     * @param path 路径
+     * @param apkItem 路径
      */
-    private void deleteApk(final String path) {
+    private void deleteApk(final ApkItem apkItem) {
         Dialog dialog = new AlertDialog.Builder(this)
-                .setTitle(StorageUtil.getApkName(this, path))
-                .setIcon(StorageUtil.getApkIcon(this, path))
+                .setTitle(apkItem.name)
+                .setIcon(apkItem.getIcon(this))
                 .setMessage(getString(R.string.apk_confirm_delete))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        File file = new File(path);
+                        File file = apkItem.getFile();
 
                         if (!file.delete()) {
                             Toast.makeText(ApkChooseActivity.this,
@@ -111,7 +111,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
                                     getString(R.string.apk_delete_succeeded),
                                     Toast.LENGTH_SHORT).show();
 
-                            onFinishDelete(path);
+                            onFinishDelete(apkItem);
                         }
                     }
                 })
@@ -139,11 +139,11 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     /**
      * 卸载应用
      *
-     * @param path 路径
+     * @param apkItem ApkItem
      */
-    private void uninstallApk(String path) {
+    private void uninstallApk(ApkItem apkItem) {
         Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
-        intent.setData(Uri.parse("package:" + StorageUtil.getApkPackageName(this, path)));
+        intent.setData(Uri.parse("package:" + apkItem.packageName));
         intent.putExtra(Intent.EXTRA_RETURN_RESULT, true);
         startActivityForResult(intent, REQUEST_CODE_UNINSTALL);
     }
@@ -152,11 +152,15 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     /**
      * 删除或卸载之后更新页面
      *
-     * @param path 路径
+     * @param apkItem ApkItem
      */
-    private void onFinishDelete(String path) {
-        mApkAdapter.deleteApk(path);
+    private void onFinishDelete(ApkItem apkItem) {
+        mApkAdapter.deleteApk(apkItem);
         refreshTitle();
+
+        if (mApkAdapter.getChosenCount() == 0) {
+            invalidateOptionsMenu();
+        }
     }
 
     /**

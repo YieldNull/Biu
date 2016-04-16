@@ -7,7 +7,10 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.bbbbiu.biu.util.db.ApkItem;
+import com.bbbbiu.biu.util.db.FileItem;
 import com.google.common.collect.ImmutableMap;
+import com.orm.SugarRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,40 +24,32 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
+ * 全盘扫描，并将文件分类
+ * 扫描以安装应用
+ * <p/>
  * Created by YieldNull at 4/7/16
  */
 public class SearchUtil {
     private static final String TAG = SearchUtil.class.getSimpleName();
 
-    public static final int TYPE_MUSIC = 1;
-    public static final int TYPE_VIDEO = 2;
-    public static final int TYPE_IMG = 3;
-    public static final int TYPE_ARCHIVE = 4;
-    public static final int TYPE_DOC = 5;
-    public static final int TYPE_WORD = 6;
-    public static final int TYPE_EXCEL = 7;
-    public static final int TYPE_PPT = 8;
-    public static final int TYPE_PDF = 9;
-    public static final int TYPE_APK = 10;
-    public static final int TYPE_APK_SYS = 11;
-    public static final int TYPE_APK_NORMAL = 12;
-
     /**
      * 文件类型与后缀名
      */
     private static final Map<Integer, List<String>> typeExtensionMap = new ImmutableMap.Builder<Integer, List<String>>().
-            put(TYPE_APK, StorageUtil.EXTENSION_APK).
-            put(TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
-            put(TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
-            put(TYPE_IMG, StorageUtil.EXTENSION_IMG).
-            put(TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-            put(TYPE_WORD, StorageUtil.EXTENSION_WORD).
-            put(TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-            put(TYPE_PPT, StorageUtil.EXTENSION_PPT).
-            put(TYPE_PDF, StorageUtil.EXTENSION_PDF)
+            put(FileItem.TYPE_APK, StorageUtil.EXTENSION_APK).
+            put(FileItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
+            put(FileItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
+            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).
+            put(FileItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
+            put(FileItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
+            put(FileItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
+            put(FileItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
+            put(FileItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
             .build();
 
-
+    /**
+     * 各类别文件大小的阈值
+     */
     private static final long THRESHOLD_IMG = 1024 * 20;// 20KB
     private static final long THRESHOLD_VIDEO = 1024 * 1024 * 5;//5MB
     private static final long THRESHOLD_ARCHIVE = 1024 * 10;//10KB;
@@ -64,15 +59,18 @@ public class SearchUtil {
      * 文件类型与阈值
      */
     private static final Map<Integer, Long> typeThresholdMap = ImmutableMap.of(
-            TYPE_IMG, THRESHOLD_IMG,
-            TYPE_VIDEO, THRESHOLD_VIDEO,
-            TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
-            TYPE_MUSIC, THRESHOLD_MUSIC
+            FileItem.TYPE_IMG, THRESHOLD_IMG,
+            FileItem.TYPE_VIDEO, THRESHOLD_VIDEO,
+            FileItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
+            FileItem.TYPE_MUSIC, THRESHOLD_MUSIC
     );
 
 
     /**
      * 全盘扫描各种文件类型，并持久化
+     * <p/>
+     * 分内部储存和外部储存扫描。不直接从根目录“/”下扫描，
+     * 因为有时候会莫名其妙地访问不了或者是出现将SD卡挂载到多个文件夹下的情况
      */
     public static void scanDisk(Context context) {
         Log.i(TAG, currentThread() + "Start scanning disk");
@@ -92,11 +90,22 @@ public class SearchUtil {
         }
 
 
+        // 清空之前的纪录
+        // TODO 有个问题，要是正在用户正在查询的时候进行扫描，把纪录删了怎么办
+        SugarRecord.deleteAll(FileItem.class);
+        SugarRecord.deleteAll(ApkItem.class);
+
+        Log.i(TAG, currentThread() + "Storing files to Database");
+
         for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
-            DBUtil.storeFileToCategory(cateEntry.getKey(), cateEntry.getValue());
+            if (cateEntry.getKey() == FileItem.TYPE_APK) {
+                ApkItem.storeApk(context, ApkItem.TYPE_APK_STANDALONE, cateEntry.getValue());
+            } else {
+                FileItem.storeFile(cateEntry.getKey(), cateEntry.getValue());
+            }
         }
 
-        Log.i(TAG, currentThread() + "Store files to Database");
+        Log.i(TAG, currentThread() + "Finish storing");
     }
 
     /**
@@ -133,17 +142,21 @@ public class SearchUtil {
             }
         }
 
-        DBUtil.storeApkInstalled(sysApkSet, normalApkSet);
+        Log.i(TAG, currentThread() + "Storing apk paths to Database");
 
-        Log.i(TAG, currentThread() + "Store apk paths to Database");
+        ApkItem.storeApk(context, ApkItem.TYPE_APK_SYSTEM, sysApkSet);
+        ApkItem.storeApk(context, ApkItem.TYPE_APK_NORMAL, normalApkSet);
+
+        Log.i(TAG, currentThread() + "Finish storing");
     }
 
     /**
      * 在指定目录搜索指定类型的文件
      *
      * @param root 目录
-     * @param type 文件类型 {@value TYPE_APK} ...等等
+     * @param type 文件类型
      * @return 文件集合
+     * @see FileItem
      */
     public static Set<String> searchFileAt(File root, int type) {
         return BFSSearch(root, type).get(type);

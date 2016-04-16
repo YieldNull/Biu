@@ -3,12 +3,6 @@ package com.bbbbiu.biu.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.google.common.collect.ImmutableMap;
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,7 +11,7 @@ import java.util.Set;
 public class PreferenceUtil {
     private static final String TAG = PreferenceUtil.class.getSimpleName();
 
-    private static final String SCHEMA_FILES_TO_SEND = "FilesToSend";
+    private static final String SCHEMA_FILES_TO_SEND = "Temp";
     private static final String KEY_FILE_PATHS_TO_SEND = "FILE_TO_SEND";
 
     /**

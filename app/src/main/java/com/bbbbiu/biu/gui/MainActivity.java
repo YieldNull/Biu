@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
 
-        //FileScanService.scheduleAlarm(this);
+        FileScanService.scheduleAlarm(this);
     }
 
 

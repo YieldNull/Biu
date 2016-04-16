@@ -9,6 +9,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.util.SearchUtil;
+import com.bbbbiu.biu.util.db.ApkItem;
+import com.bbbbiu.biu.util.db.FileItem;
+import com.orm.SugarRecord;
 
 public class FileScanService extends IntentService {
 
@@ -36,6 +39,8 @@ public class FileScanService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
+            Log.i(TAG, "Stating scan disk and apk");
+
             SearchUtil.scanDisk(this);
             SearchUtil.scanApkInstalled(this);
         }
@@ -47,12 +52,23 @@ public class FileScanService extends IntentService {
     public static class ScanAlarmReceiver extends BroadcastReceiver {
 
         private static final String TAG = ScanAlarmReceiver.class.getSimpleName();
+        public static final String ACTION_SCAN = "com.bbbbiu.biu.service.FileScanService$ScanAlarmReceiver.action_SCAN";
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.i(TAG, "Received alarm. Starting FileScanService");
+            if (intent != null) {
+                String action = intent.getAction();
+                if (action != null) {
+                    if (action.equals(Intent.ACTION_BOOT_COMPLETED)) {
+                        Log.i(TAG, "Received Boot Completed Broadcast. Starting FileScanService");
+                        FileScanService.startScan(context);// 启动服务，接收Alarm或者Boot BroadCast
 
-            FileScanService.startScan(context);// 启动服务，接收Alarm或者Boot BroadCast
+                    } else if (action.equals(ACTION_SCAN)) {
+                        Log.i(TAG, "Received scan alarm. Starting FileScanService");
+                        FileScanService.startScan(context);// 启动服务，接收Alarm或者Boot BroadCast
+                    }
+                }
+            }
         }
     }
 
@@ -65,7 +81,7 @@ public class FileScanService extends IntentService {
      */
     public static PendingIntent createPendingIntent(Context context) {
         Intent intent = new Intent(context, FileScanService.ScanAlarmReceiver.class);
-
+        intent.setAction(ScanAlarmReceiver.ACTION_SCAN);
         return PendingIntent.getBroadcast(context, 0,
                 intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }

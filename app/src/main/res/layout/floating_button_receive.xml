@@ -7,9 +7,8 @@
     android:layout_height="match_parent"
     android:layout_alignParentBottom="true"
     android:layout_alignParentRight="true"
-    android:paddingBottom="10dp"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
+    android:padding="@dimen/fab_margin"
+    app:menu_icon="@drawable/ic_fbtn_receive"
     app:menu_labels_colorNormal="@color/fbtn_label"
     app:menu_labels_colorPressed="@color/fbtn_label"
     app:menu_labels_colorRipple="@color/fbtn_label"
@@ -20,8 +19,7 @@
     fab:menu_fab_label="@string/fbtn_receive"
     fab:menu_labels_ellipsize="end"
     fab:menu_labels_singleLine="true"
-    fab:menu_labels_textColor="@color/fbtn_label_text"
-    app:menu_icon="@drawable/ic_fbtn_receive">
+    fab:menu_labels_textColor="@color/fbtn_label_text">
 
     <com.github.clans.fab.FloatingActionButton
         android:id="@+id/fbtn_receive_android"

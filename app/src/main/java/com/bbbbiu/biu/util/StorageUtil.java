@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import com.bbbbiu.biu.R;
 
@@ -310,6 +309,13 @@ public class StorageUtil {
         return installed;
     }
 
+    /**
+     * 获取应用包名
+     *
+     * @param context context
+     * @param path    路径
+     * @return 应用包名，不存在则返回null
+     */
     public static String getApkPackageName(Context context, String path) {
         PackageManager manager = context.getPackageManager();
         PackageInfo packageInfo = manager.getPackageArchiveInfo(path, 0);
@@ -323,7 +329,7 @@ public class StorageUtil {
      * 根据APK文件的路径获取其应用名称
      *
      * @param path 文件路径
-     * @return 应用名称
+     * @return 应用名称, 不存在则返回null
      */
     public static String getApkName(Context context, String path) {
         PackageManager manager = context.getPackageManager();
@@ -345,7 +351,7 @@ public class StorageUtil {
      * 根据APK文件的路径获取其ICON
      *
      * @param path 文件路径
-     * @return ICON as Bitmap or null
+     * @return ICON as Drawable or null
      */
     public static Drawable getApkIcon(Context context, String path) {
         PackageManager manager = context.getPackageManager();

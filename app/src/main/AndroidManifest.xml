@@ -34,7 +34,7 @@
             android:value="true" />
         <meta-data
             android:name="DOMAIN_PACKAGE_NAME"
-            android:value="com.bbbbiu.biu.util.dbmodel" />
+            android:value="com.bbbbiu.biu.util.db" />
 
 
         <receiver
