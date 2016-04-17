@@ -94,7 +94,7 @@ public class ApkItem extends SugarRecord {
      */
     public boolean isInstalled(Context context) {
         try {
-            context.getPackageManager().getPackageInfo(packageName, 0);
+            context.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }

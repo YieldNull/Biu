@@ -4,7 +4,8 @@ import com.bbbbiu.biu.util.SearchUtil;
 import com.orm.SugarRecord;
 import com.orm.dsl.Unique;
 
-import java.util.HashSet;
+import java.io.File;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -52,12 +53,20 @@ public class FileItem extends SugarRecord {
      * @param type 在{@link SearchUtil} 中的文件分类
      * @return 文件路径集合。该分类下没有文件则返回空Set()，没有该分类则返回null
      */
-    public static Set<String> getFile(int type) {
-        Set<String> fileSet = new HashSet<>();
-
-        for (FileItem cate : FileItem.find(FileItem.class, "type=?", String.valueOf(type))) {
-            fileSet.add(cate.path);
-        }
-        return fileSet;
+    public static List<FileItem> getFileList(int type) {
+        return FileItem.find(FileItem.class, "type=?", String.valueOf(type));
     }
+
+    public File getFile() {
+        return new File(path);
+    }
+
+    public String getFileName() {
+        return getFile().getName();
+    }
+
+    public String getParentDir() {
+        return getFile().getParentFile().getName();
+    }
+
 }

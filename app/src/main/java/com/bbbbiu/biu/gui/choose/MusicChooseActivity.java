@@ -1,26 +1,35 @@
 package com.bbbbiu.biu.gui.choose;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.view.MenuItem;
 
+import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.choose.MusicContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-public class MusicChooseActivity extends ChooseBaseActivity{
+public class MusicChooseActivity extends ChooseBaseActivity {
 
-
-    private List<MusicContentAdapter.Music> musicList;
-    private MusicContentAdapter.Music music;
     public static String TAG = MusicChooseActivity.class.getSimpleName();
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                break;
+            case R.id.action_search:
+                break;
+            default:
+                break;
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
     @Override
     protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
         return new HorizontalDividerItemDecoration.Builder(this).build();
@@ -33,24 +42,22 @@ public class MusicChooseActivity extends ChooseBaseActivity{
 
     @Override
     protected int getNormalMenuId() {
-        return 0;
+        return R.menu.music_choose;
     }
 
     @Override
     protected int getChosenMenuId() {
-        return 0;
+        return R.menu.chosen_common;
     }
 
     @Override
     protected String getNormalTitle() {
-        return null;
+        return getString(R.string.title_activity_choose_music);
     }
 
     @Override
     protected ContentBaseAdapter onCreateContentAdapter() {
-        initList();
-
-        return new MusicContentAdapter(this,musicList);
+        return new MusicContentAdapter(this);
     }
 
     @Override
@@ -61,66 +68,5 @@ public class MusicChooseActivity extends ChooseBaseActivity{
     @Override
     protected PanelBaseAdapter onCreatePanelAdapter() {
         return null;
-    }
-
-    @Override
-    public void onFileChosen(String filePath) {
-
-    }
-
-    @Override
-    public void onFileDismissed(String filePath) {
-
-    }
-    private void initList() {
-        getMusicInfo(MusicChooseActivity.this);
-    }
-    private  List<MusicContentAdapter.Music> getMusicInfo(Context context)
-    {
-        musicList = new ArrayList<>();
-        Cursor cursor = context.getContentResolver().query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,null,null,
-                MediaStore.Audio.Media.DEFAULT_SORT_ORDER
-        );
-        String title;
-        String author;
-        String duration;
-        String path;
-        long time=0;
-        for (int i=0;i<cursor.getCount();i++)
-        {
-
-            cursor.moveToNext();
-            title =
-                    cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
-            author = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
-            time = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
-            path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-
-            duration = formatTime(time);
-            Log.d(TAG,title+" : " + path );
-
-            music = new MusicContentAdapter.Music(title,author,duration);
-            musicList.add(music);
-
-
-        }
-
-        musicList.add(music);
-        Log.d(TAG,"------->"+cursor.getCount());
-        return musicList;
-    }
-    private String formatTime(long time)
-    {
-        String min = time/(1000 * 60) + "";
-        String sec = time%(1000 * 60) + "";
-        if (min.length()<2)
-            min = "0"+min;
-        if (sec.length()==4)
-            sec = "0"+sec;
-        else if(sec.length()<=3)
-            sec = "00"+sec;
-        return min + ":" + sec.trim().substring(0,2);
-
     }
 }

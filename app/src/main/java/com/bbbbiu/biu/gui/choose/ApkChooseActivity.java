@@ -202,7 +202,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getChosenMenuId() {
-        return R.menu.apk_chosen;
+        return R.menu.chosen_common;
     }
 
     @Override

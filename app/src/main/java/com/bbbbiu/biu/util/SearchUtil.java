@@ -123,7 +123,7 @@ public class SearchUtil {
         Set<String> normalApkSet = new HashSet<>();
 
 
-        List<PackageInfo> infoList = manager.getInstalledPackages(0);
+        List<PackageInfo> infoList = manager.getInstalledPackages(PackageManager.GET_ACTIVITIES);
         for (PackageInfo info : infoList) {
 
             // 获取已更新的系统应用
