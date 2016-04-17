@@ -91,6 +91,11 @@
             android:label="@string/title_activity_choose_apk"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".gui.choose.ImgChooseActivity"
+            android:label="@string/title_activity_choose_image"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
             android:name=".gui.QRCodeScanActivity"
             android:label="@string/title_activity_qrcode_scan"
             android:noHistory="true"

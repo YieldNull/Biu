@@ -29,7 +29,7 @@ import butterknife.ButterKnife;
 
 /**
  * Created by fangdongliang on 16/3/26.
- * <p/>
+ * <p>
  * Updated by YieldNull
  */
 public class MusicContentAdapter extends ContentBaseAdapter {
@@ -75,42 +75,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
      * @return 之前是否扫描过
      */
     private boolean readMusicList() {
-
-        mMusicList = FileItem.getFileList(FileItem.TYPE_MUSIC);
-
-        // 从未扫描或者说是没有？TODO 加以区分
-        if (mMusicList.size() == 0) {
-            return false;
-        }
-
-        // 按文件夹分类
-        mDirFileMap.clear();
-        for (FileItem item : mMusicList) {
-            String pDirName = item.getParentDir();
-            List<FileItem> list = mDirFileMap.get(pDirName);
-
-            if (list == null) {
-                list = new ArrayList<>();
-                mDirFileMap.put(pDirName, list);
-            }
-
-            list.add(item);
-        }
-
-
-        // 加到列表中
-        mMusicList.clear();
-        for (Map.Entry<String, List<FileItem>> entry : mDirFileMap.entrySet()) {
-            List<FileItem> list = entry.getValue();
-            if (list.size() > 0) {
-                mMusicList.add(null);
-                mMusicList.addAll(list);
-            }
-        }
-
-
-//        Collections.sort(mMusicList, mComparator); TODO 排序
-        return true;
+        return FileItem.loadFile(FileItem.TYPE_MUSIC, mMusicList, mDirFileMap);
     }
 
     @Override

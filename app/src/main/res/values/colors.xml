@@ -35,5 +35,6 @@
 
     <color name="apk_package_name">@android:color/black</color>
 
+    <color name="img_placeholder">#EEEEEE</color>
     <color name="loading_indicator">@color/fbtn</color>
 </resources>

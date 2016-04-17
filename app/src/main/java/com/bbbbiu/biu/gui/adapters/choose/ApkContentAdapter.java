@@ -294,7 +294,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
             final CardView cardView = (CardView) holder.itemView;
 
             if (mChosenApks.contains(apkItem)) {
-                cardView.setForeground(context.getResources().getDrawable(R.drawable.ic_apk_chosen));
+                cardView.setForeground(context.getResources().getDrawable(R.drawable.ic_chosen_check));
                 cardView.setForegroundGravity(Gravity.TOP | Gravity.RIGHT);
             } else {
                 cardView.setForeground(null);

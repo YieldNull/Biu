@@ -1,9 +1,13 @@
 package com.bbbbiu.biu.util;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -39,12 +43,12 @@ public class SearchUtil {
             put(FileItem.TYPE_APK, StorageUtil.EXTENSION_APK).
             put(FileItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
             put(FileItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
-            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).
-            put(FileItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-            put(FileItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
-            put(FileItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-            put(FileItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
-            put(FileItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
+//            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).  // 通过 ContentProvider扫描
+        put(FileItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
+                    put(FileItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
+                    put(FileItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
+                    put(FileItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
+                    put(FileItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
             .build();
 
     /**
@@ -59,12 +63,23 @@ public class SearchUtil {
      * 文件类型与阈值
      */
     private static final Map<Integer, Long> typeThresholdMap = ImmutableMap.of(
-            FileItem.TYPE_IMG, THRESHOLD_IMG,
+//            FileItem.TYPE_IMG, THRESHOLD_IMG,
             FileItem.TYPE_VIDEO, THRESHOLD_VIDEO,
             FileItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
             FileItem.TYPE_MUSIC, THRESHOLD_MUSIC
     );
 
+
+    public static void startSearch(Context context) {
+        // 清空之前的纪录
+        // TODO 有个问题，要是正在用户正在查询的时候进行扫描，把纪录删了怎么办
+        SugarRecord.deleteAll(FileItem.class);
+        SugarRecord.deleteAll(ApkItem.class);
+
+        SearchUtil.scanDisk(context);
+        SearchUtil.scanApkInstalled(context);
+        SearchUtil.scanImgMedia(context);
+    }
 
     /**
      * 全盘扫描各种文件类型，并持久化
@@ -89,11 +104,6 @@ public class SearchUtil {
             BFSSearch(result, StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL), typeArr);
         }
 
-
-        // 清空之前的纪录
-        // TODO 有个问题，要是正在用户正在查询的时候进行扫描，把纪录删了怎么办
-        SugarRecord.deleteAll(FileItem.class);
-        SugarRecord.deleteAll(ApkItem.class);
 
         Log.i(TAG, currentThread() + "Storing files to Database");
 
@@ -148,6 +158,38 @@ public class SearchUtil {
         ApkItem.storeApk(context, ApkItem.TYPE_APK_NORMAL, normalApkSet);
 
         Log.i(TAG, currentThread() + "Finish storing");
+    }
+
+    /**
+     * 利用ContentProvider扫描图片
+     *
+     * @param context context
+     */
+    public static void scanImgMedia(Context context) {
+        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        ContentResolver mContentResolver = context.getContentResolver();
+
+        //只查询jpeg和png的图片
+        Cursor mCursor = mContentResolver.query(mImageUri, null,
+                MediaStore.Images.Media.MIME_TYPE + "=? or "
+                        + MediaStore.Images.Media.MIME_TYPE + "=?",
+                new String[]{"image/jpeg", "image/png"}, MediaStore.Images.Media.DATE_MODIFIED);
+
+        if (mCursor == null) {
+            return;
+        }
+
+        while (mCursor.moveToNext()) {
+            //获取图片的路径
+            String path = mCursor.getString(mCursor
+                    .getColumnIndex(MediaStore.Images.Media.DATA));
+
+            new FileItem(path, FileItem.TYPE_IMG).save();
+
+        }
+        //通知Handler扫描图片完成
+        mCursor.close();
+
     }
 
     /**
@@ -294,4 +336,5 @@ public class SearchUtil {
     private static String currentThread() {
         return "[" + Thread.currentThread().getName() + "] ";
     }
+
 }

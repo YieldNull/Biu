@@ -47,7 +47,6 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportActionBar().setTitle(getNormalTitle());
         mApkAdapter = (ApkContentAdapter) mContentAdapter;
 
         mHandler = new Handler(new Handler.Callback() {

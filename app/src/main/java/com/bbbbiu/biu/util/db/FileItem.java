@@ -5,7 +5,10 @@ import com.orm.SugarRecord;
 import com.orm.dsl.Unique;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -45,6 +48,53 @@ public class FileItem extends SugarRecord {
         for (String path : pathSet) {
             new FileItem(path, type).save();
         }
+    }
+
+    public static boolean loadFile(int type, List<FileItem> all, Map<String, List<FileItem>> dirMap) {
+
+        if (all == null) {
+            all = new ArrayList<>();
+        }
+
+        if (dirMap == null) {
+            dirMap = new HashMap<>();
+        }
+
+        all.addAll(FileItem.getFileList(type));
+
+        // 从未扫描或者说是没有？TODO 加以区分
+        if (all.size() == 0) {
+            return false;
+        }
+
+        // 按文件夹分类
+        dirMap.clear();
+        for (FileItem item : all) {
+            String pDirName = item.getParentDir();
+            List<FileItem> list = dirMap.get(pDirName);
+
+            if (list == null) {
+                list = new ArrayList<>();
+                dirMap.put(pDirName, list);
+            }
+
+            list.add(item);
+        }
+
+
+        // 加到列表中
+        all.clear();
+        for (Map.Entry<String, List<FileItem>> entry : dirMap.entrySet()) {
+            List<FileItem> list = entry.getValue();
+            if (list.size() > 0) {
+                all.add(null);
+                all.addAll(list);
+            }
+        }
+
+
+//        Collections.sort(all, mComparator); TODO 排序
+        return true;
     }
 
     /**

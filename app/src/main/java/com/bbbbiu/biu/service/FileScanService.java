@@ -41,8 +41,7 @@ public class FileScanService extends IntentService {
         if (intent != null) {
             Log.i(TAG, "Stating scan disk and apk");
 
-            SearchUtil.scanDisk(this);
-            SearchUtil.scanApkInstalled(this);
+            SearchUtil.startSearch(this);
         }
     }
 

@@ -145,6 +145,10 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
+        if (getNormalTitle() != null) {
+            getSupportActionBar().setTitle(getNormalTitle());
+        }
+
         // 主内容 RecyclerView
         mContentAdapter = onCreateContentAdapter();
         if (mContentAdapter == null) {
