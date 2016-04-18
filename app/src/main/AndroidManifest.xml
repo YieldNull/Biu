@@ -98,6 +98,10 @@
             android:name=".gui.choose.VideoChooseActivity"
             android:label="@string/title_activity_choose_video"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.ArchiveChooseActivity"
+            android:label="@string/title_activity_choose_archive"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".gui.QRCodeScanActivity"

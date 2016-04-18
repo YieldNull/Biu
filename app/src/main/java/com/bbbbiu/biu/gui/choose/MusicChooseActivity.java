@@ -42,7 +42,7 @@ public class MusicChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.music_choose;
+        return R.menu.music_normal;
     }
 
     @Override

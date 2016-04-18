@@ -250,18 +250,10 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
-
-        if (viewType == VIEW_TYPE_ITEM) {
-            itemView = inflater.inflate(R.layout.list_apk_item, parent, false);
-            return new ApkViewHolder(itemView);
-        } else {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
-        }
+    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ApkViewHolder(inflater.inflate(R.layout.list_apk_item, parent, false));
     }
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {

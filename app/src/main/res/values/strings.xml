@@ -8,6 +8,8 @@
     <string name="title_activity_choose_music">传音乐</string>
     <string name="title_activity_choose_document">传文档</string>
     <string name="title_activity_choose_apk">传应用</string>
+    <string name="title_activity_choose_archive">传压缩包</string>
+
     <string name="title_activity_history">历史</string>
     <string name="title_activity_upload">正在上传</string>
     <string name="title_activity_connect_computer">连接电脑</string>

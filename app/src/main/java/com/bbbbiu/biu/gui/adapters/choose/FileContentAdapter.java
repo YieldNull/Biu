@@ -218,6 +218,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
         mImgPicasso.cancelTag(PICASSO_TAG);
     }
 
+
     @Override
     public Set<String> getChosenFiles() {
         Set<String> list = new HashSet<>();
@@ -243,19 +244,10 @@ public class FileContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
-
-        if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
-        } else {
-            itemView = inflater.inflate(R.layout.list_file_item, parent, false);
-            return new ItemViewHolder(itemView, context);
-        }
+    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ItemViewHolder(inflater.inflate(R.layout.list_file_item, parent, false), context);
     }
+
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -337,7 +329,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
         @Bind(R.id.textView_name)
         TextView fileNameTextView;
 
-        @Bind(R.id.textView_progress)
+        @Bind(R.id.textView_info)
         TextView fileInfoTextView;
 
         @Bind(R.id.imageButton_option)

@@ -36,7 +36,7 @@ public class FileChooseActivity extends ChooseBaseActivity implements OnChangeDi
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.file_choose;
+        return R.menu.file_normal;
     }
 
     @Override

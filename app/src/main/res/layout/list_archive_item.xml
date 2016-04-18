@@ -10,40 +10,45 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:layout_margin="16dp"
         android:adjustViewBounds="true"
         android:maxHeight="44dp"
         android:maxWidth="44dp"
         android:padding="10dp"
-        android:src="@drawable/ic_type_folder" />
+        android:src="@drawable/ic_type_archive" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/imageView_icon"
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
-        android:layout_marginLeft="66dp"
-        android:layout_toLeftOf="@+id/imageButton_option"
+        android:layout_toLeftOf="@+id/linearLayout"
+        android:layout_toRightOf="@+id/imageView_icon"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/textView_name"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="小酒窝"
             android:textColor="@color/file_name" />
 
         <TextView
             android:id="@+id/textView_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="大小：23MB  修改时间：16/03/07"
-            android:textColor="@color/file_info" />
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:text="3MB"
+            android:textColor="@color/file_info"
+            android:textSize="14sp" />
     </LinearLayout>
 
-    <ImageButton
+    <ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/imageButton_option"
         android:layout_width="wrap_content"
         android:layout_height="66dp"

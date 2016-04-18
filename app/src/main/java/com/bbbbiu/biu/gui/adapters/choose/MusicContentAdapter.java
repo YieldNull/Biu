@@ -39,20 +39,11 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
     }
 
-
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
-
-        if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
-        } else {
-            itemView = inflater.inflate(R.layout.list_music_item, parent, false);
-            return new MusicViewHolder(itemView);
-        }
+    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new MusicViewHolder(inflater.inflate(R.layout.list_music_item, parent, false));
     }
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {

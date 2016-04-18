@@ -5,7 +5,9 @@ import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
@@ -69,12 +71,26 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     public abstract void cancelPicassoTask();
 
+    public abstract RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
     public ContentBaseAdapter(ChooseBaseActivity context) {
         loadingDataListener = context;
         onChoosingListener = context;
         onItemOptionClickListener = context;
         this.context = context;
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View itemView;
+
+        if (viewType == VIEW_TYPE_HEADER) {
+            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
+            return new HeaderViewHolder(itemView);
+        } else {
+            return OnCreateItemViewHolder(inflater, parent);
+        }
     }
 
     @Override

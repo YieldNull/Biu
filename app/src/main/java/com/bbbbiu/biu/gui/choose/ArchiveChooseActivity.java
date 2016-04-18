@@ -3,9 +3,9 @@ package com.bbbbiu.biu.gui.choose;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.choose.ArchiveContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.VideoContentAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
@@ -13,8 +13,8 @@ import java.io.File;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class VideoChooseActivity extends ChooseBaseActivity {
-    private static final String TAG = VideoChooseActivity.class.getSimpleName();
+public class ArchiveChooseActivity extends ChooseBaseActivity {
+    private static final String TAG = ArchiveChooseActivity.class.getSimpleName();
 
     @Override
     protected int getNormalMenuId() {
@@ -28,12 +28,12 @@ public class VideoChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected String getNormalTitle() {
-        return getString(R.string.title_activity_choose_video);
+        return getString(R.string.title_activity_choose_archive);
     }
 
     @Override
     protected ContentBaseAdapter onCreateContentAdapter() {
-        return new VideoContentAdapter(this);
+        return new ArchiveContentAdapter(this);
     }
 
     @Override

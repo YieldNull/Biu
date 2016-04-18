@@ -27,7 +27,7 @@ public class ImgChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.choose_common;
+        return R.menu.normal_common;
     }
 
     @Override

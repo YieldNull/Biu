@@ -52,20 +52,11 @@ public class ImgContentAdapter extends ContentBaseAdapter {
         mPicasso.cancelTag(PICASSO_TAG);
     }
 
-
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
-
-        if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
-        } else {
-            itemView = inflater.inflate(R.layout.list_img_item, parent, false);
-            return new ImgViewHolder(itemView);
-        }
+    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ImgViewHolder(inflater.inflate(R.layout.list_img_item, parent, false));
     }
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
