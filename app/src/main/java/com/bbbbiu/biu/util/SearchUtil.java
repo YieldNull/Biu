@@ -47,10 +47,11 @@ public class SearchUtil {
             put(ModelItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
 //            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).  // 通过 ContentProvider扫描
         put(ModelItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-                    put(ModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
-                    put(ModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-                    put(ModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
-                    put(ModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
+//                    put(ModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
+//                    put(ModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
+//                    put(ModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
+//                    put(ModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
+        put(ModelItem.TYPE_DOC, StorageUtil.EXTENSION_DOC) // 不分类了
             .build();
 
     /**

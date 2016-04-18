@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ApkChooseActivity;
 import com.bbbbiu.biu.gui.choose.ArchiveChooseActivity;
+import com.bbbbiu.biu.gui.choose.DocumentChooseActivity;
 import com.bbbbiu.biu.gui.choose.FileChooseActivity;
 import com.bbbbiu.biu.gui.choose.ImgChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
@@ -98,7 +99,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             theClass = VideoChooseActivity.class;
                             break;
                         case R.string.cate_document:
-                            theClass = ApkChooseActivity.class;
+                            theClass = DocumentChooseActivity.class;
                             break;
                         case R.string.cate_archive:
                             theClass = ArchiveChooseActivity.class;

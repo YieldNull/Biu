@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_gravity="center_vertical"
-        android:layout_toLeftOf="@+id/linearLayout"
+        android:layout_toLeftOf="@+id/imageButton_option"
         android:layout_toRightOf="@+id/imageView_icon"
         android:orientation="vertical">
 

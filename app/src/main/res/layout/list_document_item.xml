@@ -16,7 +16,7 @@
         android:maxHeight="44dp"
         android:maxWidth="44dp"
         android:padding="10dp"
-        android:src="@drawable/ic_type_video" />
+        android:src="@drawable/ic_type_word" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
             android:layout_height="match_parent"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="小酒窝"
+            android:text="小酒窝小酒窝小酒窝小酒窝小酒窝小酒窝小酒窝"
             android:textColor="@color/file_name" />
 
         <TextView
@@ -43,7 +43,7 @@
             android:layout_marginTop="6dp"
             android:ellipsize="end"
             android:singleLine="true"
-            android:text="03:20  3MB"
+            android:text="3MB"
             android:textColor="@color/file_info"
             android:textSize="14sp" />
     </LinearLayout>

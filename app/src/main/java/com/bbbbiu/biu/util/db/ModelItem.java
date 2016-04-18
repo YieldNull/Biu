@@ -21,6 +21,7 @@ public abstract class ModelItem extends SugarRecord {
     public static final int TYPE_PPT = 7;
     public static final int TYPE_PDF = 8;
     public static final int TYPE_APK = 9; // APK 安装包
+    public static final int TYPE_DOC = 10;
 
     public abstract String getPath();
 
