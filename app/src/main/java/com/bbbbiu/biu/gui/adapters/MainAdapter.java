@@ -16,6 +16,7 @@ import com.bbbbiu.biu.gui.choose.ApkChooseActivity;
 import com.bbbbiu.biu.gui.choose.FileChooseActivity;
 import com.bbbbiu.biu.gui.choose.ImgChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
+import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -93,7 +94,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             theClass = MusicChooseActivity.class;
                             break;
                         case R.string.cate_video:
-                            theClass = ApkChooseActivity.class;
+                            theClass = VideoChooseActivity.class;
                             break;
                         case R.string.cate_document:
                             theClass = ApkChooseActivity.class;

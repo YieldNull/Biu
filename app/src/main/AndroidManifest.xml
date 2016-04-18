@@ -94,6 +94,10 @@
             android:name=".gui.choose.ImgChooseActivity"
             android:label="@string/title_activity_choose_image"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.VideoChooseActivity"
+            android:label="@string/title_activity_choose_video"
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".gui.QRCodeScanActivity"

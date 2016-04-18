@@ -142,7 +142,7 @@ public class ImgContentAdapter extends ContentBaseAdapter implements HorizontalD
         View itemView;
 
         if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_cate, parent, false);
+            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
             return new HeaderViewHolder(itemView);
         } else {
             itemView = inflater.inflate(R.layout.list_img_item, parent, false);

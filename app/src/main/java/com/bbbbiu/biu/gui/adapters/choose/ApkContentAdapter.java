@@ -258,7 +258,7 @@ public class ApkContentAdapter extends ContentBaseAdapter {
             itemView = inflater.inflate(R.layout.list_apk_item, parent, false);
             return new ApkViewHolder(itemView);
         } else {
-            itemView = inflater.inflate(R.layout.list_header_cate, parent, false);
+            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
             return new HeaderViewHolder(itemView);
         }
     }

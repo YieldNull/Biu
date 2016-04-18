@@ -15,7 +15,6 @@ import com.bbbbiu.biu.util.db.IModelItem;
 import com.bbbbiu.biu.util.db.MediaItem;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +116,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
         View itemView;
 
         if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_cate, parent, false);
+            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
             return new HeaderViewHolder(itemView);
         } else {
             itemView = inflater.inflate(R.layout.list_music_item, parent, false);

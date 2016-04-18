@@ -249,7 +249,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
         View itemView;
 
         if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_cate, parent, false);
+            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
             return new HeaderViewHolder(itemView);
         } else {
             itemView = inflater.inflate(R.layout.list_file_item, parent, false);
