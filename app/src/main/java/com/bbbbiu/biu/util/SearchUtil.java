@@ -13,6 +13,8 @@ import android.util.Log;
 
 import com.bbbbiu.biu.util.db.ApkItem;
 import com.bbbbiu.biu.util.db.FileItem;
+import com.bbbbiu.biu.util.db.IModelItem;
+import com.bbbbiu.biu.util.db.MediaItem;
 import com.google.common.collect.ImmutableMap;
 import com.orm.SugarRecord;
 
@@ -40,15 +42,15 @@ public class SearchUtil {
      * 文件类型与后缀名
      */
     private static final Map<Integer, List<String>> typeExtensionMap = new ImmutableMap.Builder<Integer, List<String>>().
-            put(FileItem.TYPE_APK, StorageUtil.EXTENSION_APK).
-            put(FileItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
-            put(FileItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
+            put(IModelItem.TYPE_APK, StorageUtil.EXTENSION_APK).
+            put(IModelItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
+            put(IModelItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
 //            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).  // 通过 ContentProvider扫描
-        put(FileItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-                    put(FileItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
-                    put(FileItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-                    put(FileItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
-                    put(FileItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
+        put(IModelItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
+                    put(IModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
+                    put(IModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
+                    put(IModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
+                    put(IModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
             .build();
 
     /**
@@ -64,9 +66,9 @@ public class SearchUtil {
      */
     private static final Map<Integer, Long> typeThresholdMap = ImmutableMap.of(
 //            FileItem.TYPE_IMG, THRESHOLD_IMG,
-            FileItem.TYPE_VIDEO, THRESHOLD_VIDEO,
-            FileItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
-            FileItem.TYPE_MUSIC, THRESHOLD_MUSIC
+            IModelItem.TYPE_VIDEO, THRESHOLD_VIDEO,
+            IModelItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
+            IModelItem.TYPE_MUSIC, THRESHOLD_MUSIC
     );
 
 
@@ -78,7 +80,7 @@ public class SearchUtil {
 
         SearchUtil.scanDisk(context);
         SearchUtil.scanApkInstalled(context);
-        SearchUtil.scanImgMedia(context);
+        SearchUtil.scanImg(context);
     }
 
     /**
@@ -108,10 +110,14 @@ public class SearchUtil {
         Log.i(TAG, currentThread() + "Storing files to Database");
 
         for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
-            if (cateEntry.getKey() == FileItem.TYPE_APK) {
+            int type = cateEntry.getKey();
+
+            if (type == IModelItem.TYPE_APK) {
                 ApkItem.storeApk(context, ApkItem.TYPE_APK_STANDALONE, cateEntry.getValue());
+            } else if (type == IModelItem.TYPE_VIDEO || type == IModelItem.TYPE_MUSIC) {
+                MediaItem.storeMediaItems(context, type, cateEntry.getValue());
             } else {
-                FileItem.storeFile(cateEntry.getKey(), cateEntry.getValue());
+                FileItem.storeFileItems(cateEntry.getKey(), cateEntry.getValue());
             }
         }
 
@@ -165,7 +171,9 @@ public class SearchUtil {
      *
      * @param context context
      */
-    public static void scanImgMedia(Context context) {
+    public static void scanImg(Context context) {
+        Log.i(TAG, currentThread() + "Start scanning img");
+
         Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         ContentResolver mContentResolver = context.getContentResolver();
 
@@ -179,17 +187,19 @@ public class SearchUtil {
             return;
         }
 
+        Log.i(TAG, currentThread() + "Storing img info to Database");
+
         while (mCursor.moveToNext()) {
             //获取图片的路径
             String path = mCursor.getString(mCursor
                     .getColumnIndex(MediaStore.Images.Media.DATA));
 
-            new FileItem(path, FileItem.TYPE_IMG).save();
+            new FileItem(path, IModelItem.TYPE_IMG).save();
 
         }
-        //通知Handler扫描图片完成
         mCursor.close();
 
+        Log.i(TAG, currentThread() + "Finish storing");
     }
 
     /**

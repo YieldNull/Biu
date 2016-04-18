@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +12,10 @@ import android.widget.ImageView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.bbbbiu.biu.util.db.FileItem;
+import com.bbbbiu.biu.util.db.IModelItem;
 import com.squareup.picasso.Picasso;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,15 +30,13 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/17/16
  */
-public class ImgContentAdapter extends ContentBaseAdapter {
+public class ImgContentAdapter extends ContentBaseAdapter implements HorizontalDividerItemDecoration.DrawableProvider {
     private static final String TAG = ImgContentAdapter.class.getSimpleName();
     private Context
             context;
 
     private List<FileItem> mImgList = new ArrayList<>();
     private List<FileItem> mChosenImg = new ArrayList<>();
-
-    private Map<String, List<FileItem>> mDirFileMap = new HashMap<>();
 
     private Picasso mPicasso;
     private static final String PICASSO_TAG = "tag-img";
@@ -66,7 +64,21 @@ public class ImgContentAdapter extends ContentBaseAdapter {
     }
 
     private boolean readImgList() {
-        return FileItem.loadFile(FileItem.TYPE_IMG, mImgList, mDirFileMap);
+        Map<String, List<FileItem>> mDirFileMap = FileItem.loadFileItems(IModelItem.TYPE_IMG);
+
+        if (mDirFileMap.size() == 0) {
+            return false;
+        }
+
+        for (Map.Entry<String, List<FileItem>> entry : mDirFileMap.entrySet()) {
+            List<FileItem> list = entry.getValue();
+            if (list.size() > 0) {
+                mImgList.add(null);
+                mImgList.addAll(list);
+            }
+        }
+
+        return true;
     }
 
     private FileItem getItemAt(int postion) {
@@ -147,7 +159,7 @@ public class ImgContentAdapter extends ContentBaseAdapter {
                     .tag(PICASSO_TAG)
                     .resize(mImgWidth, mImgWidth)
                     .placeholder(mPlaceholder)
-                    .onlyScaleDown()
+//                    .onlyScaleDown()
                     .centerCrop()
                     .into(holder.imageView);
 
@@ -170,7 +182,7 @@ public class ImgContentAdapter extends ContentBaseAdapter {
         } else {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
 
-            holder.headerText.setText(mImgList.get(position + 1).getParentDir());
+            holder.headerText.setText(mImgList.get(position + 1).getParentDirName());
         }
 
     }
@@ -183,6 +195,11 @@ public class ImgContentAdapter extends ContentBaseAdapter {
     @Override
     public int getItemCount() {
         return mImgList.size();
+    }
+
+    @Override
+    public Drawable drawableProvider(int position, RecyclerView parent) {
+        return null;
     }
 
 

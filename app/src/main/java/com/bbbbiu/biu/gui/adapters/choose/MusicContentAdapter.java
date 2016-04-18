@@ -1,8 +1,6 @@
 package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +11,9 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
-import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.util.db.FileItem;
+import com.bbbbiu.biu.util.db.IModelItem;
+import com.bbbbiu.biu.util.db.MediaItem;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,7 +26,7 @@ import butterknife.ButterKnife;
 
 /**
  * Created by fangdongliang on 16/3/26.
- * <p>
+ * <p/>
  * Updated by YieldNull
  */
 public class MusicContentAdapter extends ContentBaseAdapter {
@@ -37,10 +34,8 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
     private Context context;
 
-    private List<FileItem> mMusicList = new ArrayList<>();
-    private List<FileItem> mChosenMusic = new ArrayList<>();
-
-    private Map<String, List<FileItem>> mDirFileMap = new HashMap<>();
+    private List<MediaItem> mMusicList = new ArrayList<>();
+    private List<MediaItem> mChosenMusic = new ArrayList<>();
 
     public MusicContentAdapter(final ChooseBaseActivity context) {
         super(context);
@@ -75,7 +70,21 @@ public class MusicContentAdapter extends ContentBaseAdapter {
      * @return 之前是否扫描过
      */
     private boolean readMusicList() {
-        return FileItem.loadFile(FileItem.TYPE_MUSIC, mMusicList, mDirFileMap);
+        Map<String, List<MediaItem>> mDirFileMap = MediaItem.loadMediaItems(IModelItem.TYPE_MUSIC);
+
+        if (mDirFileMap.size() == 0) {
+            return false;
+        }
+
+        for (Map.Entry<String, List<MediaItem>> entry : mDirFileMap.entrySet()) {
+            List<MediaItem> list = entry.getValue();
+            if (list.size() > 0) {
+                mMusicList.add(null);
+                mMusicList.addAll(list);
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -89,7 +98,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     }
 
     private void setItemChosen(int position) {
-        FileItem item = mMusicList.get(position);
+        MediaItem item = mMusicList.get(position);
 
         if (mChosenMusic.contains(item)) {
             mChosenMusic.remove(item);
@@ -122,11 +131,11 @@ public class MusicContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             MusicViewHolder holder = (MusicViewHolder) hd;
 
-            Music music = new Music(mMusicList.get(position).path);
-            holder.title.setText(music.title);
-            holder.singer.setText(music.artist);
-            holder.size.setText(music.size);
-            holder.duration.setText(music.duration);
+            MediaItem item = mMusicList.get(position);
+            holder.title.setText(item.title);
+            holder.singer.setText(item.artist);
+            holder.size.setText(item.getSize());
+            holder.duration.setText(item.duration);
 
             if (mChosenMusic.contains(mMusicList.get(position))) {
                 holder.setItemStyleChosen();
@@ -143,7 +152,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
         } else {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(mMusicList.get(position + 1).getParentDir());
+            holder.headerText.setText(mMusicList.get(position + 1).getParentDirName());
         }
 
     }
@@ -152,7 +161,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     public Set<String> getChosenFiles() {
         Set<String> set = new HashSet<>();
 
-        for (FileItem item : mChosenMusic) {
+        for (MediaItem item : mChosenMusic) {
             set.add(item.path);
         }
         return set;
@@ -166,7 +175,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     @Override
     public void setFileAllChosen() {
         mChosenMusic.clear();
-        for (FileItem fileItem : mMusicList) {
+        for (MediaItem fileItem : mMusicList) {
             if (fileItem != null) {
                 mChosenMusic.add(fileItem);
             }
@@ -223,43 +232,4 @@ public class MusicContentAdapter extends ContentBaseAdapter {
         }
     }
 
-    class Music {
-        String title;
-        String artist;
-        String duration;
-        String size;
-
-        Music(String path) {
-            // 获取Music的Metadata
-            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-
-            File file = new File(path);
-            Uri uri = Uri.fromFile(file);
-            mediaMetadataRetriever.setDataSource(context, uri);
-
-            title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            duration = formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            size = StorageUtil.getReadableSize(file.length());
-        }
-
-        /**
-         * 格式化时间
-         *
-         * @param time time as long integer
-         * @return 格式化之后的时间 如 05:20 表示5min 20sec
-         */
-        private String formatTime(long time) {
-            String min = time / (1000 * 60) + "";
-            String sec = time % (1000 * 60) + "";
-            if (min.length() < 2)
-                min = "0" + min;
-            if (sec.length() == 4)
-                sec = "0" + sec;
-            else if (sec.length() <= 3)
-                sec = "00" + sec;
-            return min + ":" + sec.trim().substring(0, 2);
-        }
-    }
 }
