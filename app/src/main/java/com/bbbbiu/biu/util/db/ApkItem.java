@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Created by YieldNull at 4/16/16
  */
-public class ApkItem extends SugarRecord {
+public class ApkItem extends ModelItem {
     public static final int TYPE_APK_STANDALONE = 0;
     public static final int TYPE_APK_SYSTEM = 1;
     public static final int TYPE_APK_NORMAL = 2;
@@ -101,6 +101,22 @@ public class ApkItem extends SugarRecord {
         return true;
     }
 
+    @Override
+    public String getPath() {
+        return path;
+    }
+
+
+    @Override
+    public String getSize() {
+        return StorageUtil.getReadableSize(getFile().length());
+    }
+
+    @Override
+    public String getParentDirName() {
+        return getFile().getParentFile().getName();
+    }
+
     /**
      * 获取对应的Apk文件
      *
@@ -109,6 +125,7 @@ public class ApkItem extends SugarRecord {
     public File getFile() {
         return new File(path);
     }
+
 
     /**
      * 获取图标文件

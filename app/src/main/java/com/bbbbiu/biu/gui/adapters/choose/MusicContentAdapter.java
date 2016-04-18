@@ -10,15 +10,8 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
-import com.bbbbiu.biu.util.SearchUtil;
-import com.bbbbiu.biu.util.db.IModelItem;
 import com.bbbbiu.biu.util.db.MediaItem;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import com.bbbbiu.biu.util.db.ModelItem;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -33,82 +26,19 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
     private Context context;
 
-    private List<MediaItem> mMusicList = new ArrayList<>();
-    private List<MediaItem> mChosenMusic = new ArrayList<>();
-
     public MusicContentAdapter(final ChooseBaseActivity context) {
         super(context);
         this.context = context;
 
-        if (!readMusicList()) {
-            notifyStartLoadingData();
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    SearchUtil.scanDisk(context);
-
-                    readMusicList();
-
-                    context.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifyDataSetChanged();
-                            notifyFinishLoadingData();
-                        }
-                    });
-                }
-            }).start();
+        if (!queryModelItems(ModelItem.TYPE_MUSIC)) {
         }
-    }
-
-
-    /**
-     * 从数据库读取扫描得到的音乐
-     *
-     * @return 之前是否扫描过
-     */
-    private boolean readMusicList() {
-        Map<String, List<MediaItem>> mDirFileMap = MediaItem.loadMediaItems(IModelItem.TYPE_MUSIC);
-
-        if (mDirFileMap.size() == 0) {
-            return false;
-        }
-
-        for (Map.Entry<String, List<MediaItem>> entry : mDirFileMap.entrySet()) {
-            List<MediaItem> list = entry.getValue();
-            if (list.size() > 0) {
-                mMusicList.add(null);
-                mMusicList.addAll(list);
-            }
-        }
-
-        return true;
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return mMusicList.get(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
+    public void cancelPicassoTask() {
+
     }
 
-    @Override
-    public int getItemCount() {
-        return mMusicList.size();
-    }
-
-    private void setItemChosen(int position) {
-        MediaItem item = mMusicList.get(position);
-
-        if (mChosenMusic.contains(item)) {
-            mChosenMusic.remove(item);
-            notifyFileDismissed(item.path);
-        } else {
-            mChosenMusic.add(item);
-            notifyFileChosen(item.path);
-        }
-
-        notifyDataSetChanged();
-    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -124,19 +54,18 @@ public class MusicContentAdapter extends ContentBaseAdapter {
         }
     }
 
-
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             MusicViewHolder holder = (MusicViewHolder) hd;
 
-            MediaItem item = mMusicList.get(position);
+            MediaItem item = (MediaItem) getItemAt(position);
             holder.title.setText(item.title);
             holder.singer.setText(item.artist);
             holder.size.setText(item.getSize());
             holder.duration.setText(item.duration);
 
-            if (mChosenMusic.contains(mMusicList.get(position))) {
+            if (isItemChosen(position)) {
                 holder.setItemStyleChosen();
             } else {
                 holder.setItemStyleChoosing();
@@ -151,42 +80,9 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
         } else {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(mMusicList.get(position + 1).getParentDirName());
+            holder.headerText.setText(getHeaderText(position));
         }
 
-    }
-
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> set = new HashSet<>();
-
-        for (MediaItem item : mChosenMusic) {
-            set.add(item.path);
-        }
-        return set;
-    }
-
-    @Override
-    public int getChosenCount() {
-        return mChosenMusic.size();
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        mChosenMusic.clear();
-        for (MediaItem fileItem : mMusicList) {
-            if (fileItem != null) {
-                mChosenMusic.add(fileItem);
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChosenMusic.clear();
-        notifyDataSetChanged();
     }
 
     public class MusicViewHolder extends RecyclerView.ViewHolder {

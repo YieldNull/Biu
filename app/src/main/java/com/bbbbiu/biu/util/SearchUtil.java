@@ -13,7 +13,7 @@ import android.util.Log;
 
 import com.bbbbiu.biu.util.db.ApkItem;
 import com.bbbbiu.biu.util.db.FileItem;
-import com.bbbbiu.biu.util.db.IModelItem;
+import com.bbbbiu.biu.util.db.ModelItem;
 import com.bbbbiu.biu.util.db.MediaItem;
 import com.google.common.collect.ImmutableMap;
 import com.orm.SugarRecord;
@@ -42,15 +42,15 @@ public class SearchUtil {
      * 文件类型与后缀名
      */
     private static final Map<Integer, List<String>> typeExtensionMap = new ImmutableMap.Builder<Integer, List<String>>().
-            put(IModelItem.TYPE_APK, StorageUtil.EXTENSION_APK).
-            put(IModelItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
-            put(IModelItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
+            put(ModelItem.TYPE_APK, StorageUtil.EXTENSION_APK).
+            put(ModelItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
+            put(ModelItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
 //            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).  // 通过 ContentProvider扫描
-        put(IModelItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-                    put(IModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
-                    put(IModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-                    put(IModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
-                    put(IModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
+        put(ModelItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
+                    put(ModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
+                    put(ModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
+                    put(ModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
+                    put(ModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
             .build();
 
     /**
@@ -66,9 +66,9 @@ public class SearchUtil {
      */
     private static final Map<Integer, Long> typeThresholdMap = ImmutableMap.of(
 //            FileItem.TYPE_IMG, THRESHOLD_IMG,
-            IModelItem.TYPE_VIDEO, THRESHOLD_VIDEO,
-            IModelItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
-            IModelItem.TYPE_MUSIC, THRESHOLD_MUSIC
+            ModelItem.TYPE_VIDEO, THRESHOLD_VIDEO,
+            ModelItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
+            ModelItem.TYPE_MUSIC, THRESHOLD_MUSIC
     );
 
 
@@ -112,9 +112,9 @@ public class SearchUtil {
         for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
             int type = cateEntry.getKey();
 
-            if (type == IModelItem.TYPE_APK) {
+            if (type == ModelItem.TYPE_APK) {
                 ApkItem.storeApk(context, ApkItem.TYPE_APK_STANDALONE, cateEntry.getValue());
-            } else if (type == IModelItem.TYPE_VIDEO || type == IModelItem.TYPE_MUSIC) {
+            } else if (type == ModelItem.TYPE_VIDEO || type == ModelItem.TYPE_MUSIC) {
                 MediaItem.storeMediaItems(context, type, cateEntry.getValue());
             } else {
                 FileItem.storeFileItems(cateEntry.getKey(), cateEntry.getValue());
@@ -194,7 +194,7 @@ public class SearchUtil {
             String path = mCursor.getString(mCursor
                     .getColumnIndex(MediaStore.Images.Media.DATA));
 
-            new FileItem(path, IModelItem.TYPE_IMG).save();
+            new FileItem(path, ModelItem.TYPE_IMG).save();
 
         }
         mCursor.close();

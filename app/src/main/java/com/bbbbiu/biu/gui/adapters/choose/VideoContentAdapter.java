@@ -1,33 +1,21 @@
 package com.bbbbiu.biu.gui.adapters.choose;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
-import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.util.db.MediaItem;
+import com.bbbbiu.biu.util.db.ModelItem;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Request;
-import com.squareup.picasso.RequestHandler;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -38,13 +26,8 @@ import butterknife.ButterKnife;
 public class VideoContentAdapter extends ContentBaseAdapter {
     private static final String TAG = VideoContentAdapter.class.getSimpleName();
 
-    private List<MediaItem> mVideoList = new ArrayList<>();
-    private List<MediaItem> mChooseVideo = new ArrayList<>();
     private Context context;
-
     private Picasso mPicasso;
-    private static final String PICASSO_TAG = "tag-img";
-    private static final String PICASSO_SCHEME_VIDEO = "video-icon";
 
     private static final int THUMB_SIZE = (int) SizeUtil.convertDpToPixel(24);
 
@@ -58,28 +41,9 @@ public class VideoContentAdapter extends ContentBaseAdapter {
         mPicasso = builder.build();
 
 
-        if (!readVideoItems()) {
+        if (!queryModelItems(ModelItem.TYPE_VIDEO)) {
 
         }
-    }
-
-
-    private boolean readVideoItems() {
-        Map<String, List<MediaItem>> mDirFileMap = MediaItem.loadMediaItems(MediaItem.TYPE_VIDEO);
-
-        if (mDirFileMap.size() == 0) {
-            return false;
-        }
-
-        for (Map.Entry<String, List<MediaItem>> entry : mDirFileMap.entrySet()) {
-            List<MediaItem> list = entry.getValue();
-            if (list.size() > 0) {
-                mVideoList.add(null);
-                mVideoList.addAll(list);
-            }
-        }
-
-        return true;
     }
 
 
@@ -88,38 +52,6 @@ public class VideoContentAdapter extends ContentBaseAdapter {
         mPicasso.cancelTag(PICASSO_TAG);
     }
 
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> set = new HashSet<>();
-        for (MediaItem item : mChooseVideo) {
-            set.add(item.getPath());
-        }
-        return set;
-    }
-
-    @Override
-    public int getChosenCount() {
-        return mChooseVideo.size();
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        mChooseVideo.clear();
-
-        for (MediaItem item : mVideoList) {
-            if (item != null) {
-                mChooseVideo.add(item);
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChooseVideo.clear();
-        notifyDataSetChanged();
-    }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -140,19 +72,16 @@ public class VideoContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             VideoViewHolder holder = (VideoViewHolder) hd;
 
-            MediaItem item = getItemAt(position);
+            MediaItem item = (MediaItem) getItemAt(position);
 
             holder.nameText.setText(item.getFile().getName());
             holder.infoText.setText(String.format("%s  %s", item.duration, item.getSize()));
 
 
-            if (mChooseVideo.contains(item)) {
-                holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.file_item_chosen));
-                holder.iconImg.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
-                holder.iconImg.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
+            if (mChosenItems.contains(item)) {
+                holder.setItemStyleChosen();
             } else {
-                holder.itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
-                holder.iconImg.setBackgroundDrawable(null);
+                holder.setItemStyleChoosing();
 
                 mPicasso.load(PICASSO_SCHEME_VIDEO + ":" + item.path)
                         .resize(THUMB_SIZE, THUMB_SIZE)
@@ -165,41 +94,15 @@ public class VideoContentAdapter extends ContentBaseAdapter {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setFileChosen(position);
+                    setItemChosen(position);
                 }
             });
+
         } else {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(getItemAt(position + 1).getParentDirName());
+            holder.headerText.setText(getHeaderText(position));
         }
     }
-
-    @Override
-    public int getItemCount() {
-        return mVideoList.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return getItemAt(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
-    }
-
-    private MediaItem getItemAt(int position) {
-        return mVideoList.get(position);
-    }
-
-    private void setFileChosen(int position) {
-        MediaItem item = getItemAt(position);
-        if (!mChooseVideo.contains(item)) {
-            mChooseVideo.add(item);
-            notifyFileChosen(item.path);
-        } else {
-            mChooseVideo.remove(item);
-            notifyFileDismissed(item.path);
-        }
-        notifyDataSetChanged();
-    }
-
 
     class VideoViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.imageView_icon)
@@ -219,25 +122,16 @@ public class VideoContentAdapter extends ContentBaseAdapter {
 
             ButterKnife.bind(this, itemView);
         }
-    }
 
-    /**
-     * 加载视频缩略图
-     */
-    class VideoIconRequestHandler extends RequestHandler {
-
-        @Override
-        public boolean canHandleRequest(Request data) {
-            return PICASSO_SCHEME_VIDEO.equals(data.uri.getScheme());
+        public void setItemStyleChosen() {
+            itemView.setBackgroundColor(context.getResources().getColor(R.color.file_item_chosen));
+            iconImg.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
+            iconImg.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
         }
 
-        @Override
-        public Result load(Request request, int networkPolicy) throws IOException {
-            String path = request.uri.toString().replace(PICASSO_SCHEME_VIDEO + ":", "");
-            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(path,
-                    MediaStore.Video.Thumbnails.MICRO_KIND);
-
-            return new Result(bitmap, Picasso.LoadedFrom.DISK);
+        public void setItemStyleChoosing() {
+            itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
+            iconImg.setBackgroundDrawable(null);
         }
     }
 }

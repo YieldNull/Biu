@@ -19,7 +19,7 @@ import java.util.Set;
  * <p/>
  * Created by YieldNull at 4/18/16
  */
-public class MediaItem extends SugarRecord implements IModelItem {
+public class MediaItem extends ModelItem {
     public String path;
     public int type;
     public String title;
@@ -59,7 +59,7 @@ public class MediaItem extends SugarRecord implements IModelItem {
 
             String title, artist;
 
-            if (type == IModelItem.TYPE_VIDEO) {
+            if (type == ModelItem.TYPE_VIDEO) {
                 title = file.getName();
                 artist = null;
             } else {
@@ -72,33 +72,6 @@ public class MediaItem extends SugarRecord implements IModelItem {
 
             new MediaItem(path, type, title, artist, duration).save();
         }
-    }
-
-    /**
-     * 从数据库中读取指定类型的文件，Music or Video
-     * 并按文件夹分类
-     *
-     * @param type 类型
-     * @return {“Folder”:itemList}
-     */
-    public static Map<String, List<MediaItem>> loadMediaItems(int type) {
-        List<MediaItem> allRecords = MediaItem.find(MediaItem.class, "type=?", String.valueOf(type));
-
-        Map<String, List<MediaItem>> dirItemMap = new HashMap<>();
-
-        for (MediaItem item : allRecords) {
-            String pDirName = item.getParentDirName();
-            List<MediaItem> list = dirItemMap.get(pDirName);
-
-            if (list == null) {
-                list = new ArrayList<>();
-                dirItemMap.put(pDirName, list);
-            }
-
-            list.add(item);
-        }
-
-        return dirItemMap;
     }
 
     @Override

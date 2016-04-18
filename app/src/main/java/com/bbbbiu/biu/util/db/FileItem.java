@@ -16,7 +16,7 @@ import java.util.Set;
  * <p/>
  * Created by YieldNull at 4/15/16
  */
-public class FileItem extends SugarRecord implements IModelItem {
+public class FileItem extends ModelItem {
 
     @Unique
     public String path;
@@ -40,32 +40,6 @@ public class FileItem extends SugarRecord implements IModelItem {
         for (String path : pathSet) {
             new FileItem(path, type).save();
         }
-    }
-
-    /**
-     * 从数据库中读取指定类型的文件, 并按文件夹分类
-     *
-     * @param type 类型
-     * @return {“Folder”:itemList}
-     */
-    public static Map<String, List<FileItem>> loadFileItems(int type) {
-        List<FileItem> allItem = FileItem.find(FileItem.class, "type=?", String.valueOf(type));
-
-        Map<String, List<FileItem>> dirMap = new HashMap<>();
-
-        // 按文件夹分类
-        for (FileItem item : allItem) {
-            String pDirName = item.getParentDirName();
-            List<FileItem> list = dirMap.get(pDirName);
-
-            if (list == null) {
-                list = new ArrayList<>();
-                dirMap.put(pDirName, list);
-            }
-
-            list.add(item);
-        }
-        return dirMap;
     }
 
     @Override
