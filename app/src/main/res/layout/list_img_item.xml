@@ -11,12 +11,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:src="@drawable/ic_launcher" />
+        android:src="@drawable/img_placeholder" />
 
     <ImageView
         android:id="@+id/imageView_circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:src="@drawable/ic_chossing_circle" />
+        android:src="@drawable/ic_choosing_circle" />
 </FrameLayout>
