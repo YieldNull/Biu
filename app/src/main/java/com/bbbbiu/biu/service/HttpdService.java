@@ -4,86 +4,87 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
-import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.text.format.Formatter;
 import android.util.Log;
 
-import com.bbbbiu.biu.http.server.HttpDaemon;
-import com.bbbbiu.biu.http.server.HttpServlet;
-import com.bbbbiu.biu.http.server.servlets.StaticServlet;
+import com.bbbbiu.biu.lib.util.DefaultStaticServlet;
+import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 
 import java.io.IOException;
 
-
+/**
+ * Httpd Service。启动时注册{@link DefaultStaticServlet}
+ */
 public class HttpdService extends Service {
     private static final String TAG = HttpdService.class.getSimpleName();
 
+    private static final String ACTION_START = "com.bbbbiu.biu.service.HttpdService.action.START";
+    private static final String ACTION_STOP = "com.bbbbiu.biu.service.HttpdService.action.STOP";
 
-    private final HttpDaemon mHttpd = new HttpDaemon(8080);
-    private final IBinder mBinder = new HttpdServiceBinder();
 
-    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.service.HttpdService.ACTION_UPLOAD";
-    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.service.HttpdService.ACTION_DOWNLOAD";
+    private final HttpDaemon mHttpd = HttpDaemon.getSingleton();
 
-    public class HttpdServiceBinder extends Binder {
-        public HttpdService getService() {
-            return HttpdService.this;
-        }
+    /**
+     * 开启Http 服务器
+     *
+     * @param context context
+     */
+    public static void startService(Context context) {
+        Intent intent = new Intent(context, HttpdService.class);
+        intent.setAction(ACTION_START);
+        context.startService(intent);
+    }
+
+    /**
+     * 关闭Http 服务器
+     *
+     * @param context context
+     */
+    public static void stopService(Context context) {
+        Intent intent = new Intent(context, HttpdService.class);
+        intent.setAction(ACTION_STOP);
+        context.startService(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             final String action = intent.getAction();
-            if (ACTION_UPLOAD.equals(action)) {
-                mHttpd.setIsUpload();
-            } else if (ACTION_DOWNLOAD.equals(action)) {
-                mHttpd.setIsDownload();
+            switch (action) {
+                case ACTION_START:
+                    startHttpd();
+                    break;
+                case ACTION_STOP:
+                    stopHttpd();
+                    break;
+                default:
+                    break;
             }
         }
-        startHttpd();
-
         return Service.START_STICKY;
     }
-
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        closeHttpd();
+
+        stopHttpd();
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.i(TAG, "Service binned");
-        return mBinder;
+        return null;
     }
 
-    @Override
-    public boolean onUnbind(Intent intent) {
-        Log.i(TAG, "Service unBinned");
-        return super.onUnbind(intent);
-    }
-
-    public static void startUpload(Context context) {
-        Intent intent = new Intent(context, HttpdService.class);
-        intent.setAction(ACTION_UPLOAD);
-        context.startService(intent);
-    }
-
-    public static void startDownload(Context context) {
-        Intent intent = new Intent(context, HttpdService.class);
-        intent.setAction(ACTION_DOWNLOAD);
-        context.startService(intent);
-    }
-
-
+    /**
+     * 开启 httpd
+     */
     private void startHttpd() {
         if (!mHttpd.isAlive()) {
-            if (mHttpd.wasStarted()) {
+            if (mHttpd.isStarted()) {
                 mHttpd.stop();
                 Log.i(TAG, "HttpdServer was started but Not alive, Stop it and reStart");
             }
@@ -91,9 +92,7 @@ public class HttpdService extends Service {
             try {
                 mHttpd.start();
 
-                HttpServlet servlet = new StaticServlet(this);
-                HttpDaemon.regServlet(HttpDaemon.STATIC_FILE_REG, servlet);
-                HttpDaemon.regServlet("/", servlet);
+                DefaultStaticServlet.register(this); // 默认注册
 
                 Log.i(TAG, "HttpdServer Started at " + getListenAddress());
             } catch (IOException e) {
@@ -103,11 +102,19 @@ public class HttpdService extends Service {
     }
 
 
-    private void closeHttpd() {
+    /**
+     * 关闭httpd
+     */
+    private void stopHttpd() {
         mHttpd.stop();
         Log.i(TAG, "HttpdServer Stopped");
     }
 
+    /**
+     * 获取httpd bind的地址
+     *
+     * @return 地址，如192.168.1.1:8080
+     */
     private String getListenAddress() {
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
         String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());

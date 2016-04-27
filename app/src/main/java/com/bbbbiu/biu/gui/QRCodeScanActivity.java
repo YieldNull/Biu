@@ -12,11 +12,18 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.http.client.HttpConstants;
+import com.bbbbiu.biu.gui.transfer.DownloadActivity;
+import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.UploadActivity;
+import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.util.HttpConfig;
+import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.zxing.Result;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -42,7 +49,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     private String mBindAction;
     private ZXingScannerView mScannerView;
 
-    private String uid;
+    private String mUid;
 
     private Handler mHandler;
 
@@ -86,13 +93,19 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                     case MSG_ENTER_DOWNLOAD_ACTIVITY:
                         Log.i(TAG, "Bind succeeded. Enter download activity");
 
-                        DownloadActivity.startDownload(QRCodeScanActivity.this, uid);
+                        DownloadActivity.startTask(QRCodeScanActivity.this, null);
                         break;
 
                     case MSG_ENTER_UPLOAD_ACTIVITY:
                         Log.i(TAG, "Bind succeeded. Enter upload activity");
 
-                        UploadActivity.startUpload(QRCodeScanActivity.this, uid);
+                        ArrayList<FileItem> fileItems = new ArrayList<>();
+                        for (String path : PreferenceUtil.getFilesToSend(QRCodeScanActivity.this)) {
+                            File file = new File(path);
+                            fileItems.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
+
+                        }
+                        UploadActivity.startUpload(QRCodeScanActivity.this, HttpConfig.Computer.getUploadUrl(mUid), fileItems);
                         break;
 
                     case MSG_SERVER_ERROR:
@@ -122,9 +135,9 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     @Override
     public void handleResult(Result rawResult) {
         Log.v(TAG, rawResult.getText());
-        uid = rawResult.getText();
+        mUid = rawResult.getText();
 
-        Log.i(TAG, "The uid in QRCode is " + uid);
+        Log.i(TAG, "The uid in QRCode is " + mUid);
 
         new Thread(new Runnable() {
             @Override
@@ -156,14 +169,21 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     }
 
     private boolean bindServer() {
-        int action = mBindAction.equals(ACTION_DOWNLOAD) ? HttpConstants.BIND_ACTION_DOWNLOAD : HttpConstants.BIND_ACTION_UPLOAD;
-        Request request = HttpConstants.newBindRequest(uid, action);
+        String url;
+        if (mBindAction.equals(ACTION_DOWNLOAD)) {
+            url = HttpConfig.Computer.getBindDownloadUrl(mUid);
+        } else {
+            url = HttpConfig.Computer.getBindUploadUrl(mUid);
+        }
+
+        Request request = HttpManager.newRequest(url);
+
         Response response;
         ResponseBody body = null;
 
         try {
             try {
-                response = HttpConstants.newHttpClient().newCall(request).execute();
+                response = HttpManager.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
                 Log.i(TAG, "Bind server failed. HTTP error " + e.toString());

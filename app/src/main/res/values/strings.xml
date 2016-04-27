@@ -15,8 +15,8 @@
     <string name="title_activity_connect_computer">连接电脑</string>
     <string name="title_activity_qrcode_scan">扫描二维码</string>
     <string name="title_activity_download">正在下载</string>
-    <string name="title_activity_send_android">发送文件</string>
-    <string name="title_activity_receive_android">接收文件</string>
+    <string name="title_activity_connect_receiver">发送文件</string>
+    <string name="title_activity_connect_sender">接收文件</string>
 
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
@@ -68,6 +68,9 @@
     <string name="apk_uninstall_dismissed">卸载已取消</string>
     <string name="apk_uninstall_succeeded">卸载成功</string>
     <string name="apk_delete_dismissed">删除已取消</string>
+    <string name="transfer_waiting">正在等待</string>
+    <string name="title_activity_connect_">连接苹果</string>
+    <string name="title_activity_receive">正在接收</string>
 
 
 </resources>

@@ -22,7 +22,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <meta-data
             android:name="DATABASE"
             android:value="bbbbiu.db" />
@@ -36,9 +35,8 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="com.bbbbiu.biu.util.db" />
 
-
         <receiver
-            android:name=".service.FileScanService$ScanAlarmReceiver"
+            android:name=".service.DiskScanService$ScanAlarmReceiver"
             android:process=":remote">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -54,15 +52,16 @@
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.DownloadService"
+            android:name=".service.DiskScanService"
             android:enabled="true"
             android:exported="false" />
+
         <service
             android:name=".service.UploadService"
             android:enabled="true"
             android:exported="false" />
         <service
-            android:name=".service.FileScanService"
+            android:name=".service.DownloadService"
             android:enabled="true"
             android:exported="false" />
 
@@ -76,8 +75,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-
         <activity
             android:name=".gui.choose.FileChooseActivity"
             android:label="@string/title_activity_choose_file"
@@ -106,7 +103,6 @@
             android:name=".gui.choose.DocumentChooseActivity"
             android:label="@string/title_activity_choose_document"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".gui.QRCodeScanActivity"
             android:label="@string/title_activity_qrcode_scan"
@@ -114,28 +110,35 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".gui.ConnectAppleActivity"
-            android:label="@string/title_activity_qrcode_scan"
+            android:label="@string/title_activity_connect_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".gui.ConnectComputerActivity"
             android:label="@string/title_activity_connect_computer"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.DownloadActivity"
+            android:name=".gui.ConnectReceiverActivity"
+            android:label="@string/title_activity_connect_receiver"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.ConnectSenderActivity"
+            android:label="@string/title_activity_connect_sender"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".gui.transfer.DownloadActivity"
             android:label="@string/title_activity_download"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.UploadActivity"
+            android:name=".gui.transfer.UploadActivity"
             android:label="@string/title_activity_upload"
             android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
-            android:name=".gui.SendAndroidActivity"
-            android:label="@string/title_activity_send_android"
+            android:name=".gui.transfer.ReceiveActivity"
+            android:label="@string/title_activity_receive"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.ReceiveAndroidActivity"
-            android:label="@string/title_activity_receive_android"
-            android:theme="@style/AppTheme.NoActionBar" />
+
     </application>
 
 </manifest>

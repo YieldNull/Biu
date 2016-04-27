@@ -3,75 +3,97 @@ package com.bbbbiu.biu.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.UploadActivity;
-import com.bbbbiu.biu.http.client.HttpConstants;
-import com.bbbbiu.biu.http.util.ProgressListener;
-import com.bbbbiu.biu.http.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.Streams;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
+import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class UploadService extends Service implements ProgressListener {
+public class UploadService extends Service {
     private static final String TAG = UploadService.class.getSimpleName();
 
+    private static final String EXTRA_RESULT_RECEIVER = "com.bbbbiu.biu.service.UploadService.extra.RECEIVER";
     private static final String EXTRA_FILE_PATH = "com.bbbbiu.biu.service.UploadService.extra.FILE_PATH";
-    private static final String EXTRA_RECEIVER = "com.bbbbiu.biu.service.UploadService.extra.RECEIVER";
-    private static final String EXTRA_UID = "com.bbbbiu.biu.service.UploadService.extra.UID";
+    private static final String EXTRA_UPLOAD_URL = "com.bbbbiu.biu.service.UploadService.extra.UPLOAD_URL";
+    private static final String EXTRA_FORM_DATA = "com.bbbbiu.biu.service.UploadService.extra.FORM_DATA";
 
-    private static final String ACTION_SET_RECEIVER = "com.bbbbiu.biu.service.UploadService.action.ACTION_SET_RECEIVER";
     private static final String ACTION_START_UPLOAD = "com.bbbbiu.biu.service.UploadService.action.ACTION_START_UPLOAD";
 
-    private ResultReceiver mResultReceiver;
     private HandlerThread mWorkerThread;
     private Handler mHandler;
 
-    private File mCurrentFile;
-    private int mCurrentProgress;
-
-    public static final int RESULT_PROGRESS = 0;
-    public static final int RESULT_FAILED = 1;
-    public static final int RESULT_SUCCESS = 2;
+    private Call mCurrentHttpCall;
 
 
-    public static void setReceiver(Context context, ResultReceiver resultReceiver) {
-        Intent intent = new Intent(context, UploadService.class);
-        intent.putExtra(EXTRA_RECEIVER, resultReceiver);
-        intent.setAction(ACTION_SET_RECEIVER);
-        context.startService(intent);
+    public UploadService() {
     }
 
-    public static void startUpload(Context context, String uid, String filePath) {
+
+    /**
+     * 开始上传文件到uploadUrl
+     *
+     * @param context        context
+     * @param uploadUrl      上传URL
+     * @param filePath       文件路径
+     * @param formData       http form data
+     * @param resultReceiver {@link ResultReceiver}
+     */
+    public static void startUpload(Context context, String uploadUrl, String filePath,
+                                   @Nullable HashMap<String, String> formData, ResultReceiver resultReceiver) {
+
         Intent intent = new Intent(context, UploadService.class);
+
+        intent.putExtra(EXTRA_UPLOAD_URL, uploadUrl);
         intent.putExtra(EXTRA_FILE_PATH, filePath);
-        intent.putExtra(EXTRA_UID, uid);
+        intent.putExtra(EXTRA_FORM_DATA, formData);
+        intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
+
         intent.setAction(ACTION_START_UPLOAD);
+
         context.startService(intent);
     }
 
+
+    /**
+     * 终止上传并关闭Service
+     *
+     * @param context context
+     */
+    public static void stopUpload(Context context) {
+        Intent intent = new Intent(context, UploadService.class);
+
+        context.stopService(intent);
+    }
+
+
+    @SuppressWarnings("unchecked")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) {
             return Service.START_STICKY;
-        }
-        if (intent.getAction().equals(ACTION_SET_RECEIVER)) {
-            mResultReceiver = intent.getParcelableExtra(EXTRA_RECEIVER);
-            Log.i(TAG, "Set ResultReceiver");
 
         } else if (intent.getAction().equals(ACTION_START_UPLOAD)) {
-            final String uid = intent.getStringExtra(EXTRA_UID);
             final String filePath = intent.getStringExtra(EXTRA_FILE_PATH);
-            final File file = new File(filePath);
+            final String uploadUrl = intent.getStringExtra(EXTRA_UPLOAD_URL);
+            final HashMap<String, String> formData = (HashMap<String, String>) intent.getSerializableExtra(EXTRA_FORM_DATA);
+            final ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
+
 
             if (mWorkerThread == null) {
                 mWorkerThread = new HandlerThread("FileUploadThread");
@@ -82,47 +104,71 @@ public class UploadService extends Service implements ProgressListener {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "Start uploading file " + file.getName());
+                    Log.i(TAG, "Start sending file " + filePath);
 
-                    boolean succeeded = uploadFile(uid, file);
+                    ProgressListenerImpl progressListener = new ProgressListenerImpl(filePath, resultReceiver);
+
+                    boolean succeeded = uploadFile(uploadUrl, filePath, formData, progressListener);
+
                     if (succeeded) {
-                        mResultReceiver.send(RESULT_SUCCESS, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, null);
                     } else {
-                        mResultReceiver.send(RESULT_FAILED, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, null);
                     }
                 }
             });
+
         }
 
         return START_STICKY;
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mCurrentHttpCall != null && mCurrentHttpCall.isExecuted()) {
+            mCurrentHttpCall.cancel();
+        }
+
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler.getLooper().quit();
+        }
+
     }
 
-    private boolean uploadFile(String uid, File file) {
-        mCurrentFile = file;
-        mCurrentProgress = 0;
+    /**
+     * 传文件
+     *
+     * @param uploadUrl        uploadUrl
+     * @param filePath         文件路径
+     * @param formData         http form data
+     * @param progressListener {@link ProgressListener} 监听发送进度
+     * @return 是否发送成功
+     */
+    private boolean uploadFile(String uploadUrl, String filePath,
+                               @Nullable HashMap<String, String> formData,
+                               ProgressListener progressListener) {
 
-        ProgressNotifier notifier = new ProgressNotifier(this, file.length());
-        Request request = HttpConstants.newFileUploadRequest(uid, file, notifier);
+        File file = new File(filePath);
+        Request request = HttpManager.newFileUploadRequest(uploadUrl, file, formData,
+                new ProgressNotifier(progressListener, file.length()));
+
 
         Response response;
         ResponseBody body = null;
 
-
         try {
-            response = HttpConstants.newHttpClient().newCall(request).execute();
+            mCurrentHttpCall = HttpManager.newHttpClient().newCall(request);
+            response = mCurrentHttpCall.execute();
             body = response.body();
+
         } catch (IOException e) {
-            Log.i(TAG, "Upload file failed. " + file.getName() + "  HTTP error " + e.toString(), e);
+            Log.i(TAG, "Upload file failed. " + filePath + "  HTTP error " + e.toString(), e);
             return false;
         } finally {
-            if (body != null) {
-                body.close();
-            }
+            Streams.safeClose(body);
         }
 
         if (response.code() != 200) {
@@ -130,22 +176,17 @@ public class UploadService extends Service implements ProgressListener {
             return false;
         }
 
-        Log.i(TAG, "Upload file succeeded " + file.getName());
+        Log.i(TAG, "Upload file succeeded " + filePath);
 
         return true;
     }
 
+
     @Override
-    public void update(long pBytesRead, long pContentLength, int pItems) {
-        int progress = (int) (pBytesRead * 100.0 / pContentLength);
-
-        if (progress > mCurrentProgress) {
-            mCurrentProgress = progress;
-
-            Bundle bundle = new Bundle();
-            bundle.putInt(UploadActivity.EXTRA_PROGRESS, progress);
-            bundle.putString(UploadActivity.EXTRA_FILE_PATH, mCurrentFile.getAbsolutePath());
-            mResultReceiver.send(RESULT_PROGRESS, bundle);
-        }
+    public IBinder onBind(Intent intent) {
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
     }
+
+
 }

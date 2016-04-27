@@ -20,7 +20,7 @@ import android.widget.Toast;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.ConnectAppleActivity;
 import com.bbbbiu.biu.gui.ConnectComputerActivity;
-import com.bbbbiu.biu.gui.SendAndroidActivity;
+import com.bbbbiu.biu.gui.ConnectReceiverActivity;
 import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
 import com.bbbbiu.biu.gui.adapters.choose.OnLoadingDataListener;
@@ -33,7 +33,6 @@ import com.wang.avi.AVLoadingIndicatorView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 import butterknife.Bind;
@@ -110,7 +109,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
         switch (action) {
             case ACTION_SEND_ANDROID:
-                startActivity(new Intent(this, SendAndroidActivity.class));
+                startActivity(new Intent(this, ConnectReceiverActivity.class));
                 break;
             case ACTION_SEND_COMPUTER:
                 ConnectComputerActivity.connectForUpload(this);

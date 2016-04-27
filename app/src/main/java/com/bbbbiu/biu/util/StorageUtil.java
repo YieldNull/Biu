@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 
 import com.bbbbiu.biu.R;
@@ -19,8 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class StorageUtil {
-
-    private static final String TAG = StorageUtil.class.getSimpleName();
 
     public static final int TYPE_INTERNAL = 0;
     public static final int TYPE_EXTERNAL = 1;
@@ -246,6 +248,27 @@ public class StorageUtil {
         }
 
         return context.getResources().getDrawable(id);
+    }
+
+    /**
+     * 获取视频或者图片的缩略图
+     *
+     * @param file 文件
+     * @return bitmap
+     */
+    public static Bitmap getMediaThumbnail(File file) {
+        String extension = getFileExtension(file.getAbsolutePath()).toLowerCase();
+        Bitmap bitmap = null;
+
+        if (EXTENSION_IMG.contains(extension)) {
+            bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getAbsolutePath()),
+                    96, 96);
+        } else if (EXTENSION_VIDEO.contains(extension)) {
+            bitmap = ThumbnailUtils.createVideoThumbnail(file.getAbsolutePath(),
+                    MediaStore.Video.Thumbnails.MICRO_KIND);
+        }
+
+        return bitmap;
     }
 
     /**

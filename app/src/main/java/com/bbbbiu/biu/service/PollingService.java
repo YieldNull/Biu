@@ -3,14 +3,14 @@ package com.bbbbiu.biu.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.DownloadActivity;
-import com.bbbbiu.biu.http.client.FileItem;
-import com.bbbbiu.biu.http.client.HttpConstants;
+import com.bbbbiu.biu.gui.transfer.DownloadActivity;
+import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.util.HttpConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -24,9 +24,9 @@ import okhttp3.ResponseBody;
 
 /**
  * 轮询Service，用于电脑将文件先传到公网服务器，然后再从服务器下载的情景。
- * <p/>
+ * <p>
  * 需要轮询原因：
- * <p/>
+ * <p>
  * 1.用户上传文件后可以选择继续上传或者从手机端下载文件，不能要求用户再次扫码
  * 2.用户上传两个文件的时间间隔比较大，比如传大文件，一次无法获取所有文件列表
  */
@@ -35,14 +35,14 @@ public class PollingService extends Service {
 
     /**
      * 成功获取到服务器传来的文件列表。
-     * <p/>
+     * <p>
      * 轮询的结果，{@link ResultReceiver} send() 中 statusCode参数
      */
     public static final int RESULT_OK = 0;
 
     /**
      * 服务器故障
-     * <p/>
+     * <p>
      * 轮询的结果，{@link ResultReceiver} send() 中 statusCode参数
      */
     public static final int RESULT_ERROR = 1;
@@ -50,14 +50,14 @@ public class PollingService extends Service {
 
     /**
      * 从二维码扫描得到的uid
-     * <p/>
+     * <p>
      * intent extra 的字段名， 接收从 Activity 传来的参数
      */
     private static final String EXTRA_UID = "com.bbbbiu.biu.service.PollingService.extra.UID";
 
     /**
      * 从Activity传来的 {@link ResultReceiver}
-     * <p/>
+     * <p>
      * intent extra 的字段名， 接收从 Activity 传来的参数
      */
     private static final String EXTRA_RECEIVER = "com.bbbbiu.biu.service.PollingService.extra.RECEIVER";
@@ -78,7 +78,7 @@ public class PollingService extends Service {
     /**
      * 从服务器获取文件列表的失败重试次数，超过此次数则停止轮询
      * 失败指的是出现IO异常，HTTP返回码非200，返回的json数据非法等
-     * <p/>
+     * <p>
      * 详见{@link PollingService#downloadFileList()}
      */
     private static final int RETRY_TIME = 20;
@@ -198,25 +198,19 @@ public class PollingService extends Service {
             }
 
             Log.i(TAG, "Downloading file list from remote server");
-            ArrayList<FileItem> list = downloadFileList();
-            if (list == null) {
+            ArrayList<FileItem> fileItems = downloadFileList();
+            if (fileItems == null) {
                 retryCount++;
                 continue;
             }
 
             retryCount = 0; // 清零
 
-            if (list.size() == 0) {
+            if (fileItems.size() == 0) {
                 Log.i(TAG, "User has not send files to server. Retrying...");
             } else {
-                // 下载成功
-                Bundle bundle = new Bundle();
-                bundle.putParcelableArrayList(DownloadActivity.EXTRA_FILE_LIST, list);
 
-                Log.i(TAG, "Got file list. Send it to receiver");
-
-                mResultReceiver.send(RESULT_OK, bundle);
-
+                DownloadActivity.addTask(this, fileItems);
             }
         }
     }
@@ -227,14 +221,14 @@ public class PollingService extends Service {
      * @return 文件列表，出现故障则返回null；没有文件则返回的ArrayList.size()为0
      */
     private ArrayList<FileItem> downloadFileList() {
-        Request request = HttpConstants.newFileListRequest(mUid);
+        Request request = HttpManager.newRequest(HttpConfig.Computer.getManifestUrl(mUid));
 
         Response response;
         ResponseBody body = null;
 
         try {
             try {
-                response = HttpConstants.newHttpClient().newCall(request).execute();
+                response = HttpManager.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
                 Log.i(TAG, "Get file list failed. HTTP error" + e.toString());
@@ -248,11 +242,10 @@ public class PollingService extends Service {
 
             try {
                 Gson gson = new Gson();
-                ArrayList<FileItem> list = gson.fromJson(body.charStream(),
+
+                return gson.fromJson(body.charStream(),
                         new TypeToken<ArrayList<FileItem>>() {
                         }.getType());
-
-                return list;
 
             } catch (JsonSyntaxException e) {
                 Log.i(TAG, "Get file list failed. Response is not a valid json");

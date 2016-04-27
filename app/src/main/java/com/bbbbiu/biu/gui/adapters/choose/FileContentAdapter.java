@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.util.StorageUtil;

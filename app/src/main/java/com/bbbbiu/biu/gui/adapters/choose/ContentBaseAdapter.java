@@ -8,9 +8,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.gui.choose.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
@@ -26,9 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 /**
  * Created by YieldNull at 3/26/16
@@ -285,16 +282,4 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         }
     }
 
-    /**
-     * viewHolder of header in recyclerView
-     */
-    protected static class HeaderViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.textView)
-        TextView headerText;
-
-        HeaderViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-        }
-    }
 }

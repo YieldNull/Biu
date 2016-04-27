@@ -1,75 +1,89 @@
 package com.bbbbiu.biu.service;
 
 import android.app.Service;
-import android.content.Intent;
 import android.content.Context;
-import android.os.Bundle;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.DownloadActivity;
-import com.bbbbiu.biu.http.client.FileItem;
-import com.bbbbiu.biu.http.client.HttpConstants;
-import com.bbbbiu.biu.http.util.ProgressListener;
-import com.bbbbiu.biu.http.util.ProgressNotifier;
-import com.bbbbiu.biu.http.util.Streams;
+import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.Streams;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class DownloadService extends Service implements ProgressListener {
+public class DownloadService extends Service {
     private static final String TAG = DownloadService.class.getSimpleName();
 
-    private static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.service.DownloadService.extra.FILE_ITEM";
-    private static final String EXTRA_RECEIVER = "com.bbbbiu.biu.service.DownloadService.extra.RECEIVER";
+    private static final String EXTRA_DOWNLOAD_URL = "com.bbbbiu.biu.service.DownloadService.extra.DOWNLOAD_URL";
+    private static final String EXTRA_FILE_SIZE = "com.bbbbiu.biu.service.DownloadService.extra.FILE_SIZE";
+    private static final String EXTRA_FILE_NAME = "com.bbbbiu.biu.service.DownloadService.extra.FILE_NAME";
+    private static final String EXTRA_RESULT_RECEIVER = "com.bbbbiu.biu.service.DownloadService.extra.RECEIVER";
 
-    private static final String ACTION_SET_RECEIVER = "com.bbbbiu.biu.service.DownloadService.action.ACTION_SET_RECEIVER";
-    private static final String ACTION_START_DOWNLOAD = "com.bbbbiu.biu.service.DownloadService.action.ACTION_START_DOWNLOAD";
+    private static final String ACTION_START_DOWNLOAD = "com.bbbbiu.biu.service.computer.DownloadService.action.ACTION_START_DOWNLOAD";
 
-    private ResultReceiver mResultReceiver;
     private HandlerThread mWorkerThread;
     private Handler mHandler;
 
-    private FileItem mCurrentFile;
-    private int mCurrentProgress;
+    private Call mCurrentHttpCall;
 
-    public static final int RESULT_PROGRESS = 0;
-    public static final int RESULT_FAILED = 1;
-    public static final int RESULT_SUCCESS = 2;
 
-    public static void setReceiver(Context context, ResultReceiver resultReceiver) {
+    /**
+     * 开始下载
+     *
+     * @param context        context
+     * @param downloadUrl    下载URL
+     * @param fileName       存到文件系统中的文件名
+     * @param fileSize       文件大小 bytes
+     * @param resultReceiver {@link ResultReceiver}
+     */
+    public static void addTask(Context context, String downloadUrl, String fileName, long fileSize, ResultReceiver resultReceiver) {
         Intent intent = new Intent(context, DownloadService.class);
-        intent.putExtra(EXTRA_RECEIVER, resultReceiver);
-        intent.setAction(ACTION_SET_RECEIVER);
+
+        intent.putExtra(EXTRA_DOWNLOAD_URL, downloadUrl);
+        intent.putExtra(EXTRA_FILE_NAME, fileName);
+        intent.putExtra(EXTRA_FILE_SIZE, fileSize);
+        intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
+
+        intent.setAction(ACTION_START_DOWNLOAD);
+
         context.startService(intent);
     }
 
-    public static void startDownload(Context context, FileItem fileItem) {
-        Intent intent = new Intent(context, DownloadService.class);
-        intent.putExtra(EXTRA_FILE_ITEM, fileItem);
-        intent.setAction(ACTION_START_DOWNLOAD);
-        context.startService(intent);
+
+    /**
+     * 终止下载并关闭Service
+     *
+     * @param context context
+     */
+    public static void stopService(Context context) {
+        Intent intent = new Intent(context, UploadService.class);
+
+        context.stopService(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) {
             return Service.START_STICKY;
-        }
-        if (intent.getAction().equals(ACTION_SET_RECEIVER)) {
-            mResultReceiver = intent.getParcelableExtra(EXTRA_RECEIVER);
-            Log.i(TAG,"Set ResultReceiver");
         } else if (intent.getAction().equals(ACTION_START_DOWNLOAD)) {
-            final FileItem fileItem = intent.getParcelableExtra(EXTRA_FILE_ITEM);
+            final String downloadUrl = intent.getStringExtra(EXTRA_DOWNLOAD_URL);
+            final String fileName = intent.getStringExtra(EXTRA_FILE_NAME);
+            final long fileSize = intent.getLongExtra(EXTRA_FILE_SIZE, 0);
+            final ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
 
             if (mWorkerThread == null) {
                 mWorkerThread = new HandlerThread("FileDownloadThread");
@@ -80,12 +94,16 @@ public class DownloadService extends Service implements ProgressListener {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "Start downloading file " + fileItem.getName());
-                    boolean succeeded = downloadFile(fileItem);
+                    Log.i(TAG, "Start downloading file " + downloadUrl);
+
+                    ProgressListenerImpl progressListener = new ProgressListenerImpl(downloadUrl, resultReceiver);
+
+                    boolean succeeded = downloadFile(downloadUrl, fileName, fileSize, progressListener);
+
                     if (succeeded) {
-                        mResultReceiver.send(RESULT_SUCCESS, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, null);
                     } else {
-                        mResultReceiver.send(RESULT_FAILED, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, null);
                     }
                 }
             });
@@ -94,28 +112,50 @@ public class DownloadService extends Service implements ProgressListener {
         return START_STICKY;
     }
 
+
     @Override
-    public IBinder onBind(Intent intent) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mCurrentHttpCall != null && mCurrentHttpCall.isExecuted()) {
+            mCurrentHttpCall.cancel();
+        }
+
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+            mHandler.getLooper().quit();
+        }
+
     }
 
-    private boolean downloadFile(FileItem fileItem) {
-        Request request = HttpConstants.newFileDownloadRequest(fileItem.getUrl(), fileItem.getUid());
-        File reposition = StorageUtil.getDownloadDir(getApplicationContext());
-        File destFile = new File(reposition, fileItem.getName());
+    /**
+     * 下载文件
+     *
+     * @param downloadUrl      下载URL
+     * @param fileName         文件名
+     * @param fileSize         文件大小 bytes
+     * @param progressListener 监听下载进度
+     * @return 是否成功下载
+     */
+    private boolean downloadFile(String downloadUrl, String fileName, long fileSize, ProgressListener progressListener) {
 
-        mCurrentFile = fileItem;
-        mCurrentProgress = 0;
+        Request request = HttpManager.newRequest(downloadUrl);
+        File reposition = StorageUtil.getDownloadDir(getApplicationContext());
+
+        File destFile = new File(reposition, fileName);
 
         Response response;
         ResponseBody body = null;
 
         try {
             try {
-                response = HttpConstants.newHttpClient().newCall(request).execute();
+                mCurrentHttpCall = HttpManager.newHttpClient().newCall(request);
+                response = mCurrentHttpCall.execute();
+
                 body = response.body();
+
             } catch (IOException e) {
-                Log.i(TAG, "Download file failed. " + destFile.getName() + "  HTTP error" + e.toString());
+                Log.i(TAG, "Download file failed. " + downloadUrl + "  HTTP error" + e.toString());
                 return false;
             }
 
@@ -124,12 +164,16 @@ public class DownloadService extends Service implements ProgressListener {
                 return false;
             }
 
-            FileOutputStream fileOutStream = null;
+            FileOutputStream fileOutStream;
             try {
                 fileOutStream = new FileOutputStream(destFile);
-                ProgressNotifier notifier = new ProgressNotifier(this, fileItem.getSize());
+                ProgressNotifier notifier = new ProgressNotifier(progressListener, fileSize);
+
+                // copy stream
                 Streams.copy(response.body().byteStream(), fileOutStream, true, notifier);
-                Log.i(TAG, "Finish downloading file " + fileItem.getName());
+
+                Log.i(TAG, "Finish downloading file " + downloadUrl);
+
             } catch (IOException e) {
                 Log.w(TAG, "Store file failed", e);
             }
@@ -143,16 +187,7 @@ public class DownloadService extends Service implements ProgressListener {
     }
 
     @Override
-    public void update(long pBytesRead, long pContentLength, int pItems) {
-        int progress = (int) (pBytesRead * 100.0 / pContentLength);
-
-        if (progress > mCurrentProgress) {
-            mCurrentProgress = progress;
-
-            Bundle bundle = new Bundle();
-            bundle.putInt(DownloadActivity.EXTRA_PROGRESS, progress);
-            bundle.putParcelable(DownloadActivity.EXTRA_FILE_ITEM, mCurrentFile);
-            mResultReceiver.send(RESULT_PROGRESS, bundle);
-        }
+    public IBinder onBind(Intent intent) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

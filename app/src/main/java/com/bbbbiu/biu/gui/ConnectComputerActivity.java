@@ -21,9 +21,6 @@ public class ConnectComputerActivity extends AppCompatActivity {
     private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.ConnectComputerActivity.action.DOWNLOAD";
     private static final String TAG = ConnectComputerActivity.class.getSimpleName();
 
-    private String action;
-
-
     public static void connectForUpload(Context context) {
         Intent intent = new Intent(context, ConnectComputerActivity.class);
         intent.setAction(ACTION_UPLOAD);
@@ -36,9 +33,11 @@ public class ConnectComputerActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
+    private String mAction;
+
     @OnClick(R.id.button_scan)
     void scanQRCode() {
-        if (action.equals(ACTION_DOWNLOAD)) {
+        if (mAction.equals(ACTION_DOWNLOAD)) {
             QRCodeScanActivity.scanForDownload(this);
         } else {
             QRCodeScanActivity.scanForUpload(this);
@@ -66,7 +65,7 @@ public class ConnectComputerActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
-        action = getIntent().getAction();
+        mAction = getIntent().getAction();
 
         Log.i(TAG, "Connecting with computer");
     }
