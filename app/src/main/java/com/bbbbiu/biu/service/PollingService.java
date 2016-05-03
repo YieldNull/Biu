@@ -10,7 +10,7 @@ import android.util.Log;
 import com.bbbbiu.biu.gui.transfer.DownloadActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.HttpConfig;
+import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -221,7 +221,7 @@ public class PollingService extends Service {
      * @return 文件列表，出现故障则返回null；没有文件则返回的ArrayList.size()为0
      */
     private ArrayList<FileItem> downloadFileList() {
-        Request request = HttpManager.newRequest(HttpConfig.Computer.getManifestUrl(mUid));
+        Request request = HttpManager.newRequest(HttpConstants.Computer.getManifestUrl(mUid));
 
         Response response;
         ResponseBody body = null;

@@ -11,10 +11,10 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
-import com.bbbbiu.biu.lib.util.ProgressNotifier;
-import com.bbbbiu.biu.lib.util.Streams;
+import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
 
 import java.io.File;
 import java.io.IOException;

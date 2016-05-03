@@ -11,15 +11,19 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.lib.android.HttpManager;
-import com.bbbbiu.biu.lib.android.Manifest;
+import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.UploadActivity;
 import com.bbbbiu.biu.lib.android.WifiApManager;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
+import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.gson.Gson;
@@ -35,18 +39,42 @@ import butterknife.ButterKnife;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * 安卓发送方连接接收方。接收方开热点，发送方连接热点，
+ * 然后将要发送的文件清单传给接收方，接收方确认接收之后视为连接成功。
+ * 然后跳转到发送页面{@link com.bbbbiu.biu.gui.transfer.UploadActivity}
+ */
 public class ConnectReceiverActivity extends AppCompatActivity {
     private static final String TAG = ConnectReceiverActivity.class.getSimpleName();
 
     private WifiManager mWifiManager;
+    private Handler mHandler;
+
+    /**
+     * 扫描Wifi的task，周期性扫描，直到成功连接
+     */
     private Runnable mWifiScanTask;
+
+    /**
+     * 接收扫描wifi列表的结果 {@link WifiManager#SCAN_RESULTS_AVAILABLE_ACTION}
+     */
     private BroadcastReceiver mWifiListReceiver;
 
+    /**
+     * 是否已经连接上接收方开的热点
+     */
     private boolean mIsConnected;
-    private InetAddress mServerAddress;
-    private Manifest mFileManifest;
 
-    private Handler mHandler;
+
+    /**
+     * 接收方的地址（网关地址）
+     */
+    private InetAddress mServerAddress;
+
+    /**
+     * 文件清单
+     */
+    private ArrayList<FileItem> mFileManifest = new ArrayList<>();
 
 
     @Override
@@ -72,16 +100,16 @@ public class ConnectReceiverActivity extends AppCompatActivity {
 
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
-        // 注册Receiver
-        registerReceiver(mWifiListReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
-
         // 接收wifi列表的扫描结果
         mWifiListReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                connectWifi();
+                handleScanResult();
             }
         };
+
+        // 注册Receiver
+        registerReceiver(mWifiListReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
 
         mWifiScanTask = new Runnable() {
             @Override
@@ -93,7 +121,8 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         mHandler = new Handler();
 
 
-        mFileManifest = genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
+        // 读取要发送的文件列表
+        genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
     }
 
 
@@ -105,7 +134,6 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         if (!mIsConnected) {
             NetworkUtil.enableWifi(ConnectReceiverActivity.this);
             mHandler.postDelayed(mWifiScanTask, 1000);
-
         }
     }
 
@@ -120,7 +148,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
      * 接收到扫描结果的Broadcast之后，若列表中存在对方手机开的wifi，则连接
      * 否则继续扫描
      */
-    private void connectWifi() {
+    private void handleScanResult() {
         if (mIsConnected) {
             return;
         }
@@ -156,7 +184,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         }
 
         Log.i(TAG, "Scan wifi. not found");
-        mHandler.postDelayed(mWifiScanTask, 200);
+        mHandler.postDelayed(mWifiScanTask, 200);// 继续扫描 // TODO 避免无线扫描
     }
 
     /**
@@ -165,14 +193,23 @@ public class ConnectReceiverActivity extends AppCompatActivity {
     private void onWifiConnected() {
         mServerAddress = genServerAddress();
 
-        if (sendFileManifest()) {
-        } else {
-            // TODO 发送失败
-        }
+        HandlerThread handlerThread = new HandlerThread("");
+        handlerThread.start();
+
+        new Handler(handlerThread.getLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (sendFileManifest()) {
+                    UploadActivity.startUpload(ConnectReceiverActivity.this, HttpConstants.Android.URL_UPLOAD, null);
+                } else {
+                    // TODO 发送失败
+                }
+            }
+        }, 1000);
     }
 
     /**
-     * 发送文件清单，要新开一个线程
+     * 发送文件清单，新开一个线程调用
      *
      * @return 是否发送成功
      */
@@ -182,15 +219,20 @@ public class ConnectReceiverActivity extends AppCompatActivity {
 
         Log.i(TAG, json);
 
-        Request request = HttpManager.newManifestSendRequest(mServerAddress, json);
+        Request request = HttpManager.newJsonRequest(HttpConstants.Android.getManifestUrl(mServerAddress), json);
 
+        Response response = null;
         try {
-            Response response = HttpManager.newHttpClient().newCall(request).execute();
+            response = HttpManager.newHttpClient().newCall(request).execute();
             return response.code() == 200;
 
         } catch (IOException e) {
             Log.w(TAG, e.toString());
             return false;
+        } finally {
+            if (response != null) {
+                Streams.safeClose(response.body());
+            }
         }
     }
 
@@ -199,18 +241,13 @@ public class ConnectReceiverActivity extends AppCompatActivity {
      * 生成要发送文件的清单
      *
      * @param filePathList 要发送的文件绝对路径
-     * @return {@link Manifest}
      */
-    private Manifest genManifest(List<String> filePathList) {
-        Manifest manifest = new Manifest();
+    private void genManifest(List<String> filePathList) {
 
         for (final String filePath : filePathList) {
             File file = new File(filePath);
-            Manifest.Item item = new Manifest.Item(file.getAbsolutePath(), file.length());
-            manifest.addItem(item);
+            mFileManifest.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
         }
-        return manifest;
-
     }
 
     /**
@@ -220,7 +257,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
      */
     private InetAddress genServerAddress() {
         DhcpInfo dhcpInfo = mWifiManager.getDhcpInfo();
-        InetAddress inetAddress = NetworkUtil.intToInetAddress(dhcpInfo.gateway);
+        InetAddress inetAddress = NetworkUtil.intToInetAddress(dhcpInfo.serverAddress);
 
         Log.i(TAG, inetAddress != null ? inetAddress.toString() : null);
 

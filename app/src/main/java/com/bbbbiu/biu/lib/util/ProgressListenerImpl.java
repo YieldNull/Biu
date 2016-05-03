@@ -3,6 +3,8 @@ package com.bbbbiu.biu.lib.util;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
+import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
+
 /**
  * Created by YieldNull at 4/23/16
  */

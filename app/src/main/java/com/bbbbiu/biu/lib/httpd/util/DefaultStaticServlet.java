@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.util;
+package com.bbbbiu.biu.lib.httpd.util;
 
 import android.content.Context;
 import android.webkit.MimeTypeMap;
@@ -8,6 +8,7 @@ import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
 import com.bbbbiu.biu.lib.httpd.HttpServlet;
+import com.bbbbiu.biu.lib.util.HtmlReader;
 
 /**
  * 默认的静态资源 Servlet。处理的Uri为 “/static/*"

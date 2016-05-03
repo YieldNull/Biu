@@ -10,6 +10,12 @@ import java.net.UnknownHostException;
 public class NetworkUtil {
     private static final String TAG = NetworkUtil.class.getSimpleName();
 
+    /**
+     * 打开wifi。（已打开则直接返回）
+     *
+     * @param context context
+     * @return 是否成功打开
+     */
     public static boolean enableWifi(Context context) {
         WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
         int state = wifiManager.getWifiState();

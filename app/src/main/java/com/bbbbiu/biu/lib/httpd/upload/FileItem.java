@@ -1,7 +1,7 @@
 package com.bbbbiu.biu.lib.httpd.upload;
 
-import com.bbbbiu.biu.lib.util.FileItemHeaders;
-import com.bbbbiu.biu.lib.util.Streams;
+import com.bbbbiu.biu.lib.httpd.util.FileItemHeaders;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
 
 
 import java.io.BufferedInputStream;

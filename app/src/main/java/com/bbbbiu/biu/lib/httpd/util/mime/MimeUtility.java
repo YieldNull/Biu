@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.util.mime;
+package com.bbbbiu.biu.lib.httpd.util.mime;
 
 
 import java.io.ByteArrayOutputStream;

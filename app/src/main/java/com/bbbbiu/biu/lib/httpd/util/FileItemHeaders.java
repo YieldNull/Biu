@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.util;
+package com.bbbbiu.biu.lib.httpd.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;

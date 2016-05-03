@@ -3,7 +3,7 @@ package com.bbbbiu.biu.lib.httpd;
 
 import android.util.Log;
 
-import com.bbbbiu.biu.lib.util.Streams;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,6 @@ public class HttpDaemon {
 
     private static final int SOCKET_READ_TIMEOUT = 10000;
 
-    private final int mPort;
     private volatile ServerSocket mServerSocket;
 
     private Thread mListenThread;
@@ -42,9 +41,8 @@ public class HttpDaemon {
 
     public static final String STATIC_FILE_REG = "/static/.*";
 
-    public int getPort() {
-        return mPort;
-    }
+
+    private static HttpDaemon sHttpDaemon;
 
     /**
      * 指定监听端口
@@ -52,12 +50,20 @@ public class HttpDaemon {
      * @param port 端口
      */
     private HttpDaemon(int port) {
-        mPort = port;
         mRequestManager = new RequestManager();
     }
 
+    public static int sPort = 8080;
+
+    public static int getPort() {
+        return sPort;
+    }
+
     public static HttpDaemon getSingleton() {
-        return new HttpDaemon(8080);
+        if (sHttpDaemon == null) {
+            sHttpDaemon = new HttpDaemon(sPort);
+        }
+        return sHttpDaemon;
     }
 
     /**
@@ -159,7 +165,7 @@ public class HttpDaemon {
         @Override
         public void run() {
             try {
-                mServerSocket.bind(new InetSocketAddress(mPort)); //监听端口
+                mServerSocket.bind(new InetSocketAddress(sPort)); //监听端口
                 hasBinned = true;
             } catch (IOException e) {
                 this.bindException = e;

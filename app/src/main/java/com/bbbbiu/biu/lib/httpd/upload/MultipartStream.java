@@ -3,8 +3,8 @@ package com.bbbbiu.biu.lib.httpd.upload;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.FileUploadIOException;
 import com.bbbbiu.biu.lib.httpd.upload.interfaces.FileItemStream;
 import com.bbbbiu.biu.lib.httpd.upload.interfaces.Closeable;
-import com.bbbbiu.biu.lib.util.ProgressNotifier;
-import com.bbbbiu.biu.lib.util.Streams;
+import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
 
 import static java.lang.String.format;
 

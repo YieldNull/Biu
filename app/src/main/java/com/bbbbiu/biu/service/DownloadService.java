@@ -10,10 +10,10 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
-import com.bbbbiu.biu.lib.util.ProgressNotifier;
-import com.bbbbiu.biu.lib.util.Streams;
+import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;

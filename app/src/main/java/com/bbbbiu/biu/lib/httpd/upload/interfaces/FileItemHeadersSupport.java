@@ -1,7 +1,7 @@
 package com.bbbbiu.biu.lib.httpd.upload.interfaces;
 
 import com.bbbbiu.biu.lib.httpd.upload.FileItem;
-import com.bbbbiu.biu.lib.util.FileItemHeaders;
+import com.bbbbiu.biu.lib.httpd.util.FileItemHeaders;
 
 /**
  * Interface that will indicate that {@link FileItem} or {@link FileItemStream}

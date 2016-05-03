@@ -129,6 +129,26 @@ public class HttpRequest {
         return (int) contentLength();
     }
 
+    public String getText() {
+        if (mInputStream == null) {
+            return null;
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(mInputStream));
+        StringBuilder builder = new StringBuilder();
+        String line;
+
+        try {
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+                builder.append("\r\n");
+            }
+        } catch (IOException e) {
+            Log.w(TAG, e.toString());
+        }
+
+        return builder.toString();
+    }
 
     public static HttpRequest parseRequest(InputStream inputStream, InetAddress inetAddress) {
         HttpRequest request = new HttpRequest(inputStream, inetAddress);

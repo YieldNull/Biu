@@ -1,6 +1,6 @@
 package com.bbbbiu.biu.lib.httpd.upload;
 
-import com.bbbbiu.biu.lib.util.mime.MimeUtility;
+import com.bbbbiu.biu.lib.httpd.util.mime.MimeUtility;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;

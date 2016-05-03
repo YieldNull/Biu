@@ -16,7 +16,7 @@ import com.bbbbiu.biu.gui.transfer.DownloadActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.UploadActivity;
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.HttpConfig;
+import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.zxing.Result;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
@@ -105,7 +105,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                             fileItems.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
 
                         }
-                        UploadActivity.startUpload(QRCodeScanActivity.this, HttpConfig.Computer.getUploadUrl(mUid), fileItems);
+                        UploadActivity.startUpload(QRCodeScanActivity.this, HttpConstants.Computer.getUploadUrl(mUid), fileItems);
                         break;
 
                     case MSG_SERVER_ERROR:
@@ -171,9 +171,9 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     private boolean bindServer() {
         String url;
         if (mBindAction.equals(ACTION_DOWNLOAD)) {
-            url = HttpConfig.Computer.getBindDownloadUrl(mUid);
+            url = HttpConstants.Computer.getBindDownloadUrl(mUid);
         } else {
-            url = HttpConfig.Computer.getBindUploadUrl(mUid);
+            url = HttpConstants.Computer.getBindUploadUrl(mUid);
         }
 
         Request request = HttpManager.newRequest(url);

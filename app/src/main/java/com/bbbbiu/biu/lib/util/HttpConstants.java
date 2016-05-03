@@ -5,16 +5,18 @@ import android.content.res.Resources;
 import android.util.Log;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Properties;
 
 /**
  * Created by YieldNull at 4/23/16
  */
-public class HttpConfig {
+public class HttpConstants {
     public static class Computer {
         public static final String HOST = "http://www.bbbbiu.com";
         public static final String URL_BIND = HOST + "/bind";
@@ -52,11 +54,18 @@ public class HttpConfig {
         }
     }
 
+
+    public static class Android {
+        public static final String URL_MANIFEST = "/manifest";
+        public static final String URL_UPLOAD = "/upload";
+
+        public static String getManifestUrl(InetAddress serverAddress) {
+            return "http://" + serverAddress.getHostAddress() + ":" + HttpDaemon.getPort() + URL_MANIFEST;
+        }
+    }
+
     public static class Apple {
 
     }
 
-    public static class Android {
-
-    }
 }

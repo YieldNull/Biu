@@ -1,8 +1,7 @@
-package com.bbbbiu.biu.lib.util;
+package com.bbbbiu.biu.lib.httpd.util;
 
 import android.util.Log;
 
-import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.InvalidFileNameException;
 
 import java.io.Closeable;
@@ -112,7 +111,7 @@ public final class Streams {
                 if (closable instanceof Closeable) {
                     ((Closeable) closable).close();
                 } else {
-                    throw new IllegalArgumentException("Unknown object to close");
+                    Log.w(TAG, "Unknown object to close");
                 }
             }
         } catch (IOException e) {

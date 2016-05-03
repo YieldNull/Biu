@@ -9,7 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.format.Formatter;
 import android.util.Log;
 
-import com.bbbbiu.biu.lib.util.DefaultStaticServlet;
+import com.bbbbiu.biu.lib.httpd.util.DefaultStaticServlet;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 
 import java.io.IOException;
