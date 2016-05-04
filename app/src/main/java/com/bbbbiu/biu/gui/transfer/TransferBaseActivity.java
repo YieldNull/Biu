@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
@@ -27,6 +28,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 上传、下载、接收文件的界面基类
+ * <p/>
  * Created by YieldNull at 4/26/16
  */
 public abstract class TransferBaseActivity extends AppCompatActivity {
@@ -101,13 +104,10 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(ACTION_ADD_TASK));
-
-        addTaskItem(getIntent());
-
     }
 
 
-    private void addTaskItem(Intent intent) {
+    protected void addTaskItem(Intent intent) {
         if (intent != null) {
             ArrayList<FileItem> fileItems = intent.getParcelableArrayListExtra(EXTRA_FILE_ITEM);
             if (fileItems != null) {

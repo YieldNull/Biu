@@ -120,7 +120,6 @@ public class ConnectReceiverActivity extends AppCompatActivity {
 
         mHandler = new Handler();
 
-
         // 读取要发送的文件列表
         genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
     }
@@ -199,13 +198,26 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         new Handler(handlerThread.getLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (sendFileManifest()) {
-                    UploadActivity.startUpload(ConnectReceiverActivity.this, HttpConstants.Android.URL_UPLOAD, null);
-                } else {
+                Log.i(TAG, "Sending file manifest");
+
+                int retryCount = 0;
+                while (retryCount < 5) {
+                    if (sendFileManifest()) {
+                        break;
+                    } else {
+                        retryCount++;
+                        Log.i(TAG, "Send file manifest to receiver. RETRY COUNT: " + retryCount);
+                    }
+                }
+
+                if (retryCount == 5) {
                     // TODO 发送失败
+                } else {
+                    Log.i(TAG, "Send file manifest successfully");
+                    UploadActivity.startUpload(ConnectReceiverActivity.this, HttpConstants.Android.URL_UPLOAD, null);
                 }
             }
-        }, 2000);
+        }, 200);
     }
 
     /**
@@ -243,7 +255,6 @@ public class ConnectReceiverActivity extends AppCompatActivity {
      * @param filePathList 要发送的文件绝对路径
      */
     private void genManifest(List<String> filePathList) {
-
         for (final String filePath : filePathList) {
             File file = new File(filePath);
             mFileManifest.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
