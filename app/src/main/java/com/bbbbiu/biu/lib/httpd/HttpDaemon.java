@@ -27,7 +27,7 @@ import java.util.Map;
 public class HttpDaemon {
     private static final String TAG = HttpDaemon.class.getSimpleName();
 
-    private static final int SOCKET_READ_TIMEOUT = 10000;
+    private static final int SOCKET_READ_TIMEOUT = 500;
 
     private volatile ServerSocket mServerSocket;
 

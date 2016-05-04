@@ -10,7 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -134,28 +137,38 @@ public class HttpRequest {
             return null;
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(mInputStream));
-        StringBuilder builder = new StringBuilder();
-        String line;
-
+        InputStreamReader reader;
         try {
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-                builder.append("\r\n");
-            }
-        } catch (IOException e) {
-            Log.w(TAG, e.toString());
+            reader = new InputStreamReader(mInputStream, getCharacterEncoding());
+        } catch (UnsupportedEncodingException e) {
+            Log.w(TAG, e);
+            reader = new InputStreamReader(mInputStream);
         }
 
-        return builder.toString();
+        StringBuilder stringBuilder = new StringBuilder();
+        int c;
+
+        try {
+            try {
+                while ((c = reader.read()) >= 0) {
+                    stringBuilder.append((char) c);
+                }
+            } catch (SocketTimeoutException e) { // 浏览器使用Keep-Alive，发完之后不关闭连接。。。
+                Log.w(TAG, e.toString());
+            }
+        } catch (IOException e) {
+            Log.w(TAG, e);
+        }
+
+        return stringBuilder.toString();
     }
 
     public static HttpRequest parseRequest(InputStream inputStream, InetAddress inetAddress) {
         HttpRequest request = new HttpRequest(inputStream, inetAddress);
 
         try {
-            request.parseRequestContent();
-            Log.d(TAG, Thread.currentThread().getName() + "Finish parsing request content");
+            request.parseRequestHeader();
+            Log.d(TAG, Thread.currentThread().getName() + "Finish parsing request header");
             return request;
         } catch (IOException | HttpResponse.ResponseException e) {
             Log.w(TAG, Thread.currentThread().getName() + "Exception when parsing request");
@@ -163,10 +176,10 @@ public class HttpRequest {
         return null;
     }
 
-    private void parseRequestContent() throws IOException, HttpResponse.ResponseException {
+    private void parseRequestHeader() throws IOException, HttpResponse.ResponseException {
         byte[] headerBuf = new byte[HttpRequest.BUFSIZE]; //请求头缓冲区，最大不超过 HttpRequest.BUFSIZE
-        int mHeaderEndIndex = 0;
-        int mReadCount = 0;
+        int headerEndIndex = 0;
+        int readCount = 0;
 
         mInputStream.mark(HttpRequest.BUFSIZE);
 
@@ -174,25 +187,26 @@ public class HttpRequest {
 
         // 表示一次可能读不完，分多次读，读到两个CRLF 或者读满buf就结束循环
         while (read != -1) {
-            mReadCount += read;
-            mHeaderEndIndex = findHeaderEnd(headerBuf, mReadCount);
+            readCount += read;
+            headerEndIndex = findHeaderEnd(headerBuf, readCount);
 
-            if (mHeaderEndIndex > 0) {
+            if (headerEndIndex > 0) {
                 break;
             }
 
             // 最多读 HttpRequest.BUFSIZE - this.mReadCount 个字节
             // 存入 buf 时，从 mReadCount 开始
-            read = mInputStream.read(headerBuf, mReadCount, HttpRequest.BUFSIZE - mReadCount);
+
+            read = mInputStream.read(headerBuf, readCount, HttpRequest.BUFSIZE - readCount);
         }
 
-        if (mHeaderEndIndex < mReadCount) {
+        if (headerEndIndex < readCount) {
             mInputStream.reset(); // 回到未读取状态
-            mInputStream.skip(mHeaderEndIndex); // 跳过请求头，为后面的POST处理做准备
+            mInputStream.skip(headerEndIndex); // 跳过请求头，为后面的Body处理做准备
         } // endIndex可能比已经读到Bytes数大（当头大于Buf size的时候）就不需要移动到EndIndex,直接往下读就行了
 
         // 提取Header中的信息
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(headerBuf, 0, mReadCount)));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(headerBuf, 0, readCount)));
         decodeHeader(reader);
 
         String connection = mHeaders.get("connection");
@@ -296,17 +310,14 @@ public class HttpRequest {
      */
     private int findHeaderEnd(final byte[] buf, int readCount) {
         int endIndex = 0;
-        while (endIndex + 1 < readCount) {
+        while (endIndex < readCount - 1) {
 
-            if (buf[endIndex] == '\r' && buf[endIndex + 1] == '\n' && endIndex + 3 < readCount &&
+            if (buf[endIndex] == '\r' && buf[endIndex + 1] == '\n' &&
+                    endIndex + 3 < readCount &&
                     buf[endIndex + 2] == '\r' && buf[endIndex + 3] == '\n') {
                 return endIndex + 4;
             }
 
-            // 让你不按标准来
-            if (buf[endIndex] == '\n' && buf[endIndex + 1] == '\n') {
-                return endIndex + 2;
-            }
             endIndex++;
         }
         return -1;

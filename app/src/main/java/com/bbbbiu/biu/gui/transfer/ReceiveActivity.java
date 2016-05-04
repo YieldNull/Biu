@@ -16,9 +16,9 @@ public class ReceiveActivity extends TransferBaseActivity {
 
 
     public static void startTask(Context context, ArrayList<FileItem> fileItems) {
-        Intent intent = new Intent(DownloadActivity.ACTION_ADD_TASK);
-        intent.putParcelableArrayListExtra(DownloadActivity.EXTRA_FILE_ITEM, fileItems);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+        Intent intent = new Intent(context, ReceiveActivity.class);
+        intent.putParcelableArrayListExtra(ReceiveActivity.EXTRA_FILE_ITEM, fileItems);
+        context.startActivity(intent);
     }
 
     @Override

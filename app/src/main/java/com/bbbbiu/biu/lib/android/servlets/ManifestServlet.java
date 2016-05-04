@@ -1,7 +1,6 @@
 package com.bbbbiu.biu.lib.android.servlets;
 
 import android.content.Context;
-import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.ConnectSenderActivity;
@@ -35,10 +34,6 @@ public class ManifestServlet extends HttpServlet {
     public HttpResponse doPost(HttpRequest request) {
         Gson gson = new Gson();
 
-        Log.i(TAG, request.getClientIp());
-        Log.i(TAG, request.getCharacterEncoding());
-        Log.i(TAG, request.getContentType());
-        Log.i(TAG, request.getUri());
 
         ArrayList<FileItem> manifest = gson.fromJson(request.getText(), new TypeToken<ArrayList<FileItem>>() {
         }.getType());

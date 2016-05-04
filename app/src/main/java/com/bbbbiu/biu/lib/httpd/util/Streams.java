@@ -111,7 +111,7 @@ public final class Streams {
                 if (closable instanceof Closeable) {
                     ((Closeable) closable).close();
                 } else {
-                    Log.w(TAG, "Unknown object to close");
+                    Log.w(TAG, (new IllegalArgumentException("Unknown object to close")).toString());
                 }
             }
         } catch (IOException e) {

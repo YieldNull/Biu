@@ -205,7 +205,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
                     // TODO 发送失败
                 }
             }
-        }, 1000);
+        }, 2000);
     }
 
     /**
