@@ -114,6 +114,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         mWifiScanTask = new Runnable() {
             @Override
             public void run() {
+                Log.i(TAG, "Scanning wifi list");
                 mWifiManager.startScan();
             }
         };
@@ -132,7 +133,13 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         // 避免连接之后又重复扫描
         if (!mIsConnected) {
             NetworkUtil.enableWifi(ConnectReceiverActivity.this);
-            mHandler.postDelayed(mWifiScanTask, 1000);
+
+            if (!mWifiManager.getConnectionInfo().getSSID().equals("\"" + WifiApManager.AP_SSID + "\"")) {
+                mHandler.postDelayed(mWifiScanTask, 1000);
+            } else {
+                Log.i(TAG, "Already connected to receiver's wifi");
+                onWifiConnected();
+            }
         }
     }
 
@@ -192,7 +199,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
     private void onWifiConnected() {
         mServerAddress = genServerAddress();
 
-        HandlerThread handlerThread = new HandlerThread("");
+        HandlerThread handlerThread = new HandlerThread("SendingManifestThread");
         handlerThread.start();
 
         new Handler(handlerThread.getLooper()).postDelayed(new Runnable() {
@@ -202,6 +209,12 @@ public class ConnectReceiverActivity extends AppCompatActivity {
 
                 int retryCount = 0;
                 while (retryCount < 5) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        Log.w(TAG, e);
+                    }
+
                     if (sendFileManifest()) {
                         break;
                     } else {
@@ -214,10 +227,11 @@ public class ConnectReceiverActivity extends AppCompatActivity {
                     // TODO 发送失败
                 } else {
                     Log.i(TAG, "Send file manifest successfully");
-                    UploadActivity.startUpload(ConnectReceiverActivity.this, HttpConstants.Android.URL_UPLOAD, null);
+                    UploadActivity.startUpload(ConnectReceiverActivity.this,
+                            HttpConstants.Android.getSendUrl(mServerAddress), mFileManifest);
                 }
             }
-        }, 200);
+        }, 800);
     }
 
     /**

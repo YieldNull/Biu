@@ -62,6 +62,10 @@ public class HttpConstants {
         public static String getManifestUrl(InetAddress serverAddress) {
             return "http://" + serverAddress.getHostAddress() + ":" + HttpDaemon.getPort() + URL_MANIFEST;
         }
+
+        public static String getSendUrl(InetAddress serverAddress) {
+            return "http://" + serverAddress.getHostAddress() + ":" + HttpDaemon.getPort() + URL_UPLOAD;
+        }
     }
 
     public static class Apple {

@@ -23,6 +23,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 上传、下载、接收文件等界面({@link com.bbbbiu.biu.gui.transfer.TransferBaseActivity})的Adapter。
+ * <p/>
  * Created by YieldNull at 3/23/16
  */
 public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -45,7 +47,13 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     public TransferAdapter(Context context) {
         this.context = context;
+    }
 
+
+    /**
+     * 测试界面
+     */
+    private void test() {
         File root = StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL);
         File[] files = root.listFiles();
 
@@ -60,9 +68,13 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         refreshDataSet();
-
     }
 
+    /**
+     * 刷新数据集，将各文件分类。
+     * <p/>
+     * 显示时是按 正在下载，等待，已完成的次序显示的，因此加入数据集中的顺序不能乱
+     */
     private void refreshDataSet() {
         if (mWorkingItem != null) {
             mDataSet.add(null);
@@ -81,6 +93,11 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     }
 
+    /**
+     * 将任务加入等待队列
+     *
+     * @param fileItems 亟待完成的FileItem
+     */
     public void addItem(ArrayList<FileItem> fileItems) {
         if (fileItems == null || fileItems.size() == 0) {
             return;
@@ -99,20 +116,31 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
+    /**
+     * 任务完成
+     *
+     * @param fileUri file uri
+     */
     public void setTaskFinished(String fileUri) {
 
         mDataSet.clear();
 
         mFinishedList.add(mWorkingItem);
-        mWorkingItem = mWaitingQueue.poll();
+
+        mWorkingItem = mWaitingQueue.poll(); // TODO 为空，所有任务都完成了
 
         refreshDataSet();
 
         notifyDataSetChanged();
     }
 
+    /**
+     * 任务失败
+     *
+     * @param fileUri file uri
+     */
     public void setTaskFailed(String fileUri) {
-
+        // TODO 失败后怎么办？
     }
 
     public void updateProgress(RecyclerView recyclerView, String fileUri, int progress) {

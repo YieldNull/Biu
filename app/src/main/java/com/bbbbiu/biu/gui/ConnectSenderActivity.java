@@ -19,6 +19,7 @@ import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.ReceiveActivity;
 import com.bbbbiu.biu.lib.android.WifiApManager;
 import com.bbbbiu.biu.lib.android.servlets.ManifestServlet;
+import com.bbbbiu.biu.lib.android.servlets.ReceiveServlet;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.service.HttpdService;
@@ -32,7 +33,7 @@ import butterknife.ButterKnife;
  * 安卓接收方连接发送方。
  * 开启热点，然后开启HTTP服务器，
  * 等待发送方发送文件清单，成功接收到文件清单则表示连接成功。
- * <p>
+ * <p/>
  * 当接收到Manifest({@link com.bbbbiu.biu.lib.android.servlets.ManifestServlet})时，发送BroadCast，
  * 接收到BroadCast后，跳转到接收页面 {@link com.bbbbiu.biu.gui.transfer.ReceiveActivity}
  */
@@ -98,9 +99,10 @@ public class ConnectSenderActivity extends AppCompatActivity {
         LocalBroadcastManager mBroadcastManager = LocalBroadcastManager.getInstance(this);
         mBroadcastManager.registerReceiver(mBroadcastReceiver, new IntentFilter(ACTION_RECEIVE_MANIFEST));
 
-        // 开HttpServer
+        // 开HttpServer,注册servlet
         HttpdService.startService(ConnectSenderActivity.this);
-        HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, new ManifestServlet(ConnectSenderActivity.this));
+        ManifestServlet.register(this);
+        ReceiveServlet.register(this);
     }
 
     @Override
@@ -112,9 +114,11 @@ public class ConnectSenderActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
-//        HttpdService.stopService(this);
+        HttpdService.stopService(this);
+
         super.onDestroy();
     }
+
 
     /**
      * 开热点
@@ -122,11 +126,37 @@ public class ConnectSenderActivity extends AppCompatActivity {
      * @return 是否成功
      */
     protected boolean createHotspot() {
-        boolean succeed = mApManager.setWifiApEnabled(mApConfig, true);
+        if (!hasCreated()) {
+            boolean succeed = mApManager.setWifiApEnabled(mApConfig, true);
 
-        Log.i(TAG, "Create Wifi Access Point: Succeeded: " + String.valueOf(succeed));
+            Log.i(TAG, "Create Wifi Access Point: Succeeded: " + String.valueOf(succeed));
 
-        return succeed;
+            return succeed;
+        } else {
+            Log.i(TAG, "Wifi Access Point has already been created");
+            return true;
+        }
+    }
+
+    /**
+     * 热点是否已经开启
+     *
+     * @return 热点是否已经开启
+     */
+    protected boolean hasCreated() {
+        if (mApManager.getWifiApState() == WifiApManager.WIFI_AP_STATE_ENABLED ||
+                mApManager.getWifiApState() == WifiApManager.WIFI_AP_STATE_ENABLING) {
+
+            WifiConfiguration config = mApManager.getWifiApConfiguration();
+
+            if (mApConfig.SSID.equals(config.SSID) &&
+                    mApConfig.BSSID.equals(config.BSSID) &&
+                    mApConfig.allowedKeyManagement.equals(config.allowedKeyManagement)) {
+
+                return true;
+            }
+        }
+        return false;
     }
 
 }

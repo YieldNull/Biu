@@ -35,6 +35,7 @@ public class HttpdService extends Service {
         Intent intent = new Intent(context, HttpdService.class);
         intent.setAction(ACTION_START);
         context.startService(intent);
+        Log.i(TAG, "Starting HttpdService");
     }
 
     /**
@@ -46,6 +47,7 @@ public class HttpdService extends Service {
         Intent intent = new Intent(context, HttpdService.class);
         intent.setAction(ACTION_STOP);
         context.startService(intent);
+        Log.i(TAG, "Stopping HttpdService");
     }
 
     @Override
@@ -96,7 +98,7 @@ public class HttpdService extends Service {
 
                 Log.i(TAG, "HttpdServer Started at " + getListenAddress());
             } catch (IOException e) {
-                Log.e(TAG, "HttpdServer Start Failed");
+                Log.e(TAG, "HttpdServer Failed Starting");
             }
         }
     }
@@ -118,6 +120,6 @@ public class HttpdService extends Service {
     private String getListenAddress() {
         WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
         String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-        return ip + ":" + mHttpd.getPort();
+        return ip + ":" + HttpDaemon.getPort();
     }
 }

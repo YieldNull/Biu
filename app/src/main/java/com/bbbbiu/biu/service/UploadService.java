@@ -3,6 +3,7 @@ package com.bbbbiu.biu.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -25,19 +26,52 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+/**
+ * 使用HTTP POST 后台上传、发送文件
+ */
 public class UploadService extends Service {
     private static final String TAG = UploadService.class.getSimpleName();
 
+    /**
+     * Intent extra. {@link ResultReceiver} 接收发送进度等
+     */
     private static final String EXTRA_RESULT_RECEIVER = "com.bbbbiu.biu.service.UploadService.extra.RECEIVER";
+
+    /**
+     * Intent extra. 要上传的文件的绝对路径。
+     */
     private static final String EXTRA_FILE_PATH = "com.bbbbiu.biu.service.UploadService.extra.FILE_PATH";
+
+    /**
+     * Intent extra. POST 文件 到该URL
+     */
     private static final String EXTRA_UPLOAD_URL = "com.bbbbiu.biu.service.UploadService.extra.UPLOAD_URL";
+
+    /**
+     * Intent extra. HTTP POST FORM 中额外的key-value pair.
+     */
     private static final String EXTRA_FORM_DATA = "com.bbbbiu.biu.service.UploadService.extra.FORM_DATA";
 
+
+    /**
+     * Intent action. 开始上传
+     */
     private static final String ACTION_START_UPLOAD = "com.bbbbiu.biu.service.UploadService.action.ACTION_START_UPLOAD";
 
+    /**
+     * 上传线程
+     */
     private HandlerThread mWorkerThread;
-    private Handler mHandler;
 
+    /**
+     * 上传线程的{@link Handler}
+     */
+    private Handler mWorkerHandler;
+
+
+    /**
+     * 当前的{@link okhttp3.OkHttpClient} Call，用来终止上传
+     */
     private Call mCurrentHttpCall;
 
 
@@ -85,11 +119,8 @@ public class UploadService extends Service {
     @SuppressWarnings("unchecked")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent == null) {
-            return Service.START_STICKY;
-
-        } else if (intent.getAction().equals(ACTION_START_UPLOAD)) {
-            final String filePath = intent.getStringExtra(EXTRA_FILE_PATH);
+        if (intent != null && intent.getAction().equals(ACTION_START_UPLOAD)) {
+            final String fileUri = intent.getStringExtra(EXTRA_FILE_PATH);
             final String uploadUrl = intent.getStringExtra(EXTRA_UPLOAD_URL);
             final HashMap<String, String> formData = (HashMap<String, String>) intent.getSerializableExtra(EXTRA_FORM_DATA);
             final ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
@@ -98,28 +129,30 @@ public class UploadService extends Service {
             if (mWorkerThread == null) {
                 mWorkerThread = new HandlerThread("FileUploadThread");
                 mWorkerThread.start();
-                mHandler = new Handler(mWorkerThread.getLooper());
+                mWorkerHandler = new Handler(mWorkerThread.getLooper());
             }
 
-            mHandler.post(new Runnable() {
+            mWorkerHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "Start sending file " + filePath);
+                    Log.i(TAG, "Start sending file " + fileUri);
 
-                    ProgressListenerImpl progressListener = new ProgressListenerImpl(filePath, resultReceiver);
+                    ProgressListenerImpl progressListener = new ProgressListenerImpl(fileUri, resultReceiver);
 
-                    boolean succeeded = uploadFile(uploadUrl, filePath, formData, progressListener);
+                    boolean succeeded = uploadFile(uploadUrl, fileUri, formData, progressListener);
+
+                    Bundle bundle = new Bundle();
+                    bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, fileUri);
 
                     if (succeeded) {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, bundle);
                     } else {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, null);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, bundle);
                     }
                 }
             });
 
         }
-
         return START_STICKY;
     }
 
@@ -127,13 +160,15 @@ public class UploadService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        // 取消未完成的任务
         if (mCurrentHttpCall != null && mCurrentHttpCall.isExecuted()) {
             mCurrentHttpCall.cancel();
         }
 
-        if (mHandler != null) {
-            mHandler.removeCallbacksAndMessages(null);
-            mHandler.getLooper().quit();
+        // 清空消息队列，退出Looper，进而终止工作线程
+        if (mWorkerHandler != null) {
+            mWorkerHandler.removeCallbacksAndMessages(null);
+            mWorkerHandler.getLooper().quit();
         }
 
     }

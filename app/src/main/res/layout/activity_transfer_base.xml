@@ -46,6 +46,7 @@
                 android:src="@drawable/ic_transfer_speed" />
 
             <TextView
+                android:id="@+id/textView_transfer_speed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
@@ -67,6 +68,7 @@
                 android:src="@drawable/ic_transfer_total" />
 
             <TextView
+                android:id="@+id/textView_transfer_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"

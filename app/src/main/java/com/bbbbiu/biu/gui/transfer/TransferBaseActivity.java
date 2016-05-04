@@ -13,12 +13,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapters.TransferAdapter;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -42,6 +43,17 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     @Bind(R.id.recyclerView)
     protected RecyclerView mRecyclerView;
 
+    @Bind(R.id.textView_transfer_speed)
+    protected TextView mTransferSpeedText;
+
+    @Bind(R.id.textView_transfer_total)
+    protected TextView mTransferTotalText;
+
+    private int mPreviousProgress;
+    private long mPreviousTime = System.currentTimeMillis();
+    private long mTransferTotal;
+    private long mCurrentTaskSize;
+
     protected TransferAdapter mTransferAdapter;
 
 
@@ -60,7 +72,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     protected ResultReceiver mProgressReceiver = new ResultReceiver(new Handler()) {
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
-            String fileUri = resultData.getParcelable(ProgressListenerImpl.RESULT_EXTRA_FILE_URI);
+            String fileUri = resultData.getString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI);
 
             switch (resultCode) {
                 case ProgressListenerImpl.RESULT_FAILED:
@@ -68,10 +80,36 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     break;
                 case ProgressListenerImpl.RESULT_SUCCEEDED:
                     mTransferAdapter.setTaskFinished(fileUri);
+                    mPreviousTime = System.currentTimeMillis();
+                    mPreviousProgress = 0;
+                    mCurrentTaskSize = 0;
+
                     break;
                 case ProgressListenerImpl.RESULT_PROGRESS:
                     int progress = resultData.getInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS);
                     mTransferAdapter.updateProgress(mRecyclerView, fileUri, progress);
+
+                    if (mCurrentTaskSize == 0) {
+                        mCurrentTaskSize = mTransferAdapter.getItem(fileUri).size;
+                    }
+
+                    // 计算传输总量
+                    long periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
+
+                    mTransferTotal += periodBytes;
+                    mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
+
+                    // 计算网速
+                    long subTime = System.currentTimeMillis() - mPreviousTime;
+
+                    if (subTime != 0) {
+                        long speed = periodBytes / subTime * 1000;
+                        mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
+                    }
+
+                    mPreviousProgress = progress;
+                    mPreviousTime = System.currentTimeMillis();
+
                     break;
                 default:
                     break;

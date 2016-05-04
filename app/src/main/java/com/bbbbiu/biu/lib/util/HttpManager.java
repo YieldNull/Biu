@@ -40,11 +40,9 @@ public class HttpManager {
             }
         }
 
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                MimeTypeMap.getFileExtensionFromUrl(file.getAbsolutePath()));
 
         builder.addFormDataPart("files", file.getName(),
-                new UploadRequestBody(okhttp3.MediaType.parse(mimeType), file, notifier));
+                new UploadRequestBody(null, file, notifier));
 
         return new Request.Builder()
                 .url(uploadUrl)

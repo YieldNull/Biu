@@ -9,9 +9,15 @@ import com.bbbbiu.biu.service.UploadService;
 import java.util.ArrayList;
 
 
+/**
+ * 上传、发送文件
+ */
 public class UploadActivity extends TransferBaseActivity {
     private static final String TAG = UploadActivity.class.getSimpleName();
 
+    /**
+     * Intent extra. 上传URL
+     */
     private static final String EXTRA_UPLOAD_URL = "com.bbbbiu.biu.gui.transfer.UploadActivity.extra.UPLOAD_URL";
 
     private String mUploadUrl;
@@ -27,19 +33,18 @@ public class UploadActivity extends TransferBaseActivity {
 
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mUploadUrl = getIntent().getStringExtra(EXTRA_UPLOAD_URL);
+        addTaskItem(getIntent());
+    }
+
+    @Override
     protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
             UploadService.startUpload(this, mUploadUrl, item.uri, null, mProgressReceiver);
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-
-        mUploadUrl = getIntent().getStringExtra(EXTRA_UPLOAD_URL);
-
-
-        super.onCreate(savedInstanceState);
     }
 
 }

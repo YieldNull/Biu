@@ -5,9 +5,11 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.ConnectSenderActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
 import com.bbbbiu.biu.lib.httpd.HttpServlet;
+import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -20,8 +22,18 @@ import java.util.ArrayList;
 public class ManifestServlet extends HttpServlet {
     private static final String TAG = ManifestServlet.class.getSimpleName();
 
+    private static ManifestServlet sManifestServlet;
 
-    public ManifestServlet(Context context) {
+    public static void register(Context context) {
+        HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, getSingleton(context));
+    }
+
+    public static ManifestServlet getSingleton(Context context) {
+
+        return sManifestServlet != null ? sManifestServlet : (sManifestServlet = new ManifestServlet(context));
+    }
+
+    private ManifestServlet(Context context) {
         super(context);
     }
 

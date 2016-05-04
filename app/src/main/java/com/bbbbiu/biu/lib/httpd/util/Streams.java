@@ -8,6 +8,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 
 
 public final class Streams {
@@ -105,17 +106,21 @@ public final class Streams {
      *
      * @param closable 可关闭对象
      */
-    public static void safeClose(Object closable) {
+    public static void safeClose(Closeable closable) {
         try {
             if (closable != null) {
-                if (closable instanceof Closeable) {
-                    ((Closeable) closable).close();
-                } else {
-                    Log.w(TAG, (new IllegalArgumentException("Unknown object to close")).toString());
-                }
+                closable.close();
             }
         } catch (IOException e) {
-            Log.e(TAG, "Could not close", e);
+            Log.w(TAG, e.toString());
+        }
+    }
+
+    public static void safeClose(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            Log.w(TAG, e.toString());
         }
     }
 }

@@ -46,10 +46,8 @@ public class HttpDaemon {
 
     /**
      * 指定监听端口
-     *
-     * @param port 端口
      */
-    private HttpDaemon(int port) {
+    private HttpDaemon() {
         mRequestManager = new RequestManager();
     }
 
@@ -61,7 +59,7 @@ public class HttpDaemon {
 
     public static HttpDaemon getSingleton() {
         if (sHttpDaemon == null) {
-            sHttpDaemon = new HttpDaemon(sPort);
+            sHttpDaemon = new HttpDaemon();
         }
         return sHttpDaemon;
     }
@@ -111,7 +109,7 @@ public class HttpDaemon {
      */
     public void stop() {
         try {
-            Streams.safeClose(mServerSocket);
+            mServerSocket.close();
             mRequestManager.closeAll();
             if (mListenThread != null) {
                 mListenThread.join();
