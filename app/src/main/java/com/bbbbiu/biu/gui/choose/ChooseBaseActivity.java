@@ -56,6 +56,19 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
     private static final String ACTION_SEND_COMPUTER = "Computer";
     private static final String ACTION_SEND_APPLE = "Apple";
 
+
+    /**
+     * 开始选择，不保留Activity
+     *
+     * @param context context
+     * @param theClass class of activity
+     */
+    public static void startChoosing(Context context, Class<? extends ChooseBaseActivity> theClass) {
+        Intent intent = new Intent(context, theClass);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        context.startActivity(intent);
+    }
+
     @Bind(R.id.sliding_layout)
     protected SlidingUpPanelLayout mSlidingUpPanelLayout;
 
@@ -109,7 +122,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
         switch (action) {
             case ACTION_SEND_ANDROID:
-                startActivity(new Intent(this, ConnectReceiverActivity.class));
+                ConnectReceiverActivity.startConnection(this);
                 break;
             case ACTION_SEND_COMPUTER:
                 ConnectComputerActivity.connectForUpload(this);

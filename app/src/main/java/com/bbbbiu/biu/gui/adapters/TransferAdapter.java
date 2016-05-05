@@ -147,7 +147,12 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         int position = getPosition(fileUri);
         FileItem fileItem = getItem(fileUri);
 
-        WorkingViewHolder holder = (WorkingViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+        WorkingViewHolder holder;
+        try {
+            holder = (WorkingViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+        } catch (ClassCastException e) {
+            return; // 文件太小 已经完成了才收到
+        }
 
         if (holder != null) { // 文件太小，导致list还没完成更新，此处NullPointer
             holder.progressBar.setProgress(progress);

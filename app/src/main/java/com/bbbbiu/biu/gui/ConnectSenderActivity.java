@@ -47,6 +47,12 @@ public class ConnectSenderActivity extends AppCompatActivity {
     private WifiConfiguration mApConfig;
 
 
+    public static void startConnection(Context context) {
+        Intent intent = new Intent(context, ConnectSenderActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        context.startActivity(intent);
+    }
+
     public static void finishConnection(Context context, ArrayList<FileItem> manifest) {
         Intent intent = new Intent(ACTION_RECEIVE_MANIFEST);
         intent.putExtra(EXTRA_FILE_ITEM, manifest);
@@ -149,8 +155,9 @@ public class ConnectSenderActivity extends AppCompatActivity {
 
             WifiConfiguration config = mApManager.getWifiApConfiguration();
 
-            if (mApConfig.SSID.equals(config.SSID) &&
-                    mApConfig.BSSID.equals(config.BSSID) &&
+            if (mApConfig.SSID != null && mApConfig.SSID.equals(config.SSID) &&
+                    mApConfig.BSSID != null && mApConfig.BSSID.equals(config.BSSID) &&
+                    mApConfig.allowedKeyManagement != null &&
                     mApConfig.allowedKeyManagement.equals(config.allowedKeyManagement)) {
 
                 return true;

@@ -14,7 +14,7 @@ public class ReceiveActivity extends TransferBaseActivity {
     public static void startTask(Context context, ArrayList<FileItem> fileItems) {
         Intent intent = new Intent(context, ReceiveActivity.class);
         intent.putParcelableArrayListExtra(EXTRA_FILE_ITEM, fileItems);
-
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         context.startActivity(intent);
     }
 

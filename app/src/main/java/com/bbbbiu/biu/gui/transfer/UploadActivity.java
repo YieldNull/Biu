@@ -27,7 +27,7 @@ public class UploadActivity extends TransferBaseActivity {
         Intent intent = new Intent(context, UploadActivity.class);
         intent.putExtra(EXTRA_UPLOAD_URL, uploadUrl);
         intent.putExtra(EXTRA_FILE_ITEM, fileItems);
-
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         context.startActivity(intent);
     }
 

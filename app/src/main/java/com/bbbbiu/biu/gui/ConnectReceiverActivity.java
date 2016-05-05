@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.google.gson.Gson;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -77,6 +79,17 @@ public class ConnectReceiverActivity extends AppCompatActivity {
     private ArrayList<FileItem> mFileManifest = new ArrayList<>();
 
 
+    /**
+     * 开启连接，不保留Activity
+     *
+     * @param context context
+     */
+    public static void startConnection(Context context) {
+        Intent intent = new Intent(context, ConnectReceiverActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -120,9 +133,6 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         };
 
         mHandler = new Handler();
-
-        // 读取要发送的文件列表
-        genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
     }
 
 
@@ -134,11 +144,15 @@ public class ConnectReceiverActivity extends AppCompatActivity {
         if (!mIsConnected) {
             NetworkUtil.enableWifi(ConnectReceiverActivity.this);
 
-            if (!mWifiManager.getConnectionInfo().getSSID().equals("\"" + WifiApManager.AP_SSID + "\"")) {
-                mHandler.postDelayed(mWifiScanTask, 1000);
-            } else {
+            WifiInfo info = mWifiManager.getConnectionInfo();
+
+            if (info != null && info.getSSID() != null && info.getSSID().equals("\"" + WifiApManager.AP_SSID + "\"")) {
                 Log.i(TAG, "Already connected to receiver's wifi");
+
+                mIsConnected = true;
                 onWifiConnected();
+            } else {
+                mHandler.postDelayed(mWifiScanTask, 1000);
             }
         }
     }
@@ -197,6 +211,8 @@ public class ConnectReceiverActivity extends AppCompatActivity {
      * 连上对方的Wifi之后，发送清单，发送文件
      */
     private void onWifiConnected() {
+        // 读取要发送的文件列表
+        genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
         mServerAddress = genServerAddress();
 
         HandlerThread handlerThread = new HandlerThread("SendingManifestThread");
@@ -210,7 +226,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
                 int retryCount = 0;
                 while (retryCount < 5) {
                     try {
-                        Thread.sleep(200);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         Log.w(TAG, e);
                     }
@@ -231,7 +247,7 @@ public class ConnectReceiverActivity extends AppCompatActivity {
                             HttpConstants.Android.getSendUrl(mServerAddress), mFileManifest);
                 }
             }
-        }, 800);
+        }, 4000);
     }
 
     /**
@@ -271,7 +287,8 @@ public class ConnectReceiverActivity extends AppCompatActivity {
     private void genManifest(List<String> filePathList) {
         for (final String filePath : filePathList) {
             File file = new File(filePath);
-            mFileManifest.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
+            String name = file.getAbsolutePath().endsWith("apk") ? StorageUtil.getApkName(this, filePath) : file.getName();
+            mFileManifest.add(new FileItem(file.getAbsolutePath(), name, file.length()));
         }
     }
 

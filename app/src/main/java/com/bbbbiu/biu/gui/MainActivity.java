@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.fbtn_receive_android)
     void receiveAndroid() {
         actionMenu.toggle(false);
-        startActivity(new Intent(this, ConnectSenderActivity.class));
-//        startActivity(new Intent(this, DownloadActivity.class));
+        ConnectSenderActivity.startConnection(this);
     }
 
     @Override

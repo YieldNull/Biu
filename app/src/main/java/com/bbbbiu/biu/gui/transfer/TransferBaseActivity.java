@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -63,6 +64,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction().equals(ACTION_ADD_TASK)) {
+                Log.i(TAG, "Received adding task message");
                 addTaskItem(intent);
             }
         }
@@ -93,23 +95,23 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                         mCurrentTaskSize = mTransferAdapter.getItem(fileUri).size;
                     }
 
-                    // 计算传输总量
+                    long periodTime = System.currentTimeMillis() - mPreviousTime;
                     long periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
 
-                    mTransferTotal += periodBytes;
-                    mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
 
-                    // 计算网速
-                    long subTime = System.currentTimeMillis() - mPreviousTime;
+                    // TODO 总传输时间小于500ms
+                    if (periodTime > 500) { // 每隔一段时间更新一下网速、下载总量
+                        // 计算传输总量
+                        mTransferTotal += periodBytes;
+                        mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
 
-                    if (subTime != 0) {
-                        long speed = periodBytes / subTime * 1000;
+                        // 计算网速
+                        long speed = periodBytes / periodTime * 1000;
                         mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
+
+                        mPreviousProgress = progress;
+                        mPreviousTime = System.currentTimeMillis();
                     }
-
-                    mPreviousProgress = progress;
-                    mPreviousTime = System.currentTimeMillis();
-
                     break;
                 default:
                     break;
@@ -148,6 +150,9 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     protected void addTaskItem(Intent intent) {
         if (intent != null) {
             ArrayList<FileItem> fileItems = intent.getParcelableArrayListExtra(EXTRA_FILE_ITEM);
+
+            Log.i(TAG, "Adding task...");
+
             if (fileItems != null) {
                 mTransferAdapter.addItem(fileItems);
                 onAddTaskItem(fileItems);
