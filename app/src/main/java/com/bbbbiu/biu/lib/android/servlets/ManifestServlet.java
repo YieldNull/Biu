@@ -3,8 +3,8 @@ package com.bbbbiu.biu.lib.android.servlets;
 import android.content.Context;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.ConnectSenderActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.ReceiveActivity;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
@@ -50,7 +50,7 @@ public class ManifestServlet extends HttpServlet {
         ArrayList<FileItem> manifest = gson.fromJson(request.getText(), new TypeToken<ArrayList<FileItem>>() {
         }.getType());
 
-        ConnectSenderActivity.finishConnection(context, manifest);
+        ReceiveActivity.finishConnection(context, manifest);
         return HttpResponse.newResponse("");
     }
 

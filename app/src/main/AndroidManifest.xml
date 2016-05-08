@@ -116,14 +116,6 @@
             android:name=".gui.ConnectComputerActivity"
             android:label="@string/title_activity_connect_computer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.ConnectReceiverActivity"
-            android:label="@string/title_activity_connect_receiver"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.ConnectSenderActivity"
-            android:label="@string/title_activity_connect_sender"
-            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".gui.transfer.DownloadActivity"

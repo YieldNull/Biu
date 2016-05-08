@@ -105,7 +105,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                             fileItems.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
 
                         }
-                        UploadActivity.startUpload(QRCodeScanActivity.this, HttpConstants.Computer.getUploadUrl(mUid), fileItems);
+                        //UploadActivity.startUpload(QRCodeScanActivity.this, HttpConstants.Computer.getUploadUrl(mUid), fileItems);
                         break;
 
                     case MSG_SERVER_ERROR:

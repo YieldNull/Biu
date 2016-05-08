@@ -68,9 +68,11 @@
     <string name="apk_uninstall_dismissed">卸载已取消</string>
     <string name="apk_uninstall_succeeded">卸载成功</string>
     <string name="apk_delete_dismissed">删除已取消</string>
-    <string name="transfer_waiting">正在等待</string>
     <string name="title_activity_connect_">连接苹果</string>
     <string name="title_activity_receive">正在接收</string>
 
+    <string name="transfer_connecting">正在连接</string>
+    <string name="transfer_waiting">正在等待</string>
+    <string name="transfer_working">正在传输</string>
 
 </resources>

@@ -14,7 +14,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
@@ -22,6 +24,7 @@ import com.bbbbiu.biu.gui.adapters.TransferAdapter;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+import com.wang.avi.AVLoadingIndicatorView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
@@ -49,6 +52,12 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
     @Bind(R.id.textView_transfer_total)
     protected TextView mTransferTotalText;
+
+    @Bind(R.id.loadingIndicatorView)
+    protected AVLoadingIndicatorView mLoadingIndicatorView;
+
+    @Bind(R.id.linearLayout_measure)
+    protected LinearLayout mMeasureLinearLayout;
 
     private int mPreviousProgress;
     private long mPreviousTime = System.currentTimeMillis();
@@ -144,19 +153,36 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(ACTION_ADD_TASK));
+
+        mLoadingIndicatorView.setVisibility(View.GONE);
     }
 
+    protected void onConnecting() {
+        mLoadingIndicatorView.setVisibility(View.VISIBLE);
+        mMeasureLinearLayout.setVisibility(View.GONE);
+        setTitle(getString(R.string.transfer_connecting));
+    }
+
+    protected void onConnected() {
+        mLoadingIndicatorView.setVisibility(View.GONE);
+        mMeasureLinearLayout.setVisibility(View.VISIBLE);
+        setTitle(getString(R.string.transfer_working));
+    }
 
     protected void addTaskItem(Intent intent) {
         if (intent != null) {
             ArrayList<FileItem> fileItems = intent.getParcelableArrayListExtra(EXTRA_FILE_ITEM);
+            addTaskItem(fileItems);
+        }
 
-            Log.i(TAG, "Adding task...");
+    }
 
-            if (fileItems != null) {
-                mTransferAdapter.addItem(fileItems);
-                onAddTaskItem(fileItems);
-            }
+    protected void addTaskItem(ArrayList<FileItem> fileItems) {
+        Log.i(TAG, "Adding task...");
+        if (fileItems != null) {
+            mTransferAdapter.addItem(fileItems);
+            onAddTaskItem(fileItems);
+            onConnected();
         }
     }
 
