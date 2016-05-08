@@ -30,7 +30,7 @@ public class DownloadActivity extends TransferBaseActivity {
     protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
 
         for (FileItem item : fileItems) {
-            DownloadService.addTask(this, item.uri, item.name, item.size, mProgressReceiver);
+            DownloadService.addTask(this, item.uri, item.name, item.size, mProgressResultReceiver);
         }
     }
 

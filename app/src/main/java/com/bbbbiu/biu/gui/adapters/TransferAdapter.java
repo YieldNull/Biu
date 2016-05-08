@@ -144,8 +144,16 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void updateProgress(RecyclerView recyclerView, String fileUri, int progress) {
-        int position = getPosition(fileUri);
-        FileItem fileItem = getItem(fileUri);
+        int position;
+        FileItem fileItem;
+
+        if (fileUri != null) {
+            position = getPosition(fileUri);
+            fileItem = getItem(fileUri);
+        } else {
+            fileItem = mWorkingItem;
+            position = getPosition(fileItem);
+        }
 
         WorkingViewHolder holder;
         try {
@@ -169,8 +177,16 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return mDataSet.indexOf(new FileItem(fileUri, "", 0));
     }
 
+    public int getPosition(FileItem fileItem) {
+        return mDataSet.indexOf(fileItem);
+    }
+
     public FileItem getItem(String fileUri) {
-        return mDataSet.get(getPosition(fileUri));
+        if (fileUri != null) {
+            return mDataSet.get(getPosition(fileUri));
+        } else {
+            return mWorkingItem;
+        }
     }
 
     public FileItem getItem(int position) {

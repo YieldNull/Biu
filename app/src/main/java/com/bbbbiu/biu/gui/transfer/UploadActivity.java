@@ -111,7 +111,7 @@ public class UploadActivity extends TransferBaseActivity {
     @Override
     protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
-            UploadService.startUpload(this, mUploadUrl, item.uri, null, mProgressReceiver);
+            UploadService.startUpload(this, mUploadUrl, item.uri, null, mProgressResultReceiver);
         }
     }
 

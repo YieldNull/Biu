@@ -1,8 +1,13 @@
 package com.bbbbiu.biu.lib.android.servlets;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
+import com.bbbbiu.biu.lib.httpd.ContentType;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
@@ -11,7 +16,9 @@ import com.bbbbiu.biu.lib.httpd.upload.FileItem;
 import com.bbbbiu.biu.lib.httpd.upload.FileItemFactory;
 import com.bbbbiu.biu.lib.httpd.upload.FileUpload;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.FileUploadException;
+import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
 import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -51,6 +58,21 @@ public class ReceiveServlet extends HttpServlet {
 
         FileUpload fileUpload = new FileUpload(factory);
 
+        fileUpload.setProgressListener(new ProgressListener() {
+            private int mCurrentProgress;
+
+            @Override
+            public void update(long pBytesRead, long pContentLength, int pItems) {
+                int progress = (int) (pBytesRead * 100.0 / pContentLength);
+
+                // 更新进度(0-100)
+                if (progress > mCurrentProgress) {
+                    mCurrentProgress = progress;
+
+                    sendProgressBroadcast(progress);
+                }
+            }
+        });
 
 
         List<FileItem> items;
@@ -59,13 +81,57 @@ public class ReceiveServlet extends HttpServlet {
             items = fileUpload.parseRequest(request);
         } catch (FileUploadException e) {
             Log.w(TAG, e.toString());
-            return null;
+
+            sendFailureBroadcast();
+
+            return HttpResponse.newResponse(HttpResponse.Status.INTERNAL_ERROR,
+                    ContentType.MIME_PLAINTEXT,
+                    HttpResponse.Status.INTERNAL_ERROR.getDescription());
         }
 
         for (FileItem item : items) {
             Log.i(TAG, "Uploading file " + item.getName() + " to " + downloadDir.getAbsolutePath());
         }
 
+        sendSuccessBroadcast();
+
         return HttpResponse.newResponse("200 OK");
+    }
+
+
+    private void sendProgressBroadcast(int progress) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS, progress);
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
+
+
+        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_PROGRESS);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
+    private void sendFailureBroadcast() {
+        Bundle bundle = new Bundle();
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
+
+        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_FAILED);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+    }
+
+
+    private void sendSuccessBroadcast() {
+        Bundle bundle = new Bundle();
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
+
+        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_SUCCEEDED);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
+
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 }

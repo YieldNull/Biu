@@ -34,14 +34,19 @@ import butterknife.ButterKnife;
 
 /**
  * 上传、下载、接收文件的界面基类
- * <p/>
+ * <p>
  * Created by YieldNull at 4/26/16
  */
 public abstract class TransferBaseActivity extends AppCompatActivity {
     private static final String TAG = TransferBaseActivity.class.getSimpleName();
 
     public static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.FILE_ITEM";
+
+    public static final String EXTRA_RESULT_CODE = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.RESULT_CODE";
+    public static final String EXTRA_RESULT_BUNDLE = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.RESULT_BUNDLE";
+
     public static final String ACTION_ADD_TASK = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.action.ADD_TASK";
+    public static final String ACTION_UPDATE_PROGRESS = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.action.UPDATE_PROGRESS";
 
 
     @Bind(R.id.recyclerView)
@@ -69,7 +74,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
     protected abstract void onAddTaskItem(ArrayList<FileItem> fileItems);
 
-    protected BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    protected BroadcastReceiver mTaskBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent != null && intent.getAction().equals(ACTION_ADD_TASK)) {
@@ -79,54 +84,66 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         }
     };
 
-
-    protected ResultReceiver mProgressReceiver = new ResultReceiver(new Handler()) {
+    protected BroadcastReceiver mProgressBroadcastReceiver = new BroadcastReceiver() {
         @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            String fileUri = resultData.getString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI);
-
-            switch (resultCode) {
-                case ProgressListenerImpl.RESULT_FAILED:
-                    mTransferAdapter.setTaskFailed(fileUri);
-                    break;
-                case ProgressListenerImpl.RESULT_SUCCEEDED:
-                    mTransferAdapter.setTaskFinished(fileUri);
-                    mPreviousTime = System.currentTimeMillis();
-                    mPreviousProgress = 0;
-                    mCurrentTaskSize = 0;
-
-                    break;
-                case ProgressListenerImpl.RESULT_PROGRESS:
-                    int progress = resultData.getInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS);
-                    mTransferAdapter.updateProgress(mRecyclerView, fileUri, progress);
-
-                    if (mCurrentTaskSize == 0) {
-                        mCurrentTaskSize = mTransferAdapter.getItem(fileUri).size;
-                    }
-
-                    long periodTime = System.currentTimeMillis() - mPreviousTime;
-                    long periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
-
-
-                    // TODO 总传输时间小于500ms
-                    if (periodTime > 500) { // 每隔一段时间更新一下网速、下载总量
-                        // 计算传输总量
-                        mTransferTotal += periodBytes;
-                        mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
-
-                        // 计算网速
-                        long speed = periodBytes / periodTime * 1000;
-                        mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
-
-                        mPreviousProgress = progress;
-                        mPreviousTime = System.currentTimeMillis();
-                    }
-                    break;
-                default:
-                    break;
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null && intent.getAction().equals(ACTION_UPDATE_PROGRESS)) {
+                updateProgress(intent.getIntExtra(EXTRA_RESULT_CODE, -1), intent.getBundleExtra(EXTRA_RESULT_BUNDLE));
             }
         }
     };
+
+    protected ResultReceiver mProgressResultReceiver = new ResultReceiver(new Handler()) {
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            updateProgress(resultCode, resultData);
+        }
+    };
+
+    private void updateProgress(int resultCode, Bundle resultData) {
+        String fileUri = resultData.getString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI);
+
+        switch (resultCode) {
+            case ProgressListenerImpl.RESULT_FAILED:
+                mTransferAdapter.setTaskFailed(fileUri);
+                break;
+            case ProgressListenerImpl.RESULT_SUCCEEDED:
+                mTransferAdapter.setTaskFinished(fileUri);
+                mPreviousTime = System.currentTimeMillis();
+                mPreviousProgress = 0;
+                mCurrentTaskSize = 0;
+
+                break;
+            case ProgressListenerImpl.RESULT_PROGRESS:
+                int progress = resultData.getInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS);
+                mTransferAdapter.updateProgress(mRecyclerView, fileUri, progress);
+
+                if (mCurrentTaskSize == 0) {
+                    mCurrentTaskSize = mTransferAdapter.getItem(fileUri).size;
+                }
+
+                long periodTime = System.currentTimeMillis() - mPreviousTime;
+                long periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
+
+
+                // TODO 总传输时间小于500ms
+                if (periodTime > 500) { // 每隔一段时间更新一下网速、下载总量
+                    // 计算传输总量
+                    mTransferTotal += periodBytes;
+                    mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
+
+                    // 计算网速
+                    long speed = periodBytes / periodTime * 1000;
+                    mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
+
+                    mPreviousProgress = progress;
+                    mPreviousTime = System.currentTimeMillis();
+                }
+                break;
+            default:
+                break;
+        }
+    }
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -152,7 +169,8 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(ACTION_ADD_TASK));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mTaskBroadcastReceiver, new IntentFilter(ACTION_ADD_TASK));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mProgressBroadcastReceiver,new IntentFilter(ACTION_UPDATE_PROGRESS));
 
         mLoadingIndicatorView.setVisibility(View.GONE);
     }
@@ -188,7 +206,9 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mTaskBroadcastReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mProgressBroadcastReceiver);
+
         super.onDestroy();
     }
 }
