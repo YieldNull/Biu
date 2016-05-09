@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters.choose;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.db.MediaItem;
 import com.bbbbiu.biu.util.db.ModelItem;

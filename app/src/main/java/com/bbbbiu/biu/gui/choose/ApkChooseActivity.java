@@ -14,9 +14,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.choose.ApkContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ApkContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.util.db.ApkItem;
 
 import java.io.File;

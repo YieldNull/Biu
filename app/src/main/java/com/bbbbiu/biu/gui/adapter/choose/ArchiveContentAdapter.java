@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters.choose;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,13 +9,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.bbbbiu.biu.util.db.FileItem;
 import com.bbbbiu.biu.util.db.ModelItem;
-
-import java.io.File;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -23,14 +20,13 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class DocumentContentAdapter extends ContentBaseAdapter {
-    private static final String TAG = DocumentContentAdapter.class.getSimpleName();
+public class ArchiveContentAdapter extends ContentBaseAdapter {
+    private static final String TAG = ArchiveContentAdapter.class.getSimpleName();
 
-    public DocumentContentAdapter(ChooseBaseActivity context) {
+    public ArchiveContentAdapter(ChooseBaseActivity context) {
         super(context);
 
-        if (!queryModelItems(ModelItem.TYPE_DOC)) {
-
+        if (!queryModelItems(ModelItem.TYPE_ARCHIVE)) {
         }
     }
 
@@ -41,14 +37,14 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
 
     @Override
     public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
+        return new ArchiveViewHolder(inflater.inflate(R.layout.list_archive_item, parent, false));
     }
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
-
-            DocumentViewHolder holder = (DocumentViewHolder) hd;
+            ArchiveViewHolder holder = (ArchiveViewHolder) hd;
             FileItem item = (FileItem) getItemAt(position);
 
             holder.nameText.setText(item.getFile().getName());
@@ -57,7 +53,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
             if (isItemChosen(position)) {
                 holder.setItemStyleChosen();
             } else {
-                holder.setItemStyleChoosing(item.getFile());
+                holder.setItemStyleChoosing();
             }
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +69,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
         }
     }
 
-    class DocumentViewHolder extends RecyclerView.ViewHolder {
+    class ArchiveViewHolder extends RecyclerView.ViewHolder {
 
         @Bind(R.id.imageView_icon)
         ImageView iconImg;
@@ -87,7 +83,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
         @Bind(R.id.imageButton_option)
         ImageButton optionButton;
 
-        public DocumentViewHolder(View itemView) {
+        public ArchiveViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);
@@ -99,10 +95,10 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
             iconImg.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
         }
 
-        public void setItemStyleChoosing(File file) {
+        public void setItemStyleChoosing() {
             itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
             iconImg.setBackgroundDrawable(null);
-            iconImg.setImageDrawable(StorageUtil.getFileIcon(context, file));
+            iconImg.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_archive));
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters.choose;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.support.v7.widget.RecyclerView;
 

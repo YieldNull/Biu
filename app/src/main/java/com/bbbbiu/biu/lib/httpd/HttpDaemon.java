@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.lib.httpd;
 
 
+import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.httpd.util.Streams;
@@ -51,7 +52,7 @@ public class HttpDaemon {
         mRequestManager = new RequestManager();
     }
 
-    public static int sPort = 8080;
+    public static int sPort = 5050;
 
     public static int getPort() {
         return sPort;
@@ -287,8 +288,8 @@ public class HttpDaemon {
                         )
                 );
 
-            } catch (IOException e) {
-                Log.w(TAG, e.toString());
+            } catch (Exception e) {
+                Log.w(TAG, e);
             } finally {
                 Streams.safeClose(inputStream);
                 Streams.safeClose(outputStream);
@@ -302,6 +303,12 @@ public class HttpDaemon {
          */
         private HttpResponse handleRequest(HttpRequest request) {
             String uri = request.getUri();
+
+            if (uri == null) {
+                return HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST, ContentType.MIME_PLAINTEXT,
+                        HttpResponse.Status.BAD_REQUEST.getDescription());
+            }
+
             HttpRequest.Method method = request.getMethod();
 
             HttpServlet servlet = null;

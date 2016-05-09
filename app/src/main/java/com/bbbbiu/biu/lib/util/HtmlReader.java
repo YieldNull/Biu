@@ -15,14 +15,14 @@ public class HtmlReader {
 
     /**
      * @param context context
-     * @param path    在 “assets/html” 中的路径
+     * @param path    在 “assets/html” 中的路径,如 "index.html"
      * @return 读取到的源码。找不到该路径下的文件或者读取文件时出现IOException 则返回null
      */
     public static String readAll(Context context, String path) {
         StringBuilder sb;
         try {
 
-            InputStream stream = context.getAssets().open("html" + path);
+            InputStream stream = context.getAssets().open("html/" + path);
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
             sb = new StringBuilder();

@@ -1,6 +1,5 @@
 package com.bbbbiu.biu.gui;
 
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,9 +11,9 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.MainAdapter;
-import com.bbbbiu.biu.gui.transfer.DownloadActivity;
-import com.bbbbiu.biu.gui.transfer.ReceiveActivity;
+import com.bbbbiu.biu.gui.adapter.MainAdapter;
+import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
+import com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.fbtn_receive_android)
     void receiveAndroid() {
         actionMenu.toggle(false);
-        ReceiveActivity.startConnection(this);
+        ReceivingActivity.startConnection(this);
     }
 
     @Override

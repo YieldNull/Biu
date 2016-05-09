@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.transfer.DownloadActivity;
+import com.bbbbiu.biu.gui.transfer.apple.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
@@ -24,9 +24,9 @@ import okhttp3.ResponseBody;
 
 /**
  * 轮询Service，用于电脑将文件先传到公网服务器，然后再从服务器下载的情景。
- * <p>
+ * <p/>
  * 需要轮询原因：
- * <p>
+ * <p/>
  * 1.用户上传文件后可以选择继续上传或者从手机端下载文件，不能要求用户再次扫码
  * 2.用户上传两个文件的时间间隔比较大，比如传大文件，一次无法获取所有文件列表
  */
@@ -35,14 +35,14 @@ public class PollingService extends Service {
 
     /**
      * 成功获取到服务器传来的文件列表。
-     * <p>
+     * <p/>
      * 轮询的结果，{@link ResultReceiver} send() 中 statusCode参数
      */
     public static final int RESULT_OK = 0;
 
     /**
      * 服务器故障
-     * <p>
+     * <p/>
      * 轮询的结果，{@link ResultReceiver} send() 中 statusCode参数
      */
     public static final int RESULT_ERROR = 1;
@@ -50,14 +50,14 @@ public class PollingService extends Service {
 
     /**
      * 从二维码扫描得到的uid
-     * <p>
+     * <p/>
      * intent extra 的字段名， 接收从 Activity 传来的参数
      */
     private static final String EXTRA_UID = "com.bbbbiu.biu.service.PollingService.extra.UID";
 
     /**
      * 从Activity传来的 {@link ResultReceiver}
-     * <p>
+     * <p/>
      * intent extra 的字段名， 接收从 Activity 传来的参数
      */
     private static final String EXTRA_RECEIVER = "com.bbbbiu.biu.service.PollingService.extra.RECEIVER";
@@ -78,7 +78,7 @@ public class PollingService extends Service {
     /**
      * 从服务器获取文件列表的失败重试次数，超过此次数则停止轮询
      * 失败指的是出现IO异常，HTTP返回码非200，返回的json数据非法等
-     * <p>
+     * <p/>
      * 详见{@link PollingService#downloadFileList()}
      */
     private static final int RETRY_TIME = 20;
@@ -210,7 +210,7 @@ public class PollingService extends Service {
                 Log.i(TAG, "User has not send files to server. Retrying...");
             } else {
 
-                DownloadActivity.addTask(this, fileItems);
+                //TODO//ReceivingActivity.addTask(this, fileItems);
             }
         }
     }

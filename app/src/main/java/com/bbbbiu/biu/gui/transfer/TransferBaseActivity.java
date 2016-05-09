@@ -20,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.TransferAdapter;
+import com.bbbbiu.biu.gui.adapter.TransferAdapter;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;

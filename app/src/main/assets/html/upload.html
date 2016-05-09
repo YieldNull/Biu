@@ -8,12 +8,74 @@
 <body>
 <div style="text-align:center;margin-top:50%;">
     <!-- Page Layout here -->
-    <form action="/upload" enctype="multipart/form-data" method="post">
-        <input type="file" name="upfile" multiple>
-        <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+    <form action="/upload" name="theForm" id="theForm" enctype="multipart/form-data" method="post">
+        <input type="file" name="upfile" id="fileUpload" accept="*/*" multiple>
+        <button class="btn waves-effect waves-light" type="button" onclick="sendManifest()"
+                name="action">Submit
         </button>
     </form>
 </div>
+
+<script>
+
+    function sendManifest() {
+        var fileInput = document.getElementById("fileUpload");
+        var manifest = [];
+
+        if (fileInput.files.length == 0) {
+            alert("请先选择文件");
+            return;
+        }
+
+        var time;
+        for (var i = 0; i < fileInput.files.length; i++) {
+            time = new Date().getTime();
+
+            var file = fileInput.files[i];
+            var info = {};
+            info['size'] = file.size;
+            info['name'] = file.name;   // TODO 处理同名文件
+            info['uri'] = time + "/" + file.name; // "timestamp/filename"
+
+            while (time == new Date().getTime()) {
+
+            }
+
+            manifest.push(info);
+        }
+
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('post', '/manifest', true);
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+
+        // send the collected data as JSON
+        var json = JSON.stringify(manifest);
+
+        xhr.onloadend = function () {
+            sendOneByOne(fileInput.files, 0);
+        };
+
+        xhr.send(json);
+    }
+
+    function sendOneByOne(files, index) {
+        if (index > files.length - 1) {
+            return;
+        }
+
+        var file = files[index];
+        var formData = new FormData();
+        formData.append(file.name, file, file.name);
+
+        xhr = new XMLHttpRequest();
+        xhr.open('POST', '/upload', true);
+        xhr.onloadend = function () {
+            sendOneByOne(files, index + 1);
+        };
+        xhr.send(formData);
+    }
+</script>
 </body>
 </html>
 

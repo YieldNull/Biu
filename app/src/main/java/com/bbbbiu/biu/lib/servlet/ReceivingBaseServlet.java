@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.android.servlets;
+package com.bbbbiu.biu.lib.servlet;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.httpd.ContentType;
-import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
 import com.bbbbiu.biu.lib.httpd.HttpServlet;
@@ -17,7 +16,6 @@ import com.bbbbiu.biu.lib.httpd.upload.FileItemFactory;
 import com.bbbbiu.biu.lib.httpd.upload.FileUpload;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.FileUploadException;
 import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
-import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 
@@ -25,22 +23,12 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Created by YieldNull at 4/22/16
+ * Created by YieldNull at 5/9/16
  */
-public class ReceiveServlet extends HttpServlet {
-    private static final String TAG = ReceiveServlet.class.getSimpleName();
+public class ReceivingBaseServlet extends HttpServlet {
+    private static final String TAG = ReceivingBaseServlet.class.getSimpleName();
 
-    private static ReceiveServlet sReceiveServlet;
-
-    public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Android.URL_UPLOAD, getSingleton(context));
-    }
-
-    public static ReceiveServlet getSingleton(Context context) {
-        return sReceiveServlet != null ? sReceiveServlet : (sReceiveServlet = new ReceiveServlet(context));
-    }
-
-    private ReceiveServlet(Context context) {
+    public ReceivingBaseServlet(Context context) {
         super(context);
     }
 
@@ -63,6 +51,7 @@ public class ReceiveServlet extends HttpServlet {
 
             @Override
             public void update(long pBytesRead, long pContentLength, int pItems) {
+
                 int progress = (int) (pBytesRead * 100.0 / pContentLength);
 
                 // 更新进度(0-100)
@@ -99,7 +88,7 @@ public class ReceiveServlet extends HttpServlet {
     }
 
 
-    private void sendProgressBroadcast(int progress) {
+    protected void sendProgressBroadcast(int progress) {
         Bundle bundle = new Bundle();
         bundle.putInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS, progress);
         bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
@@ -112,7 +101,7 @@ public class ReceiveServlet extends HttpServlet {
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
-    private void sendFailureBroadcast() {
+    protected void sendFailureBroadcast() {
         Bundle bundle = new Bundle();
         bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
 
@@ -124,7 +113,7 @@ public class ReceiveServlet extends HttpServlet {
     }
 
 
-    private void sendSuccessBroadcast() {
+    protected void sendSuccessBroadcast() {
         Bundle bundle = new Bundle();
         bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
 

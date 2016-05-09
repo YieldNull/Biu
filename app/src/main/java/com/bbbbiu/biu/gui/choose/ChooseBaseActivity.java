@@ -18,13 +18,13 @@ import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.ConnectAppleActivity;
+import com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity;
 import com.bbbbiu.biu.gui.ConnectComputerActivity;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.OnLoadingDataListener;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.transfer.UploadActivity;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.OnLoadingDataListener;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
@@ -122,7 +122,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
 
         switch (action) {
             case ACTION_SEND_ANDROID:
-                UploadActivity.startConnection(this);
+                SendingActivity.startConnection(this);
                 break;
             case ACTION_SEND_COMPUTER:
                 ConnectComputerActivity.connectForUpload(this);

@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.transfer;
+package com.bbbbiu.biu.gui.transfer.android;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,7 +14,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import com.bbbbiu.biu.lib.android.WifiApManager;
+import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
+import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.lib.util.HttpManager;
@@ -35,10 +37,10 @@ import okhttp3.Response;
 
 
 /**
- * 上传、发送文件
+ * Android 端发送文件给 Android端
  */
-public class UploadActivity extends TransferBaseActivity {
-    private static final String TAG = UploadActivity.class.getSimpleName();
+public class SendingActivity extends TransferBaseActivity {
+    private static final String TAG = SendingActivity.class.getSimpleName();
 
     private WifiManager mWifiManager;
     private Handler mHandler;
@@ -72,7 +74,7 @@ public class UploadActivity extends TransferBaseActivity {
     private String mUploadUrl;
 
     public static void startConnection(Context context) {
-        context.startActivity(new Intent(context, UploadActivity.class));
+        context.startActivity(new Intent(context, SendingActivity.class));
     }
 
     @Override

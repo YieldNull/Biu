@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".gui.transfer.DownloadActivity">
+    tools:context=".gui.transfer.apple.ReceivingActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"

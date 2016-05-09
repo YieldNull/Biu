@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters.choose;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -10,7 +10,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.util.db.ModelItem;

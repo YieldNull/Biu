@@ -171,7 +171,7 @@ public class HttpRequest {
             Log.d(TAG, Thread.currentThread().getName() + "Finish parsing request header");
             return request;
         } catch (IOException | HttpResponse.ResponseException e) {
-            Log.w(TAG, Thread.currentThread().getName() + "Exception when parsing request");
+            Log.w(TAG, Thread.currentThread().getName() + "Exception when parsing request", e);
         }
         return null;
     }

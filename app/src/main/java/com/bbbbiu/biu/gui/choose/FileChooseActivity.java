@@ -3,11 +3,11 @@ package com.bbbbiu.biu.gui.choose;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.OnChangeDirListener;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.FileContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.FilePanelAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.OnChangeDirListener;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.FilePanelAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;

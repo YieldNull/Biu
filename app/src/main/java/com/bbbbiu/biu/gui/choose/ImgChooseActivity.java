@@ -5,9 +5,9 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.ImgContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ImgContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
 
 import java.io.File;
 

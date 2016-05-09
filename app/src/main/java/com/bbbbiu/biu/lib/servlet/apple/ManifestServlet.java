@@ -1,10 +1,10 @@
-package com.bbbbiu.biu.lib.android.servlets;
+package com.bbbbiu.biu.lib.servlet.apple;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.gui.transfer.ReceiveActivity;
+import com.bbbbiu.biu.gui.transfer.apple.ReceivingActivity;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
@@ -13,11 +13,10 @@ import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
- * Created by YieldNull at 4/22/16
+ * Created by YieldNull at 5/9/16
  */
 public class ManifestServlet extends HttpServlet {
     private static final String TAG = ManifestServlet.class.getSimpleName();
@@ -25,7 +24,7 @@ public class ManifestServlet extends HttpServlet {
     private static ManifestServlet sManifestServlet;
 
     public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, getSingleton(context));
+        HttpDaemon.registerServlet(HttpConstants.Apple.URL_MANIFEST, getSingleton(context));
     }
 
     public static ManifestServlet getSingleton(Context context) {
@@ -46,12 +45,13 @@ public class ManifestServlet extends HttpServlet {
     public HttpResponse doPost(HttpRequest request) {
         Gson gson = new Gson();
 
-
-        ArrayList<FileItem> manifest = gson.fromJson(request.getText(), new TypeToken<ArrayList<FileItem>>() {
+        String json = request.getText();
+        ArrayList<FileItem> manifest = gson.fromJson(json, new TypeToken<ArrayList<FileItem>>() {
         }.getType());
 
-        ReceiveActivity.finishConnection(context, manifest);
+        Log.i(TAG, json);
+
+        ReceivingActivity.startReceiving(context, manifest);
         return HttpResponse.newResponse("");
     }
-
 }

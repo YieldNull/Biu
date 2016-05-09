@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapters.choose;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.gui.choose.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;

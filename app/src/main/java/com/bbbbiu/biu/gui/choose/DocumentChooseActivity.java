@@ -3,9 +3,9 @@ package com.bbbbiu.biu.gui.choose;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.DocumentContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.DocumentContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;

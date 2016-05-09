@@ -4,9 +4,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapters.choose.MusicContentAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapters.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.MusicContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;

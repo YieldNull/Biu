@@ -1,22 +1,25 @@
-package com.bbbbiu.biu.gui;
+package com.bbbbiu.biu.gui.transfer.apple;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.lib.servlet.apple.ManifestServlet;
+import com.bbbbiu.biu.lib.servlet.apple.ReceivingServlet;
+import com.bbbbiu.biu.lib.util.WifiApManager;
+import com.bbbbiu.biu.service.HttpdService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -30,8 +33,8 @@ import butterknife.ButterKnife;
 public class ConnectAppleActivity extends AppCompatActivity {
     private static final String TAG = ConnectAppleActivity.class.getSimpleName();
 
-    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.ConnectAppleActivity.action.UPLOAD";
-    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.ConnectAppleActivity.action.DOWNLOAD";
+    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
+    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
 
 
     public static void connectForUpload(Context context) {
@@ -48,6 +51,10 @@ public class ConnectAppleActivity extends AppCompatActivity {
 
     @Bind(R.id.imageView)
     ImageView mQRCodeImage;
+
+
+    private WifiApManager mApManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +75,34 @@ public class ConnectAppleActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
+        mApManager = new WifiApManager(this);
 
-        WifiManager wm = (WifiManager) getSystemService(WIFI_SERVICE);
-        String ip = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-        String url = "http://" + ip + ":8080";
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mApManager.createAp();
+            }
+        }, 1000);
+
+
+        String url = "http://192.168.43.1:5050";
 
         mQRCodeImage.setImageBitmap(genQRCode(url));
+
+        // 开HttpServer,注册servlet
+        HttpdService.startService(this);
+        ManifestServlet.register(this);
+        ReceivingServlet.register(this);
     }
 
+
+    @Override
+    protected void onDestroy() {
+        mApManager.closeAp();
+        HttpdService.stopService(this);
+
+        super.onDestroy();
+    }
 
     private Bitmap genQRCode(String info) {
 

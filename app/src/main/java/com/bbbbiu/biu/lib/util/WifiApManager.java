@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.android;
+package com.bbbbiu.biu.lib.util;
 
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
@@ -19,7 +19,7 @@ public class WifiApManager {
     private static final String TAG = WifiApManager.class.getSimpleName();
 
     public static final String AP_SSID = "bbbbiu.com";
-    
+
     public static final int WIFI_AP_STATE_DISABLING = 10;
     public static final int WIFI_AP_STATE_DISABLED = 11;
     public static final int WIFI_AP_STATE_ENABLING = 12;
@@ -46,6 +46,52 @@ public class WifiApManager {
             isHtc = field != null;
         } catch (Exception ignore) {
         }
+    }
+
+    public static WifiConfiguration getDefaultApConfig() {
+        WifiConfiguration apConfig = new WifiConfiguration();
+        apConfig.SSID = WifiApManager.AP_SSID;
+        apConfig.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+
+        return apConfig;
+    }
+
+    /**
+     * 开热点
+     *
+     * @return 是否成功
+     */
+    public boolean createAp() {
+        if (!hasApCreated()) {
+            boolean succeed = setWifiApEnabled(getDefaultApConfig(), true);
+
+            Log.i(TAG, "Create Wifi Access Point: Succeeded: " + String.valueOf(succeed));
+
+            return succeed;
+        } else {
+            Log.i(TAG, "Wifi Access Point has already been created");
+            return true;
+        }
+    }
+
+    public void closeAp() {
+        setWifiApEnabled(getDefaultApConfig(), false);
+    }
+
+    public boolean hasApCreated() {
+        if (getWifiApState() == WifiApManager.WIFI_AP_STATE_ENABLED ||
+                getWifiApState() == WifiApManager.WIFI_AP_STATE_ENABLING) {
+
+            WifiConfiguration config = getWifiApConfiguration();
+            WifiConfiguration defaultConfig = getDefaultApConfig();
+
+            if (defaultConfig.SSID != null && defaultConfig.SSID.equals(config.SSID) &&
+                    defaultConfig.allowedKeyManagement != null &&
+                    defaultConfig.allowedKeyManagement.equals(config.allowedKeyManagement)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

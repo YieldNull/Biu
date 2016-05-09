@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".gui.ConnectAppleActivity">
+    tools:context=".gui.transfer.apple.ConnectAppleActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -24,6 +24,21 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        card_view:cardCornerRadius="2dp"
+        card_view:contentPadding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="请连接Wifi “bbbbiu.com”" />
+
+    </android.support.v7.widget.CardView>
 
 
     <android.support.v7.widget.CardView
@@ -42,7 +57,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="请扫码二维码" />
+                android:text="扫码二维码" />
 
             <TextView
                 android:id="@+id/textView"
@@ -50,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
-                android:text="或用浏览器访问 http://192.168.1.100:5050" />
+                android:text="或用浏览器访问 http://192.168.43.1:5050" />
         </LinearLayout>
 
     </android.support.v7.widget.CardView>

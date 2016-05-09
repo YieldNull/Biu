@@ -103,32 +103,35 @@
             android:name=".gui.choose.DocumentChooseActivity"
             android:label="@string/title_activity_choose_document"
             android:theme="@style/AppTheme.NoActionBar" />
+
+
         <activity
-            android:name=".gui.QRCodeScanActivity"
-            android:label="@string/title_activity_qrcode_scan"
-            android:noHistory="true"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.ConnectAppleActivity"
+            android:name=".gui.transfer.apple.ConnectAppleActivity"
             android:label="@string/title_activity_connect_"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.transfer.apple.ReceivingActivity"
+            android:label="@string/title_activity_download"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+
+        <activity
+            android:name=".gui.transfer.android.SendingActivity"
+            android:label="@string/title_activity_upload"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.transfer.android.ReceivingActivity"
+            android:label="@string/title_activity_receive"
+            android:theme="@style/AppTheme.NoActionBar" />
+
         <activity
             android:name=".gui.ConnectComputerActivity"
             android:label="@string/title_activity_connect_computer"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
-            android:name=".gui.transfer.DownloadActivity"
-            android:label="@string/title_activity_download"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".gui.transfer.UploadActivity"
-            android:label="@string/title_activity_upload"
-            android:theme="@style/AppTheme.NoActionBar" />
-
-        <activity
-            android:name=".gui.transfer.ReceiveActivity"
-            android:label="@string/title_activity_receive"
+            android:name=".gui.QRCodeScanActivity"
+            android:label="@string/title_activity_qrcode_scan"
+            android:noHistory="true"
             android:theme="@style/AppTheme.NoActionBar" />
 
     </application>
