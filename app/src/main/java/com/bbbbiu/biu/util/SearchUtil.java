@@ -11,10 +11,10 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.bbbbiu.biu.util.db.ApkItem;
-import com.bbbbiu.biu.util.db.FileItem;
-import com.bbbbiu.biu.util.db.ModelItem;
-import com.bbbbiu.biu.util.db.MediaItem;
+import com.bbbbiu.biu.db.search.ApkItem;
+import com.bbbbiu.biu.db.search.FileItem;
+import com.bbbbiu.biu.db.search.ModelItem;
+import com.bbbbiu.biu.db.search.MediaItem;
 import com.google.common.collect.ImmutableMap;
 import com.orm.SugarRecord;
 
@@ -78,6 +78,7 @@ public class SearchUtil {
         // TODO 有个问题，要是正在用户正在查询的时候进行扫描，把纪录删了怎么办
         SugarRecord.deleteAll(FileItem.class);
         SugarRecord.deleteAll(ApkItem.class);
+        SugarRecord.deleteAll(MediaItem.class);
 
         SearchUtil.scanDisk(context);
         SearchUtil.scanApkInstalled(context);

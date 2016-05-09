@@ -9,11 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.util.db.FileItem;
-import com.bbbbiu.biu.util.db.ModelItem;
+import com.bbbbiu.biu.db.search.FileItem;
+import com.bbbbiu.biu.db.search.ModelItem;
 
 import java.io.File;
 

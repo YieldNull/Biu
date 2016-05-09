@@ -33,7 +33,7 @@
             android:value="true" />
         <meta-data
             android:name="DOMAIN_PACKAGE_NAME"
-            android:value="com.bbbbiu.biu.util.db" />
+            android:value="com.bbbbiu.biu.db" />
 
         <receiver
             android:name=".service.DiskScanService$ScanAlarmReceiver"
@@ -55,7 +55,6 @@
             android:name=".service.DiskScanService"
             android:enabled="true"
             android:exported="false" />
-
         <service
             android:name=".service.UploadService"
             android:enabled="true"
@@ -103,8 +102,6 @@
             android:name=".gui.choose.DocumentChooseActivity"
             android:label="@string/title_activity_choose_document"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
         <activity
             android:name=".gui.transfer.apple.ConnectAppleActivity"
             android:label="@string/title_activity_connect_"
@@ -113,8 +110,6 @@
             android:name=".gui.transfer.apple.ReceivingActivity"
             android:label="@string/title_activity_download"
             android:theme="@style/AppTheme.NoActionBar" />
-
-
         <activity
             android:name=".gui.transfer.android.SendingActivity"
             android:label="@string/title_activity_upload"
@@ -123,7 +118,6 @@
             android:name=".gui.transfer.android.ReceivingActivity"
             android:label="@string/title_activity_receive"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".gui.ConnectComputerActivity"
             android:label="@string/title_activity_connect_computer"
@@ -131,7 +125,10 @@
         <activity
             android:name=".gui.QRCodeScanActivity"
             android:label="@string/title_activity_qrcode_scan"
-            android:noHistory="true"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.HistoryActivity"
+            android:label="@string/title_activity_history"
             android:theme="@style/AppTheme.NoActionBar" />
 
     </application>

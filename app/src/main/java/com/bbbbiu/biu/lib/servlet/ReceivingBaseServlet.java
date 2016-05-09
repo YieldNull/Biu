@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.httpd.ContentType;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
@@ -80,6 +81,12 @@ public class ReceivingBaseServlet extends HttpServlet {
 
         for (FileItem item : items) {
             Log.i(TAG, "Uploading file " + item.getName() + " to " + downloadDir.getAbsolutePath());
+
+
+            new RevRecord(
+                    System.currentTimeMillis(),
+                    item.getName(),
+                    item.getSize()).save();
         }
 
         sendSuccessBroadcast();

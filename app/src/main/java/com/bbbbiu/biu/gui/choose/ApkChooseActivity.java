@@ -17,7 +17,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.ApkContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
-import com.bbbbiu.biu.util.db.ApkItem;
+import com.bbbbiu.biu.db.search.ApkItem;
 
 import java.io.File;
 import java.util.LinkedList;

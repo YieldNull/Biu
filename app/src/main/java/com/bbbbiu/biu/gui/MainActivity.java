@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity;
+import com.bbbbiu.biu.service.DiskScanService;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
 
-//        FileScanService.scheduleAlarm(this);
+//        DiskScanService.scheduleAlarm(this);
     }
 
 
@@ -101,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
+            case R.id.action_history:
+                startActivity(new Intent(this, HistoryActivity.class));
+                break;
             default:
                 break;
         }

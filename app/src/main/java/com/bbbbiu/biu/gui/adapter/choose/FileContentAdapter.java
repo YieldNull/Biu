@@ -2,9 +2,6 @@ package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
-import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,17 +11,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
-import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Request;
-import com.squareup.picasso.RequestHandler;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +36,6 @@ import butterknife.ButterKnife;
 public class FileContentAdapter extends ContentBaseAdapter {
 
     private static final String TAG = FileContentAdapter.class.getSimpleName();
-
-    /**
-     * ViewType 类型
-     */
-    private static final int THUMB_SIZE = (int) SizeUtil.convertDpToPixel(24);
 
     private Context context;
 
@@ -81,7 +70,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
     private Picasso mVideoPicasso;
     private Picasso mImgPicasso;
 
-    private static final String PICASOO_SCHEME_VIDEO = "video-icon";
     private static final String PICASSO_TAG = "tag-img";
 
     public FileContentAdapter(ChooseBaseActivity context, File rootDir) {
@@ -362,15 +350,15 @@ public class FileContentAdapter extends ContentBaseAdapter {
             fileIconImageView.setBackgroundDrawable(null);
 
             if (StorageUtil.isVideoFile(file.getPath())) {
-                mVideoPicasso.load(PICASOO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
-                        .resize(THUMB_SIZE, THUMB_SIZE)
+                mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
+                        .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_video)
                         .tag(PICASSO_TAG)
                         .into(fileIconImageView);
 
             } else if (StorageUtil.isImgFile(file.getPath())) {
                 mImgPicasso.load(file)
-                        .resize(THUMB_SIZE, THUMB_SIZE)
+                        .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_img)
                         .tag(PICASSO_TAG)
                         .into(fileIconImageView);
@@ -402,27 +390,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
                     setFileChosen(position, true); // 被选
                 }
             }
-        }
-    }
-
-
-    /**
-     * 加载视频缩略图
-     */
-    class VideoIconRequestHandler extends RequestHandler {
-
-        @Override
-        public boolean canHandleRequest(Request data) {
-            return PICASOO_SCHEME_VIDEO.equals(data.uri.getScheme());
-        }
-
-        @Override
-        public Result load(Request request, int networkPolicy) throws IOException {
-            String path = request.uri.toString().replace(PICASOO_SCHEME_VIDEO + ":", "");
-            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(path,
-                    MediaStore.Video.Thumbnails.MICRO_KIND);
-
-            return new Result(bitmap, Picasso.LoadedFrom.DISK);
         }
     }
 }

@@ -12,11 +12,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.util.db.ApkItem;
+import com.bbbbiu.biu.db.search.ApkItem;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -128,7 +128,10 @@ public class ApkContentAdapter extends ContentBaseAdapter {
      * @return 之前是否有扫描
      */
     private boolean readApkList() {
-        return readInstalledApk() && readStandaloneApk(); // 注意顺序，此为显示顺序
+        boolean b = readInstalledApk();
+        readStandaloneApk(); // 注意顺序，此为显示顺序
+
+        return b;
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.util.db;
+package com.bbbbiu.biu.db.search;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.bbbbiu.biu.util.StorageUtil;
-import com.orm.SugarRecord;
 import com.orm.dsl.Unique;
 
 import java.io.File;

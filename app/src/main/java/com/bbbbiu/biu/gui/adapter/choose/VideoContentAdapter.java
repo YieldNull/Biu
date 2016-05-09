@@ -10,11 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
-import com.bbbbiu.biu.util.db.MediaItem;
-import com.bbbbiu.biu.util.db.ModelItem;
+import com.bbbbiu.biu.db.search.MediaItem;
+import com.bbbbiu.biu.db.search.ModelItem;
 import com.squareup.picasso.Picasso;
 
 
@@ -76,7 +77,7 @@ public class VideoContentAdapter extends ContentBaseAdapter {
             } else {
                 holder.setItemStyleChoosing();
 
-                mPicasso.load(PICASSO_SCHEME_VIDEO + ":" + item.path)
+                mPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + item.path)
                         .resize(THUMB_SIZE, THUMB_SIZE)
                         .tag(PICASSO_TAG)
                         .placeholder(R.drawable.ic_type_video)

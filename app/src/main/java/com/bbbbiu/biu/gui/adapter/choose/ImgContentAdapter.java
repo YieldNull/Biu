@@ -10,10 +10,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.util.SizeUtil;
-import com.bbbbiu.biu.util.db.ModelItem;
+import com.bbbbiu.biu.db.search.ModelItem;
 import com.squareup.picasso.Picasso;
 
 import butterknife.Bind;

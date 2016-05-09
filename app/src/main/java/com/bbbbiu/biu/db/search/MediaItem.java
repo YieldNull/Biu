@@ -1,17 +1,12 @@
-package com.bbbbiu.biu.util.db;
+package com.bbbbiu.biu.db.search;
 
 import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
 import com.bbbbiu.biu.util.StorageUtil;
-import com.orm.SugarRecord;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**

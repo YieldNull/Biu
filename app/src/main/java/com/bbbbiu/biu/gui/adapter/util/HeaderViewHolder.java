@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter;
+package com.bbbbiu.biu.gui.adapter.util;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

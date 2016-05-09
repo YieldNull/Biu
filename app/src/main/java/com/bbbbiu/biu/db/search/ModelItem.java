@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.util.db;
+package com.bbbbiu.biu.db.search;
 
 import com.orm.SugarRecord;
 
@@ -43,10 +43,10 @@ public abstract class ModelItem extends SugarRecord {
         List<ModelItem> allRecords = new ArrayList<>();
 
         if (type == TYPE_MUSIC || type == TYPE_VIDEO) {
-            List<MediaItem> records = MediaItem.find(MediaItem.class, "type=?", String.valueOf(type));
+            List<MediaItem> records = find(MediaItem.class, "type=?", String.valueOf(type));
             allRecords.addAll(records);
         } else {
-            List<FileItem> records = MediaItem.find(FileItem.class, "type=?", String.valueOf(type));
+            List<FileItem> records = find(FileItem.class, "type=?", String.valueOf(type));
             allRecords.addAll(records);
         }
 

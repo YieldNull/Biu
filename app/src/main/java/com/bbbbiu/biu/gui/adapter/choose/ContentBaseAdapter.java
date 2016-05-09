@@ -1,26 +1,19 @@
 package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
-import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.gui.choose.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
-import com.bbbbiu.biu.util.db.ModelItem;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Request;
-import com.squareup.picasso.RequestHandler;
+import com.bbbbiu.biu.db.search.ModelItem;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -51,11 +44,6 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      * 已选项
      */
     protected List<ModelItem> mChosenItems = new ArrayList<>();
-
-    /**
-     * 自定义 Picasso Request Handler 时的 Request URI Schema
-     */
-    protected static final String PICASSO_SCHEME_VIDEO = "video-icon";
 
     /**
      * 为所有Picasso请求打上标签，以便之后取消
@@ -261,25 +249,5 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         onItemOptionClickListener.onFileOptionClick(file);
     }
 
-
-    /**
-     * 加载视频缩略图
-     */
-    protected class VideoIconRequestHandler extends RequestHandler {
-
-        @Override
-        public boolean canHandleRequest(Request data) {
-            return PICASSO_SCHEME_VIDEO.equals(data.uri.getScheme());
-        }
-
-        @Override
-        public Result load(Request request, int networkPolicy) throws IOException {
-            String path = request.uri.toString().replace(PICASSO_SCHEME_VIDEO + ":", "");
-            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(path,
-                    MediaStore.Video.Thumbnails.MICRO_KIND);
-
-            return new Result(bitmap, Picasso.LoadedFrom.DISK);
-        }
-    }
 
 }
