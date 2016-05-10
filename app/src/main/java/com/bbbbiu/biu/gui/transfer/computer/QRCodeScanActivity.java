@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui;
+package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -38,8 +38,8 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     private static final String TAG = QRCodeScanActivity.class.getSimpleName();
 
 
-    public static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.QRCodeScanActivity.action.UPLOAD";
-    public static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.QRCodeScanActivity.action.DOWNLOAD";
+    public static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.computer.QRCodeScanActivity.action.UPLOAD";
+    public static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.computer.QRCodeScanActivity.action.DOWNLOAD";
 
     private static final int MSG_ENTER_DOWNLOAD_ACTIVITY = 0;
     private static final int MSG_ENTER_UPLOAD_ACTIVITY = 1;
@@ -70,13 +70,6 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
         super.onCreate(state);
         ButterKnife.bind(this);
 
-        // android 4.4 状态栏透明
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            SystemBarTintManager tintManager = new SystemBarTintManager(this);
-            tintManager.setStatusBarTintEnabled(true);
-            tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
-        }
 
         mScannerView = new ZXingScannerView(this);
         setContentView(mScannerView);

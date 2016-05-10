@@ -30,21 +30,21 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 
-public class ConnectAppleActivity extends AppCompatActivity {
-    private static final String TAG = ConnectAppleActivity.class.getSimpleName();
+public class ConnectingActivity extends AppCompatActivity {
+    private static final String TAG = ConnectingActivity.class.getSimpleName();
 
     private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
     private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
 
 
     public static void connectForUpload(Context context) {
-        Intent intent = new Intent(context, ConnectAppleActivity.class);
+        Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_UPLOAD);
         context.startActivity(intent);
     }
 
     public static void connectForDownload(Context context) {
-        Intent intent = new Intent(context, ConnectAppleActivity.class);
+        Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_DOWNLOAD);
         context.startActivity(intent);
     }

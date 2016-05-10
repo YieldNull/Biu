@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui;
+package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
@@ -15,20 +15,20 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ConnectComputerActivity extends AppCompatActivity {
+public class ConnectingActivity extends AppCompatActivity {
 
-    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.ConnectComputerActivity.action.UPLOAD";
-    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.ConnectComputerActivity.action.DOWNLOAD";
-    private static final String TAG = ConnectComputerActivity.class.getSimpleName();
+    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.UPLOAD";
+    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.DOWNLOAD";
+    private static final String TAG = ConnectingActivity.class.getSimpleName();
 
     public static void connectForUpload(Context context) {
-        Intent intent = new Intent(context, ConnectComputerActivity.class);
+        Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_UPLOAD);
         context.startActivity(intent);
     }
 
     public static void connectForDownload(Context context) {
-        Intent intent = new Intent(context, ConnectComputerActivity.class);
+        Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_DOWNLOAD);
         context.startActivity(intent);
     }

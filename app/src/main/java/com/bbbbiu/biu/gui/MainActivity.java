@@ -14,8 +14,7 @@ import android.view.WindowManager;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
-import com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity;
-import com.bbbbiu.biu.service.DiskScanService;
+import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -39,13 +38,13 @@ public class MainActivity extends AppCompatActivity {
     void receiveComputer() {
         actionMenu.toggle(false);
 
-        ConnectComputerActivity.connectForDownload(this);
+        ConnectingActivity.connectForDownload(this);
     }
 
     @OnClick(R.id.fbtn_receive_ios)
     void receiveApple() {
         actionMenu.toggle(false);
-        ConnectAppleActivity.connectForDownload(this);
+        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForDownload(this);
     }
 
     @OnClick(R.id.fbtn_receive_android)

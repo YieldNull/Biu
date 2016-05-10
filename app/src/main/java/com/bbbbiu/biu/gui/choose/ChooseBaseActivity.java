@@ -18,8 +18,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity;
-import com.bbbbiu.biu.gui.ConnectComputerActivity;
+import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.FileContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.OnLoadingDataListener;
@@ -125,10 +124,10 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
                 SendingActivity.startConnection(this);
                 break;
             case ACTION_SEND_COMPUTER:
-                ConnectComputerActivity.connectForUpload(this);
+                ConnectingActivity.connectForUpload(this);
                 break;
             default:
-                ConnectAppleActivity.connectForUpload(this);
+                com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForUpload(this);
                 break;
         }
 

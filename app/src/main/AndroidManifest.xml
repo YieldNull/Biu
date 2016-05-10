@@ -103,7 +103,7 @@
             android:label="@string/title_activity_choose_document"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.transfer.apple.ConnectAppleActivity"
+            android:name=".gui.transfer.apple.ConnectingActivity"
             android:label="@string/title_activity_connect_"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
@@ -119,11 +119,11 @@
             android:label="@string/title_activity_receive"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.ConnectComputerActivity"
+            android:name=".gui.transfer.computer.ConnectingActivity"
             android:label="@string/title_activity_connect_computer"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.QRCodeScanActivity"
+            android:name=".gui.transfer.computer.QRCodeScanActivity"
             android:label="@string/title_activity_qrcode_scan"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
