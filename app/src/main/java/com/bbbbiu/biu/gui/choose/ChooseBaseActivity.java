@@ -127,7 +127,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
                 ConnectingActivity.connectForUpload(this);
                 break;
             default:
-                com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForUpload(this);
+                com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForSending(this);
                 break;
         }
 

@@ -8,9 +8,9 @@
 <body>
 
 <div style="text-align:center;margin-top:50%;">
-    {% for file in files %}
-    <p><a href="/download/{{ file.hashCode() }}">{{ file.getName() }}</a></p>
-    {% endfor %}
+    {{#files }}
+    <p><a href="/download/{{hashCode}}">{{name}}</a></p>
+    {{/files}}
 </div>
 </body>
 </html>

@@ -74,5 +74,6 @@
     <string name="transfer_connecting">正在连接</string>
     <string name="transfer_waiting">正在等待</string>
     <string name="transfer_working">正在传输</string>
+    <string name="title_activity_send">正在发送</string>
 
 </resources>

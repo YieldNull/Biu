@@ -140,10 +140,10 @@ public class HttpResponse {
 
 
     /**
-     * 返回已知大小纯文本
+     * 返回已知大小的HTML源码
      */
-    public static HttpResponse newResponse(String msg) {
-        return newResponse(HttpResponse.Status.OK, ContentType.MIME_HTML, msg);
+    public static HttpResponse newResponse(String html) {
+        return newResponse(HttpResponse.Status.OK, ContentType.MIME_HTML, html);
     }
 
 

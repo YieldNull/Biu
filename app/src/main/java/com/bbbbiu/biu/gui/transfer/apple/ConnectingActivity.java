@@ -16,6 +16,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
+import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
 import com.bbbbiu.biu.lib.servlet.apple.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.apple.ReceivingServlet;
 import com.bbbbiu.biu.lib.util.WifiApManager;
@@ -33,19 +35,19 @@ import butterknife.ButterKnife;
 public class ConnectingActivity extends AppCompatActivity {
     private static final String TAG = ConnectingActivity.class.getSimpleName();
 
-    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
-    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
+    private static final String ACTION_SENDING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
+    private static final String ACTION_RECEIVING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
 
 
-    public static void connectForUpload(Context context) {
+    public static void connectForSending(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
-        intent.setAction(ACTION_UPLOAD);
+        intent.setAction(ACTION_SENDING);
         context.startActivity(intent);
     }
 
-    public static void connectForDownload(Context context) {
+    public static void connectForReceiving(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
-        intent.setAction(ACTION_DOWNLOAD);
+        intent.setAction(ACTION_RECEIVING);
         context.startActivity(intent);
     }
 
@@ -91,8 +93,16 @@ public class ConnectingActivity extends AppCompatActivity {
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
-        ManifestServlet.register(this);
-        ReceivingServlet.register(this);
+
+        String action = getIntent().getAction();
+
+        if (action.equals(ACTION_RECEIVING)) {
+            ManifestServlet.register(this);
+            ReceivingServlet.register(this);
+        } else {
+            DownloadServlet.register(this);
+            FileServlet.register(this);
+        }
     }
 
 

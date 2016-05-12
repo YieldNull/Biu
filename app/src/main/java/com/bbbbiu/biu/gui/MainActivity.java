@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.fbtn_receive_ios)
     void receiveApple() {
         actionMenu.toggle(false);
-        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForDownload(this);
+        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(this);
     }
 
     @OnClick(R.id.fbtn_receive_android)
