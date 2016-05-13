@@ -4,10 +4,10 @@ import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.upload.interfaces.Closeable;
 import com.bbbbiu.biu.lib.httpd.upload.interfaces.FileItemIterator;
 import com.bbbbiu.biu.lib.httpd.upload.interfaces.FileItemStream;
-import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
+import com.bbbbiu.biu.lib.util.ProgressListener;
 import com.bbbbiu.biu.lib.httpd.util.FileItemHeaders;
 import com.bbbbiu.biu.lib.httpd.util.LimitedInputStream;
-import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
 import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.*;
 

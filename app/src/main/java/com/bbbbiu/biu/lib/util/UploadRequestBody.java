@@ -1,7 +1,5 @@
 package com.bbbbiu.biu.lib.util;
 
-import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
-
 import java.io.File;
 import java.io.IOException;
 

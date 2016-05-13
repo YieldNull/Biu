@@ -1,9 +1,5 @@
 package com.bbbbiu.biu.lib.util;
 
-import android.webkit.MimeTypeMap;
-
-import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
-
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;

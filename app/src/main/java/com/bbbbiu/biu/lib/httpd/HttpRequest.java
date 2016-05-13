@@ -170,13 +170,13 @@ public class HttpRequest {
             request.parseRequestHeader();
             Log.d(TAG, Thread.currentThread().getName() + "Finish parsing request header");
             return request;
-        } catch (IOException | HttpResponse.ResponseException e) {
+        } catch (IOException e) {
             Log.w(TAG, Thread.currentThread().getName() + "Exception when parsing request", e);
         }
         return null;
     }
 
-    private void parseRequestHeader() throws IOException, HttpResponse.ResponseException {
+    private void parseRequestHeader() throws IOException {
         byte[] headerBuf = new byte[HttpRequest.BUFSIZE]; //请求头缓冲区，最大不超过 HttpRequest.BUFSIZE
         int headerEndIndex = 0;
         int readCount = 0;
@@ -218,10 +218,9 @@ public class HttpRequest {
      * 解析请求头
      *
      * @param reader reader
-     * @throws HttpResponse.ResponseException 请求头格式不对
      * @throws IOException
      */
-    private void decodeHeader(BufferedReader reader) throws HttpResponse.ResponseException, IOException {
+    private void decodeHeader(BufferedReader reader) throws IOException {
 
         // 请求的URL，请求方式，HTTP协议版本
         String line = reader.readLine();
@@ -233,7 +232,7 @@ public class HttpRequest {
 
         if (tokens.length != 3) {
             Log.w(TAG, Thread.currentThread().getName() + "Invalid HTTP Request Header");
-            throw new HttpResponse.ResponseException(HttpResponse.Status.BAD_REQUEST.getDescription());
+            throw new IOException(HttpResponse.Status.BAD_REQUEST.getDescription());
         }
 
         mMethod = Method.lookup(tokens[0]);

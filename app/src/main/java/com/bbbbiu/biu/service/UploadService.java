@@ -12,9 +12,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
-import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
-import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
 import com.bbbbiu.biu.lib.httpd.util.Streams;
 
 import java.io.File;
@@ -142,12 +141,12 @@ public class UploadService extends Service {
                     boolean succeeded = uploadFile(uploadUrl, fileUri, formData, progressListener);
 
                     Bundle bundle = new Bundle();
-                    bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, fileUri);
+                    bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, fileUri);
 
                     if (succeeded) {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, bundle);
+                        resultReceiver.send(ProgressListener.RESULT_SUCCEEDED, bundle);
                     } else {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, bundle);
+                        resultReceiver.send(ProgressListener.RESULT_FAILED, bundle);
                     }
                 }
             });

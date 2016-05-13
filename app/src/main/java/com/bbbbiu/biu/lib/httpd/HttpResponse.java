@@ -1,11 +1,12 @@
 package com.bbbbiu.biu.lib.httpd;
 
-import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.ProgressListener;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,109 +31,150 @@ public class HttpResponse {
      * 返回状态码
      */
     public enum Status {
-        SWITCH_PROTOCOL(101, "Switching Protocols"),
         OK(200, "OK"),
-        CREATED(201, "Created"),
-        ACCEPTED(202, "Accepted"),
-        NO_CONTENT(204, "No Content"),
-        PARTIAL_CONTENT(206, "Partial Content"),
-        MULTI_STATUS(207, "Multi-Status"),
-        REDIRECT(301, "Moved Permanently"),
         REDIRECT_SEE_OTHER(303, "See Other"),
-        NOT_MODIFIED(304, "Not Modified"),
         BAD_REQUEST(400, "Bad Request"),
-        UNAUTHORIZED(401, "Unauthorized"),
-        FORBIDDEN(403, "Forbidden"),
         NOT_FOUND(404, "Not Found"),
         METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-        NOT_ACCEPTABLE(406, "Not Acceptable"),
-        REQUEST_TIMEOUT(408, "Request Timeout"),
-        CONFLICT(409, "Conflict"),
-        RANGE_NOT_SATISFIABLE(416, "Requested Range Not Satisfiable"),
-        INTERNAL_ERROR(500, "Internal Server Error"),
-        NOT_IMPLEMENTED(501, "Not Implemented"),
-        UNSUPPORTED_HTTP_VERSION(505, "HTTP Version Not Supported");
+        INTERNAL_ERROR(500, "Internal Server Error");
 
-        private final int requestStatus;
+        private final int status;
 
         private final String description;
 
-        Status(int requestStatus, String description) {
-            this.requestStatus = requestStatus;
+        Status(int status, String description) {
+            this.status = status;
             this.description = description;
         }
 
         public String getDescription() {
-            return "" + this.requestStatus + " " + this.description;
+            return "" + this.status + " " + this.description;
         }
     }
 
+    /**
+     * 回车换行：Carriage Return & Line Feed
+     */
+    private static final String CRLF = "\r\n";
 
+    /**
+     * 空格
+     */
+    private static final String SPACE = " ";
+
+    /**
+     * 返回状态码
+     */
     private Status status;
+
+
+    /**
+     * 返回数据对应的MIME TYPE
+     */
     private String mimeType;
 
-    private InputStream data;
+    /**
+     * 将要发送的数据
+     */
+    private InputStream dataStream;
+
+    /**
+     * 数据长度
+     */
     private long contentLength;
 
-
-    private boolean chunkedTransfer;
+    /**
+     * 是否用Gzip发送
+     */
     private boolean encodeAsGzip;
-    private boolean keepAlive;
 
+    /**
+     * 监听发送进度
+     */
+    private ProgressNotifier progressNotifier;
+
+    /**
+     * HTTP Headers
+     */
     private HashMap<String, String> headerMap = new HashMap<>();
 
-    public InputStream getData() {
-        return this.data;
-    }
 
-
+    /**
+     * 获取返回数据的 MIME TYPE
+     *
+     * @return MIME TYPE
+     */
     public String getMimeType() {
         return this.mimeType;
     }
 
-    public void setGzipEncoding(boolean encodeAsGzip) {
-        this.encodeAsGzip = encodeAsGzip;
-    }
-
-    public void setKeepAlive(boolean useKeepAlive) {
-        this.keepAlive = useKeepAlive;
-    }
-
-    public void setData(InputStream data) {
-        this.data = data;
-    }
-
-
-    public void addHeader(String header, String value) {
-        headerMap.put(header, value);
-    }
-
+    /**
+     * 获取返回状态码
+     *
+     * @return {@link Status}
+     */
     public Status getStatus() {
         return status;
     }
 
     /**
-     * 私有构造函数，会有工厂方法创建对象
+     * 设置是否使用GZIP 发送数据
+     *
+     * @param encodeAsGzip 是否使用GZIP
+     */
+    public void setGzipEncoding(boolean encodeAsGzip) {
+        this.encodeAsGzip = encodeAsGzip;
+    }
+
+
+    /**
+     * 设置发送进度监听
+     *
+     * @param progressNotifier {@link ProgressListener}
+     */
+    public void setProgressNotifier(ProgressNotifier progressNotifier) {
+        this.progressNotifier = progressNotifier;
+    }
+
+    /**
+     * 设置HTTP Header。会覆盖原有值
+     *
+     * @param header header
+     * @param value  value
+     */
+    public void addHeader(String header, String value) {
+        headerMap.put(header, value);
+    }
+
+    /**
+     * 私有构造函数，会有工厂方法创建对象.
+     * <p/>
+     * {@link HttpResponse#newResponse(String)}
+     * <p/>
+     * {@link HttpResponse#newResponse(Status, String)}
+     * <p/>
+     * {@link HttpResponse#newResponse(InputStream, long)}
+     * <p/>
+     * {@link HttpResponse#newResponse(Status, String, InputStream, long)}
+     * <p/>
+     * {@link HttpResponse#newRedirectResponse(String)}
      *
      * @param status     返回状态码,默认为200
      * @param mimeType   返回MIME类型
-     * @param data       返回报文输入流
+     * @param dataStream 返回报文输入流
      * @param totalBytes 返回报文大小 “Content-Length"
      */
-    private HttpResponse(Status status, String mimeType, InputStream data, long totalBytes) {
+    private HttpResponse(Status status, String mimeType, InputStream dataStream, long totalBytes) {
         this.status = status == null ? Status.OK : status;
         this.mimeType = mimeType;
 
-        if (data == null) {
-            this.data = new ByteArrayInputStream(new byte[0]);
+        if (dataStream == null) {
+            this.dataStream = new ByteArrayInputStream(new byte[0]);
             contentLength = 0L;
         } else {
-            this.data = data;
+            this.dataStream = dataStream;
             this.contentLength = totalBytes;
         }
-        chunkedTransfer = contentLength < 0; // 不知道totalBytes的时候采用chunkedTransfer
-
-        keepAlive = true; // 默认KeepAlive,之后会根据Request做出相应更改
 
         Log.d(TAG, String.format("%s Finish generating response. Status:%s",
                 Thread.currentThread().getName(), status.getDescription()));
@@ -140,7 +182,10 @@ public class HttpResponse {
 
 
     /**
-     * 返回已知大小的HTML源码
+     * 返回HTML源码,状态码为200
+     *
+     * @param html 源码
+     * @return {@link HttpResponse}
      */
     public static HttpResponse newResponse(String html) {
         return newResponse(HttpResponse.Status.OK, html);
@@ -148,21 +193,25 @@ public class HttpResponse {
 
 
     /**
-     * 返回已知大小的纯文本，指定返回码，文本类型
+     * 返回指定状态码的HTML源码
+     *
+     * @param status 状态码 {@link Status}
+     * @param html   源码
+     * @return {@link HttpResponse}
      */
-    public static HttpResponse newResponse(Status status, String txt) {
+    public static HttpResponse newResponse(Status status, String html) {
         ContentType contentType = new ContentType(ContentType.MIME_HTML);
 
-        if (txt == null) {
+        if (html == null) {
             return newResponse(status, ContentType.MIME_HTML, new ByteArrayInputStream(new byte[0]), 0);
         } else {
             byte[] bytes;
             try {
                 CharsetEncoder newEncoder = Charset.forName(contentType.getEncoding()).newEncoder();
-                if (!newEncoder.canEncode(txt)) {
+                if (!newEncoder.canEncode(html)) {
                     contentType = contentType.tryUTF8();
                 }
-                bytes = txt.getBytes(contentType.getEncoding());
+                bytes = html.getBytes(contentType.getEncoding());
             } catch (UnsupportedEncodingException e) {
                 Log.e(TAG, Thread.currentThread().getName() + "Encoding problem, Responding nothing", e);
                 bytes = new byte[0];
@@ -173,25 +222,35 @@ public class HttpResponse {
     }
 
     /**
-     * 知道返回体的大小,以流的形式返回
+     * 以 {@link ContentType#MIME_STREAM} 形式返回，状态码200
+     *
+     * @param data       输入流
+     * @param totalBytes length
+     * @return {@link HttpResponse}
      */
-    public static HttpResponse newResponse(Status status, String mimeType, InputStream data, long totalBytes) {
-        return new HttpResponse(status, mimeType, data, totalBytes);
-    }
-
-
     public static HttpResponse newResponse(InputStream data, long totalBytes) {
         return newResponse(Status.OK, ContentType.MIME_STREAM, data, totalBytes);
     }
 
     /**
-     * 不知道返回体的大小
+     * 从从输入流读取数据
+     *
+     * @param status     状态码，{@link Status}
+     * @param mimeType   MIME ，{@link ContentType}
+     * @param data       输入流
+     * @param totalBytes length
+     * @return {@link HttpResponse}
      */
-    public static HttpResponse newChunkedResponse(Status status, String mimeType, InputStream data) {
-        return new HttpResponse(status, mimeType, data, -1);
+    public static HttpResponse newResponse(Status status, String mimeType, InputStream data, long totalBytes) {
+        return new HttpResponse(status, mimeType, data, totalBytes);
     }
 
-
+    /**
+     * 重定向
+     *
+     * @param location 重定向地点，http header "location"
+     * @return {@link HttpResponse}
+     */
     public static HttpResponse newRedirectResponse(String location) {
         HttpResponse response = newResponse(Status.REDIRECT_SEE_OTHER, null);
         response.addHeader("location", location);
@@ -199,7 +258,11 @@ public class HttpResponse {
     }
 
     /**
-     * 发送返回的数据到客户端
+     * 将要发送给客户端的数据写入输出流。
+     * <p/>
+     *
+     * @param outputStream OutputStream
+     * @throws IOException
      */
     public void send(OutputStream outputStream) throws IOException {
         PrintWriter writer = new PrintWriter(
@@ -211,7 +274,7 @@ public class HttpResponse {
 
 
         // 协议、状态码、状态描述
-        writer.append("HTTP/1.1 ").append(status.getDescription()).append(" \r\n");
+        writer.append("HTTP/1.1 ").append(status.getDescription()).append(SPACE + CRLF);
 
 
         // MIME Content-Type
@@ -224,59 +287,40 @@ public class HttpResponse {
         gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
         printHeader(writer, "Date", gmtFrmt.format(new Date()));
 
-        // Connection,Keep-Alive? 默认keep-alive
-        printHeader(writer, "Connection", (keepAlive ? "Keep-Alive" : "close"));
+        // Connection,Keep-Alive?
+        printHeader(writer, "Connection", "close");
 
+        // content-length
+        printHeader(writer, "Content-Length", String.valueOf(contentLength));
 
+        // Use Gzip?
+        if (encodeAsGzip) {
+            printHeader(writer, "Content-Encoding", "gzip");
+        }
+
+        // other headers
         for (Map.Entry<String, String> header : headerMap.entrySet()) {
             printHeader(writer, header.getKey(), header.getValue());
         }
 
-        // Use Gzip? 默认false
-        if (encodeAsGzip) {
-            printHeader(writer, "Content-Encoding", "gzip");
-            chunkedTransfer = true; // Gzip压缩之后就不知道大小了。。。
-        }
-
-        // chunked OR specific length
-        if (chunkedTransfer) {
-            printHeader(writer, "Transfer-Encoding", "chunked");
-        } else {
-            printHeader(writer, "Content-Length", String.valueOf(contentLength));
-        }
-
-        writer.append("\r\n");
+        writer.append(CRLF);
         writer.flush();
 
-        sendBodyIfChunked(outputStream);
+        sendBodyIfGzip(outputStream);
         outputStream.flush();
     }
 
     /**
      * 按照Header的格式将key-value对转换字符串
      *
-     * @param writer 写到OutputStreamWriter中
+     * @param writer 写到writer里面
+     * @param key    key
+     * @param value  value
      */
     private void printHeader(PrintWriter writer, String key, String value) {
-        writer.append(key).append(": ").append(value).append("\r\n");
+        writer.append(key).append(": ").append(value).append(CRLF);
     }
 
-
-    /**
-     * 按 Chunked Transfer 传输 或普通传输
-     *
-     * @param outputStream 输出流
-     * @throws IOException
-     */
-    private void sendBodyIfChunked(OutputStream outputStream) throws IOException {
-        if (chunkedTransfer) {
-            ChunkedOutputStream chunkedOutputStream = new ChunkedOutputStream(outputStream);
-            sendBodyIfGzip(chunkedOutputStream);
-            chunkedOutputStream.finish();
-        } else {
-            sendBodyIfGzip(outputStream);
-        }
-    }
 
     /**
      * 按Gzip压缩后传输或普通传输
@@ -305,58 +349,15 @@ public class HttpResponse {
         byte[] buff = new byte[BUFFER_SIZE];
 
         while (true) {
-            int read = data.read(buff, 0, BUFFER_SIZE);
+            int read = dataStream.read(buff, 0, BUFFER_SIZE);
             if (read <= 0) {
                 break;
             }
             outputStream.write(buff, 0, read);
-        }
-    }
 
-
-    /**
-     * 自动将write的数据发送到output stream
-     * <p/>
-     * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
-     */
-    private static class ChunkedOutputStream extends FilterOutputStream {
-
-        public ChunkedOutputStream(OutputStream out) {
-            super(out);
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            byte[] data = {
-                    (byte) b
-            };
-            write(data, 0, 1);
-        }
-
-        @Override
-        public void write(@NonNull byte[] b) throws IOException {
-            write(b, 0, b.length);
-        }
-
-        @Override
-        public void write(@NonNull byte[] b, int off, int len) throws IOException {
-            if (len == 0)
-                return;
-            out.write(String.format("%x\r\n", len).getBytes());
-            out.write(b, off, len);
-            out.write("\r\n".getBytes());
-        }
-
-        public void finish() throws IOException {
-            out.write("0\r\n\r\n".getBytes());
-        }
-
-    }
-
-    public static final class ResponseException extends Exception {
-
-        public ResponseException(String message) {
-            super(message);
+            if (progressNotifier != null) {
+                progressNotifier.noteBytesRead(read);
+            }
         }
     }
 }

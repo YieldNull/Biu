@@ -45,7 +45,7 @@ public class ReceivingActivity extends TransferBaseActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(ACTION_RECEIVE_MANIFEST)) {
-                addTaskItem(intent);
+                addTask(intent);
             }
         }
     };
@@ -74,11 +74,11 @@ public class ReceivingActivity extends TransferBaseActivity {
         ReceivingServlet.register(this);
 
 
-        onConnecting();
+        showConnectingAnim();
     }
 
     @Override
-    protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
+    protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
             Log.i(TAG, item.uri);
         }

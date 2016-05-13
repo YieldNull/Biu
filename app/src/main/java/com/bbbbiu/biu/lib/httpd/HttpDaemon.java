@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * HTTP服务器。
- * <p>
+ * <p/>
  * RequestListener 监听TCP端口，等待请求到来
  * RequestManager 管理请求，每个请求开一个线程处理
  * RequestHandler 处理请求，并返回
@@ -267,7 +267,6 @@ public class HttpDaemon {
 
 
                 String acceptEncoding = request.getHeaders().get("accept-encoding");
-                boolean keepAlive = request.isKeepAlive();
 
                 response = handleRequest(request);
 
@@ -275,7 +274,6 @@ public class HttpDaemon {
                 // 返回用GZip压缩？
                 boolean useGzip = response.getMimeType() != null && response.getMimeType().toLowerCase().contains("text/");
                 response.setGzipEncoding(useGzip && acceptEncoding != null && acceptEncoding.contains("gzip"));
-                response.setKeepAlive(keepAlive);
 
                 response.send(outputStream);
 

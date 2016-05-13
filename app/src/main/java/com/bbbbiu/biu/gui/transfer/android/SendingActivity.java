@@ -105,13 +105,13 @@ public class SendingActivity extends TransferBaseActivity {
         mHandler = new Handler();
 
 
-        addTaskItem(getIntent());
+        addTask(getIntent());
 
-        onConnecting();
+        showConnectingAnim();
     }
 
     @Override
-    protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
+    protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
             UploadService.startUpload(this, mUploadUrl, item.uri, null, mProgressResultReceiver);
         }
@@ -231,7 +231,7 @@ public class SendingActivity extends TransferBaseActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            addTaskItem(mFileManifest);
+                            addTask(mFileManifest);
                         }
                     });
                 }

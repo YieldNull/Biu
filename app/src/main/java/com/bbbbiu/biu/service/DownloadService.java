@@ -10,9 +10,8 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
-import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
-import com.bbbbiu.biu.lib.httpd.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
 import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.util.StorageUtil;
 
@@ -101,9 +100,9 @@ public class DownloadService extends Service {
                     boolean succeeded = downloadFile(downloadUrl, fileName, fileSize, progressListener);
 
                     if (succeeded) {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, null);
+                        resultReceiver.send(ProgressListener.RESULT_SUCCEEDED, null);
                     } else {
-                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, null);
+                        resultReceiver.send(ProgressListener.RESULT_FAILED, null);
                     }
                 }
             });

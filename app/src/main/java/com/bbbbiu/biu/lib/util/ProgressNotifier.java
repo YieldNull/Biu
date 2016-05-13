@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.httpd.util;
+package com.bbbbiu.biu.lib.util;
 
 public class ProgressNotifier {
 

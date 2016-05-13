@@ -3,6 +3,7 @@ package com.bbbbiu.biu.lib.httpd.util;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.InvalidFileNameException;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
 
 import java.io.Closeable;
 import java.io.IOException;

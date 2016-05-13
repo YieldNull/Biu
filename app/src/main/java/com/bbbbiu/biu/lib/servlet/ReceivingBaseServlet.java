@@ -1,22 +1,15 @@
 package com.bbbbiu.biu.lib.servlet;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.transfer.RevRecord;
-import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.HttpServlet;
 import com.bbbbiu.biu.lib.httpd.upload.FileItem;
 import com.bbbbiu.biu.lib.httpd.upload.FileItemFactory;
 import com.bbbbiu.biu.lib.httpd.upload.FileUpload;
 import com.bbbbiu.biu.lib.httpd.upload.exceptions.FileUploadException;
-import com.bbbbiu.biu.lib.httpd.util.ProgressListener;
-import com.bbbbiu.biu.lib.util.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -25,16 +18,11 @@ import java.util.List;
 /**
  * Created by YieldNull at 5/9/16
  */
-public class ReceivingBaseServlet extends HttpServlet {
+public class ReceivingBaseServlet extends ProgressBaseServlet {
     private static final String TAG = ReceivingBaseServlet.class.getSimpleName();
 
     public ReceivingBaseServlet(Context context) {
         super(context);
-    }
-
-    @Override
-    public HttpResponse doGet(HttpRequest request) {
-        return null;
     }
 
     @Override
@@ -46,23 +34,7 @@ public class ReceivingBaseServlet extends HttpServlet {
 
         FileUpload fileUpload = new FileUpload(factory);
 
-        fileUpload.setProgressListener(new ProgressListener() {
-            private int mCurrentProgress;
-
-            @Override
-            public void update(long pBytesRead, long pContentLength, int pItems) {
-
-                int progress = (int) (pBytesRead * 100.0 / pContentLength);
-
-                // 更新进度(0-100)
-                if (progress > mCurrentProgress) {
-                    mCurrentProgress = progress;
-
-                    sendProgressBroadcast(progress);
-                }
-            }
-        });
-
+        fileUpload.setProgressListener(getProgressListener());
 
         List<FileItem> items;
 
@@ -90,42 +62,5 @@ public class ReceivingBaseServlet extends HttpServlet {
         sendSuccessBroadcast();
 
         return HttpResponse.newResponse("200 OK");
-    }
-
-
-    protected void sendProgressBroadcast(int progress) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS, progress);
-        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
-
-
-        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
-
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
-
-    protected void sendFailureBroadcast() {
-        Bundle bundle = new Bundle();
-        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
-
-        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_FAILED);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
-
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
-
-
-    protected void sendSuccessBroadcast() {
-        Bundle bundle = new Bundle();
-        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
-
-        Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_SUCCEEDED);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
-
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 }

@@ -38,6 +38,8 @@ public class ConnectingActivity extends AppCompatActivity {
     private static final String ACTION_SENDING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
     private static final String ACTION_RECEIVING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
 
+    private static final String HOME_URL = "http://192.168.43.1:5050";
+
 
     public static void connectForSending(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
@@ -87,13 +89,10 @@ public class ConnectingActivity extends AppCompatActivity {
         }, 1000);
 
 
-        String url = "http://192.168.43.1:5050";
-
-        mQRCodeImage.setImageBitmap(genQRCode(url));
+        mQRCodeImage.setImageBitmap(genQRCode(HOME_URL));
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
-
         String action = getIntent().getAction();
 
         if (action.equals(ACTION_RECEIVING)) {
@@ -114,7 +113,13 @@ public class ConnectingActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private Bitmap genQRCode(String info) {
+    /**
+     * 生成二维码
+     *
+     * @param url 二维码包含的URL信息
+     * @return Bitmap
+     */
+    private Bitmap genQRCode(String url) {
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -125,7 +130,7 @@ public class ConnectingActivity extends AppCompatActivity {
         Bitmap bitmap = null;
         QRCodeWriter writer = new QRCodeWriter();
         try {
-            BitMatrix bm = writer.encode(info, BarcodeFormat.QR_CODE, width, width);
+            BitMatrix bm = writer.encode(url, BarcodeFormat.QR_CODE, width, width);
             bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_8888);
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < width; j++) {

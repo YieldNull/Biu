@@ -45,31 +45,10 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<FileItem> mFinishedList = new ArrayList<>();
     private FileItem mWorkingItem;
 
-
     public TransferAdapter(Context context) {
         this.context = context;
     }
 
-
-    /**
-     * 测试界面
-     */
-    private void test() {
-        File root = StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL);
-        File[] files = root.listFiles();
-
-        mWorkingItem = new FileItem(files[0].getAbsolutePath(), files[0].getName(), files[0].length());
-
-        for (int i = 1; i < files.length / 2; i++) {
-            mWaitingQueue.add(new FileItem(files[i].getAbsolutePath(), files[i].getName(), files[i].length()));
-        }
-
-        for (int i = files.length / 2; i < files.length; i++) {
-            mFinishedList.add(new FileItem(files[i].getAbsolutePath(), files[i].getName(), files[i].length()));
-        }
-
-        refreshDataSet();
-    }
 
     /**
      * 刷新数据集，将各文件分类。
@@ -117,6 +96,7 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
+
     /**
      * 任务完成
      *
@@ -143,6 +123,7 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void setTaskFailed(String fileUri) {
         // TODO 失败后怎么办？
     }
+
 
     public void updateProgress(RecyclerView recyclerView, String fileUri, int progress) {
         int position;
@@ -193,6 +174,7 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public FileItem getItem(int position) {
         return mDataSet.get(position);
     }
+
 
     @Override
     public int getItemCount() {
@@ -272,7 +254,6 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             holder.infoText.setText(StorageUtil.getReadableSize(fileItem.size));
         }
     }
-
 
     class WorkingViewHolder extends RecyclerView.ViewHolder {
 

@@ -7,7 +7,8 @@ import android.util.Log;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.HttpServlet;
+import com.bbbbiu.biu.lib.util.ProgressNotifier;
+import com.bbbbiu.biu.lib.servlet.ProgressBaseServlet;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 
@@ -19,7 +20,7 @@ import java.io.InputStream;
 /**
  * Created by YieldNull at 5/13/16
  */
-public class FileServlet extends HttpServlet {
+public class FileServlet extends ProgressBaseServlet {
     private static final String TAG = FileServlet.class.getSimpleName();
 
     private static FileServlet sFileServlet;
@@ -72,15 +73,14 @@ public class FileServlet extends HttpServlet {
 
         HttpResponse response = HttpResponse.newResponse(inputStream, file.length());
 
+        response.setProgressNotifier(new ProgressNotifier(getProgressListener(), file.length()));
+
         response.addHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\";filename*=UTF-8''%s",
                         file.getName(),
                         Uri.encode(file.getName())));
-        return response;
-    }
 
-    @Override
-    public HttpResponse doPost(HttpRequest request) {
-        return null;
+
+        return response;
     }
 }

@@ -27,7 +27,7 @@ public class ReceivingActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onAddTaskItem(ArrayList<FileItem> fileItems) {
+    protected void onAddNewTask(ArrayList<FileItem> fileItems) {
 
     }
 
@@ -35,13 +35,13 @@ public class ReceivingActivity extends TransferBaseActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        addTaskItem(intent);
+        addTask(intent);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        addTaskItem(getIntent());
+        addTask(getIntent());
     }
 }
