@@ -1,7 +1,6 @@
 package com.bbbbiu.biu.lib.httpd;
 
 
-import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.lib.httpd.util.Streams;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 /**
  * HTTP服务器。
- * <p/>
+ * <p>
  * RequestListener 监听TCP端口，等待请求到来
  * RequestManager 管理请求，每个请求开一个线程处理
  * RequestHandler 处理请求，并返回
@@ -260,7 +259,7 @@ public class HttpDaemon {
 
 
                 if (request == null) {
-                    response = HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST, ContentType.MIME_PLAINTEXT,
+                    response = HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST,
                             HttpResponse.Status.BAD_REQUEST.getDescription());
                     response.send(outputStream);
                     return;
@@ -305,7 +304,7 @@ public class HttpDaemon {
             String uri = request.getUri();
 
             if (uri == null) {
-                return HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST, ContentType.MIME_PLAINTEXT,
+                return HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST,
                         HttpResponse.Status.BAD_REQUEST.getDescription());
             }
 
@@ -332,12 +331,12 @@ public class HttpDaemon {
             } else {
                 // 没有匹配的Servlet
                 response = HttpResponse.newResponse(HttpResponse.Status.NOT_FOUND,
-                        ContentType.MIME_PLAINTEXT, "404 Page Not Found");
+                        HttpResponse.Status.NOT_FOUND.getDescription());
             }
 
             if (response == null) {
                 return HttpResponse.newResponse(HttpResponse.Status.METHOD_NOT_ALLOWED,
-                        ContentType.MIME_PLAINTEXT, HttpResponse.Status.METHOD_NOT_ALLOWED.getDescription());
+                        HttpResponse.Status.METHOD_NOT_ALLOWED.getDescription());
             } else {
                 return response;
             }

@@ -143,18 +143,18 @@ public class HttpResponse {
      * 返回已知大小的HTML源码
      */
     public static HttpResponse newResponse(String html) {
-        return newResponse(HttpResponse.Status.OK, ContentType.MIME_HTML, html);
+        return newResponse(HttpResponse.Status.OK, html);
     }
 
 
     /**
      * 返回已知大小的纯文本，指定返回码，文本类型
      */
-    public static HttpResponse newResponse(Status status, String mimeType, String txt) {
-        ContentType contentType = new ContentType(mimeType);
+    public static HttpResponse newResponse(Status status, String txt) {
+        ContentType contentType = new ContentType(ContentType.MIME_HTML);
 
         if (txt == null) {
-            return newResponse(status, mimeType, new ByteArrayInputStream(new byte[0]), 0);
+            return newResponse(status, ContentType.MIME_HTML, new ByteArrayInputStream(new byte[0]), 0);
         } else {
             byte[] bytes;
             try {
@@ -179,6 +179,11 @@ public class HttpResponse {
         return new HttpResponse(status, mimeType, data, totalBytes);
     }
 
+
+    public static HttpResponse newResponse(InputStream data, long totalBytes) {
+        return newResponse(Status.OK, ContentType.MIME_STREAM, data, totalBytes);
+    }
+
     /**
      * 不知道返回体的大小
      */
@@ -188,7 +193,7 @@ public class HttpResponse {
 
 
     public static HttpResponse newRedirectResponse(String location) {
-        HttpResponse response = newResponse(Status.REDIRECT_SEE_OTHER, ContentType.MIME_HTML, null);
+        HttpResponse response = newResponse(Status.REDIRECT_SEE_OTHER, null);
         response.addHeader("location", location);
         return response;
     }
@@ -311,7 +316,7 @@ public class HttpResponse {
 
     /**
      * 自动将write的数据发送到output stream
-     * <p>
+     * <p/>
      * http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
      */
     private static class ChunkedOutputStream extends FilterOutputStream {

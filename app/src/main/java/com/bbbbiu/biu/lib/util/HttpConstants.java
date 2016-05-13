@@ -71,6 +71,7 @@ public class HttpConstants {
     public static class Apple {
         public static final String URL_UPLOAD = "/upload";
         public static final String URL_MANIFEST = "/manifest";
+        public static final String URL_DOWNLOAD = "/download";
     }
 
 }

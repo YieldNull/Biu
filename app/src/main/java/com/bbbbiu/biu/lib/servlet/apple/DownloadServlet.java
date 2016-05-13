@@ -8,6 +8,7 @@ import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
 import com.bbbbiu.biu.lib.httpd.HttpServlet;
 import com.bbbbiu.biu.lib.util.HtmlReader;
+import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
@@ -28,7 +29,7 @@ public class DownloadServlet extends HttpServlet {
     private static DownloadServlet sDownloadServlet;
 
     public static void register(Context context) {
-        HttpDaemon.registerServlet("/download", getSingleton(context));
+        HttpDaemon.registerServlet(HttpConstants.Apple.URL_DOWNLOAD, getSingleton(context));
         HttpDaemon.registerServlet("/", getSingleton(context));
     }
 

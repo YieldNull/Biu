@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.httpd.ContentType;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
 import com.bbbbiu.biu.lib.httpd.HttpServlet;
@@ -75,7 +74,6 @@ public class ReceivingBaseServlet extends HttpServlet {
             sendFailureBroadcast();
 
             return HttpResponse.newResponse(HttpResponse.Status.INTERNAL_ERROR,
-                    ContentType.MIME_PLAINTEXT,
                     HttpResponse.Status.INTERNAL_ERROR.getDescription());
         }
 

@@ -3,7 +3,6 @@ package com.bbbbiu.biu.lib.httpd.util;
 import android.content.Context;
 import android.webkit.MimeTypeMap;
 
-import com.bbbbiu.biu.lib.httpd.ContentType;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
@@ -29,9 +28,9 @@ public class DefaultStaticServlet extends HttpServlet {
         String html = HtmlReader.readAll(context, uri);
 
         if (html != null) {
-            return HttpResponse.newResponse(HttpResponse.Status.OK, mime, html);
+            return HttpResponse.newResponse(HttpResponse.Status.OK, html);
         } else {
-            return HttpResponse.newResponse(HttpResponse.Status.NOT_FOUND, ContentType.MIME_PLAINTEXT,
+            return HttpResponse.newResponse(HttpResponse.Status.NOT_FOUND,
                     HttpResponse.Status.NOT_FOUND.getDescription());
         }
     }
