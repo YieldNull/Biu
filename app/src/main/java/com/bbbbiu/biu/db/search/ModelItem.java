@@ -33,6 +33,28 @@ public abstract class ModelItem extends SugarRecord {
 
 
     /**
+     * "重载" {@link SugarRecord#find(Class, String, String...)}
+     * <p/>
+     * 将在文件系统中不存在的查询结果剔除
+     */
+    public static <T> List<T> find(Class<T> type, String whereClause, String... whereArgs) {
+        List<T> items = SugarRecord.find(type, whereClause, whereArgs, null, null, null);
+
+        List<T> itemsToDelete = new ArrayList<>();
+
+        for (T t : items) {
+            File file = new File(((ModelItem) t).getPath());
+            if (!file.exists()) {
+                itemsToDelete.add(t);
+            }
+        }
+
+        items.removeAll(itemsToDelete);
+
+        return items;
+    }
+
+    /**
      * 从数据库中读取指定类型的文件
      * 并按文件夹分类
      *
