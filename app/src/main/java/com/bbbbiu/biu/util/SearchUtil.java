@@ -15,8 +15,8 @@ import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.db.search.MediaItem;
+import com.bbbbiu.biu.service.DiskScanService;
 import com.google.common.collect.ImmutableMap;
-import com.orm.SugarRecord;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,17 +72,47 @@ public class SearchUtil {
             ModelItem.TYPE_MUSIC, THRESHOLD_MUSIC
     );
 
+    /**
+     * 开始全盘扫描
+     *
+     * @param context context
+     */
+    public static void startSearch(final Context context) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SearchUtil.scanDisk(context);
+            }
+        });
 
-    public static void startSearch(Context context) {
-        // 清空之前的纪录
-        // TODO 有个问题，要是正在用户正在查询的时候进行扫描，把纪录删了怎么办
-        SugarRecord.deleteAll(FileItem.class);
-        SugarRecord.deleteAll(ApkItem.class);
-        SugarRecord.deleteAll(MediaItem.class);
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SearchUtil.scanApkInstalled(context);
+            }
+        });
 
-        SearchUtil.scanDisk(context);
-        SearchUtil.scanApkInstalled(context);
-        SearchUtil.scanImg(context);
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SearchUtil.scanImg(context);
+            }
+        });
+
+        thread.start();
+        thread1.start();
+        thread2.start();
+
+        try {
+            thread.join();
+            thread1.join();
+            thread2.join();
+            DiskScanService.stopService(context);
+
+        } catch (InterruptedException e) {
+            Log.w(TAG, e);
+        }
+
     }
 
     /**
@@ -91,7 +121,7 @@ public class SearchUtil {
      * 分内部储存和外部储存扫描。不直接从根目录“/”下扫描，
      * 因为有时候会莫名其妙地访问不了或者是出现将SD卡挂载到多个文件夹下的情况
      */
-    public static void scanDisk(Context context) {
+    public static void scanDisk(final Context context) {
         Log.i(TAG, currentThread() + "Start scanning disk");
 
         Integer[] typeArr = typeExtensionMap.keySet().toArray(new Integer[typeExtensionMap.size()]);
@@ -109,15 +139,19 @@ public class SearchUtil {
         }
 
 
-        Log.i(TAG, currentThread() + "Storing files to Database");
+        Log.i(TAG, currentThread() + "Storing apk doc archive files to Database");
 
-        for (Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
-            int type = cateEntry.getKey();
+        for (final Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
+            final int type = cateEntry.getKey();
 
             if (type == ModelItem.TYPE_APK) {
                 ApkItem.storeApk(context, ApkItem.TYPE_APK_STANDALONE, cateEntry.getValue());
             } else if (type == ModelItem.TYPE_VIDEO || type == ModelItem.TYPE_MUSIC) {
+
+                Log.i(TAG, currentThread() + "Starting storing video | music");
                 MediaItem.storeMediaItems(context, type, cateEntry.getValue());
+                Log.i(TAG, currentThread() + "Finish storing");
+
             } else {
                 FileItem.storeFileItems(cateEntry.getKey(), cateEntry.getValue());
             }
@@ -159,6 +193,7 @@ public class SearchUtil {
                 normalApkSet.add(path);
             }
         }
+
 
         Log.i(TAG, currentThread() + "Storing apk paths to Database");
 

@@ -8,7 +8,11 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.bbbbiu.biu.util.StorageUtil;
-import com.orm.dsl.Unique;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.Index;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,10 +20,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by YieldNull at 4/16/16
- */
+
+@Table(database = FileItem.MyDatabase.class)
 public class ApkItem extends ModelItem {
+
     public static final int TYPE_APK_STANDALONE = 0;
     public static final int TYPE_APK_SYSTEM = 1;
     public static final int TYPE_APK_NORMAL = 2;
@@ -28,14 +32,17 @@ public class ApkItem extends ModelItem {
 
     public static final String ICON_DIR = "apk_icon";
 
-    @Unique
+    @PrimaryKey
+    @Index
     public String path;
 
+    @Column
     public String name;
 
-    @Unique
+    @Column
     public String packageName;
 
+    @Column
     public int type;
 
     public ApkItem() {
@@ -78,11 +85,14 @@ public class ApkItem extends ModelItem {
      * @return 已更新过的系统APK
      */
     public static List<ApkItem> getApkList(int type) {
-        return ApkItem.find(ApkItem.class, "type=?", String.valueOf(type));
-    }
+        List<ApkItem> items = SQLite.select()
+                .from(ApkItem.class)
+                .where(ApkItem_Table.type.eq(type))
+                .queryList();
 
-    public static ApkItem getApk(String path) {
-        return ApkItem.find(ApkItem.class, "path=?", path).get(0);
+        filter(items);
+
+        return items;
     }
 
     /**

@@ -1,7 +1,11 @@
 package com.bbbbiu.biu.db.search;
 
 import com.bbbbiu.biu.util.StorageUtil;
-import com.orm.dsl.Unique;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.Database;
+import com.raizlabs.android.dbflow.annotation.Index;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
 
 import java.io.File;
 import java.util.Set;
@@ -11,10 +15,23 @@ import java.util.Set;
  * <p/>
  * Created by YieldNull at 4/15/16
  */
+
+@Table(database = FileItem.MyDatabase.class)
 public class FileItem extends ModelItem {
 
-    @Unique
+    @Database(name = MyDatabase.NAME, version = MyDatabase.VERSION)
+    public class MyDatabase {
+
+        public static final String NAME = "file";
+
+        public static final int VERSION = 1;
+    }
+
+    @PrimaryKey
+    @Index
     public String path;
+
+    @Column
     public int type;
 
     public FileItem() {

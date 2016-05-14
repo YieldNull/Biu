@@ -96,21 +96,6 @@ public class ApkContentAdapter extends ContentBaseAdapter {
                             });
                         }
                     }).start();
-
-                    // 扫描独立的APK文件，一定会比上一个线程后结束？
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            scanStandaloneApk();
-
-                            context.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    notifyDataSetChanged();
-                                }
-                            });
-                        }
-                    }).start();
                 }
             }
         }).start();

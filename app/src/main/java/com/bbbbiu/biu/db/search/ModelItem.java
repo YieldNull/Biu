@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.db.search;
 
-import com.orm.SugarRecord;
+import com.raizlabs.android.dbflow.sql.language.SQLite;
+import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Map;
 /**
  * Created by YieldNull at 4/18/16
  */
-public abstract class ModelItem extends SugarRecord {
+public abstract class ModelItem extends BaseModel {
     public static final int TYPE_MUSIC = 1;
     public static final int TYPE_VIDEO = 2;
     public static final int TYPE_IMG = 3;
@@ -32,26 +33,19 @@ public abstract class ModelItem extends SugarRecord {
     public abstract String getParentDirName();
 
 
-    /**
-     * "重载" {@link SugarRecord#find(Class, String, String...)}
-     * <p/>
-     * 将在文件系统中不存在的查询结果剔除
-     */
-    public static <T> List<T> find(Class<T> type, String whereClause, String... whereArgs) {
-        List<T> items = SugarRecord.find(type, whereClause, whereArgs, null, null, null);
-
+    public static <T extends ModelItem> void filter(List<T> items) {
         List<T> itemsToDelete = new ArrayList<>();
 
         for (T t : items) {
-            File file = new File(((ModelItem) t).getPath());
+            File file = new File(t.getPath());
             if (!file.exists()) {
                 itemsToDelete.add(t);
+
+                t.delete(); // 删除纪录
             }
         }
 
         items.removeAll(itemsToDelete);
-
-        return items;
     }
 
     /**
@@ -65,10 +59,22 @@ public abstract class ModelItem extends SugarRecord {
         List<ModelItem> allRecords = new ArrayList<>();
 
         if (type == TYPE_MUSIC || type == TYPE_VIDEO) {
-            List<MediaItem> records = find(MediaItem.class, "type=?", String.valueOf(type));
+            List<MediaItem> records = SQLite.select()
+                    .from(MediaItem.class)
+                    .where(MediaItem_Table.type.eq(type))
+                    .queryList();
+
+            filter(records);
+
             allRecords.addAll(records);
         } else {
-            List<FileItem> records = find(FileItem.class, "type=?", String.valueOf(type));
+            List<FileItem> records = SQLite.select()
+                    .from(FileItem.class)
+                    .where(FileItem_Table.type.eq(type))
+                    .queryList();
+
+            filter(records);
+
             allRecords.addAll(records);
         }
 

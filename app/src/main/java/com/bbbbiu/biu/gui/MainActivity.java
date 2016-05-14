@@ -15,6 +15,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
+import com.bbbbiu.biu.service.DiskScanService;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -87,9 +88,14 @@ public class MainActivity extends AppCompatActivity {
         actionMenu.setIconAnimated(false);
         actionMenu.setClosedOnTouchOutside(true);
 
-//        DiskScanService.scheduleAlarm(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        DiskScanService.scheduleAlarm(this);
+
+        super.onDestroy();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

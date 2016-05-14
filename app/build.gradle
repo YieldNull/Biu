@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 23
@@ -24,6 +24,8 @@ android {
     }
 }
 
+def dbflow_version = "3.0.0-beta6"
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
@@ -43,8 +45,10 @@ dependencies {
     compile 'com.sothree.slidinguppanel:library:3.3.0'
     compile 'com.github.clans:fab:1.6.2'
 
-    // ORM
-    compile 'com.github.satyan:sugar:1.5'
+
+    apt "com.github.Raizlabs.DBFlow:dbflow-processor:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow-core:${dbflow_version}"
+    compile "com.github.Raizlabs.DBFlow:dbflow:${dbflow_version}"
 
     // 二维码
     compile 'com.google.zxing:core:3.2.1'

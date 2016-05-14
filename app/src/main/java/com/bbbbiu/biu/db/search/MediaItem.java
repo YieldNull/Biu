@@ -5,6 +5,11 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 
 import com.bbbbiu.biu.util.StorageUtil;
+import com.raizlabs.android.dbflow.annotation.Column;
+import com.raizlabs.android.dbflow.annotation.Database;
+import com.raizlabs.android.dbflow.annotation.Index;
+import com.raizlabs.android.dbflow.annotation.PrimaryKey;
+import com.raizlabs.android.dbflow.annotation.Table;
 
 import java.io.File;
 import java.util.Set;
@@ -14,11 +19,31 @@ import java.util.Set;
  * <p/>
  * Created by YieldNull at 4/18/16
  */
+
+@Table(database = MediaItem.MyDatabase.class)
 public class MediaItem extends ModelItem {
+    @Database(name = MyDatabase.NAME, version = MyDatabase.VERSION)
+    public class MyDatabase {
+
+        public static final String NAME = "media";
+
+        public static final int VERSION = 1;
+    }
+
+    @PrimaryKey
+    @Index
     public String path;
+
+    @Column
     public int type;
+
+    @Column
     public String title;
+
+    @Column
     public String artist;
+
+    @Column
     public String duration;
 
 
@@ -49,6 +74,11 @@ public class MediaItem extends ModelItem {
 
         for (String path : pathSet) {
             File file = new File(path);
+
+            if (!file.exists()) {
+                continue;
+            }
+
             Uri uri = Uri.fromFile(file);
             mediaMetadataRetriever.setDataSource(context, uri);
 
@@ -62,8 +92,13 @@ public class MediaItem extends ModelItem {
                 artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
             }
 
-            String duration = formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
-                    MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            String duration;
+            try {
+                duration = formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
+                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            } catch (NumberFormatException e) {
+                continue;
+            }
 
             new MediaItem(path, type, title, artist, duration).save();
         }

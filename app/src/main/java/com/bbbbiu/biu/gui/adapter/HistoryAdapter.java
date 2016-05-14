@@ -45,7 +45,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         mVideoPicasso = builder.build();
         mImgPicasso = Picasso.with(context);
 
-        mDataSet.addAll(RevRecord.listAll(RevRecord.class));
+        mDataSet.addAll(RevRecord.queryAll(context));
 
     }
 
