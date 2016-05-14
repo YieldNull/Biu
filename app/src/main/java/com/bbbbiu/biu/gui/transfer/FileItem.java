@@ -11,6 +11,10 @@ public class FileItem implements Parcelable {
     public String name;
     public long size;
 
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
     @Override
     public int describeContents() {
         return 0;

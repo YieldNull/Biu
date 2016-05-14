@@ -3,11 +3,13 @@ package com.bbbbiu.biu.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.google.gson.Gson;
@@ -209,7 +211,9 @@ public class PollingService extends Service {
                 Log.i(TAG, "User has not send files to server. Retrying...");
             } else {
 
-                //TODO//ReceivingActivity.addTask(this, fileItems);
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList(TransferBaseActivity.EXTRA_FILE_ITEM, fileItems);
+                mResultReceiver.send(RESULT_OK, bundle);
             }
         }
     }

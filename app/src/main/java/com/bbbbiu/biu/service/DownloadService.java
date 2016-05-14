@@ -3,6 +3,7 @@ package com.bbbbiu.biu.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -99,10 +100,16 @@ public class DownloadService extends Service {
 
                     boolean succeeded = downloadFile(downloadUrl, fileName, fileSize, progressListener);
 
+                    Bundle bundle = new Bundle();
+                    bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, downloadUrl);
+
                     if (succeeded) {
-                        resultReceiver.send(ProgressListener.RESULT_SUCCEEDED, null);
+                        Log.i(TAG, "Finish downloading");
+                        resultReceiver.send(ProgressListener.RESULT_SUCCEEDED, bundle);
                     } else {
-                        resultReceiver.send(ProgressListener.RESULT_FAILED, null);
+                        Log.i(TAG, "Downloading failed");
+
+                        resultReceiver.send(ProgressListener.RESULT_FAILED, bundle);
                     }
                 }
             });

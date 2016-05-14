@@ -133,7 +133,12 @@
 
         <activity
             android:name=".gui.transfer.computer.UploadActivity"
-            android:label="@string/title_activity_send"
+            android:label="@string/title_activity_upload"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".gui.transfer.computer.DownloadActivity"
+            android:label="@string/title_activity_download"
             android:theme="@style/AppTheme.NoActionBar" />
     </application>
 

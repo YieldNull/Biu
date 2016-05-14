@@ -10,7 +10,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.transfer.apple.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
@@ -83,8 +82,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                 switch (msg.what) {
                     case MSG_ENTER_DOWNLOAD_ACTIVITY:
                         Log.i(TAG, "Bind succeeded. Enter download activity");
-
-                        ReceivingActivity.startReceiving(QRCodeScanActivity.this, null);
+                        DownloadActivity.startDownload(QRCodeScanActivity.this, mUid);
                         break;
 
                     case MSG_ENTER_UPLOAD_ACTIVITY:
