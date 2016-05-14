@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context=".gui.ConnectComputerActivity">
+    tools:context=".gui.transfer.computer.ConnectingActivity">
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/appbar"
@@ -25,9 +25,92 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        card_view:cardCornerRadius="2dp"
+        card_view:contentPadding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="第一步"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="在电脑上用浏览器访问"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="http://www.bbbbiu.com"
+                android:textColor="@color/colorPrimary" />
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        card_view:cardCornerRadius="2dp"
+        card_view:contentPadding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="第二步"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="扫描网页中的二维码"
+                android:textColor="@android:color/black" />
+
+
+            <TextView
+                android:id="@+id/textView_computer_scan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="扫描二维码"
+                android:textColor="@color/colorPrimary" />
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
         card_view:cardCornerRadius="2dp"
         card_view:contentPadding="16dp">
@@ -35,27 +118,32 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="请在电脑上访问" />
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="传递大文件？"
+                android:textColor="@android:color/black" />
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="http://www.bbbbiu.com" />
+                android:layout_marginTop="20dp"
+                android:text="电脑能连接WIFI？"
+                android:textColor="@android:color/black" />
+
+            <TextView
+                android:id="@+id/textView_computer_jump"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="试试网页免流量传吧"
+                android:textColor="@color/colorPrimary" />
         </LinearLayout>
     </android.support.v7.widget.CardView>
-
-    <Button
-        android:id="@+id/button_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="20dp"
-        android:text="扫描二维码" />
 
 </LinearLayout>

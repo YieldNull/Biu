@@ -125,8 +125,8 @@
     <orderEntry type="library" exported="" name="support-vector-drawable-23.3.0" level="project" />
     <orderEntry type="library" exported="" name="animated-vector-drawable-23.3.0" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-23.3.0" level="project" />
-    <orderEntry type="library" exported="" name="guava-19.0" level="project" />
     <orderEntry type="library" exported="" name="library-2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="guava-19.0" level="project" />
     <orderEntry type="library" exported="" name="zxing-1.8.4" level="project" />
     <orderEntry type="library" exported="" name="design-23.3.0" level="project" />
     <orderEntry type="library" exported="" name="cardview-v7-23.3.0" level="project" />

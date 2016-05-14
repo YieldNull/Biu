@@ -124,7 +124,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
                 SendingActivity.startConnection(this);
                 break;
             case ACTION_SEND_COMPUTER:
-                ConnectingActivity.connectForUpload(this);
+                ConnectingActivity.connectForSending(this);
                 break;
             default:
                 com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForSending(this);

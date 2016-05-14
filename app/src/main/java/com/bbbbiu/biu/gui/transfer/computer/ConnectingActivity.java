@@ -2,47 +2,64 @@ package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ConnectingActivity extends AppCompatActivity {
-
-    private static final String ACTION_UPLOAD = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.UPLOAD";
-    private static final String ACTION_DOWNLOAD = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.DOWNLOAD";
     private static final String TAG = ConnectingActivity.class.getSimpleName();
 
-    public static void connectForUpload(Context context) {
+    private static final String ACTION_SEND = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.SEND";
+    private static final String ACTION_RECEIVE = "com.bbbbiu.biu.gui.transfer.computer.ConnectComputerActivity.action.RECEIVE";
+
+    public static void connectForSending(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
-        intent.setAction(ACTION_UPLOAD);
+        intent.setAction(ACTION_SEND);
         context.startActivity(intent);
     }
 
-    public static void connectForDownload(Context context) {
+    public static void connectForReceiving(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
-        intent.setAction(ACTION_DOWNLOAD);
+        intent.setAction(ACTION_RECEIVE);
         context.startActivity(intent);
     }
 
     private String mAction;
 
-    @OnClick(R.id.button_scan)
+    @OnClick(R.id.textView_computer_scan)
     void scanQRCode() {
-        if (mAction.equals(ACTION_DOWNLOAD)) {
+        if (mAction.equals(ACTION_RECEIVE)) {
             QRCodeScanActivity.scanForDownload(this);
         } else {
             QRCodeScanActivity.scanForUpload(this);
         }
     }
+
+    @OnClick(R.id.textView_computer_jump)
+    void jumpToWebSending() {
+        if (mAction.equals(ACTION_SEND)) {
+            com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForSending(this);
+        } else {
+            com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(this);
+        }
+    }
+
+    @Bind(R.id.textView_computer_scan)
+    TextView mScanQRCodeTextView;
+
+    @Bind(R.id.textView_computer_jump)
+    TextView mJumpTextView;
 
 
     @SuppressWarnings("ConstantConditions")
@@ -67,6 +84,8 @@ public class ConnectingActivity extends AppCompatActivity {
 
         mAction = getIntent().getAction();
 
-        Log.i(TAG, "Connecting with computer");
+
+        mScanQRCodeTextView.setPaintFlags(mScanQRCodeTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        mJumpTextView.setPaintFlags(mJumpTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
 }

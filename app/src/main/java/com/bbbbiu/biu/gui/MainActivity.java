@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     void receiveComputer() {
         actionMenu.toggle(false);
 
-        ConnectingActivity.connectForDownload(this);
+        ConnectingActivity.connectForReceiving(this);
     }
 
     @OnClick(R.id.fbtn_receive_ios)
