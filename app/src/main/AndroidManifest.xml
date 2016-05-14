@@ -130,6 +130,11 @@
             android:name=".gui.HistoryActivity"
             android:label="@string/title_activity_history"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <activity
+            android:name=".gui.transfer.computer.UploadActivity"
+            android:label="@string/title_activity_send"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

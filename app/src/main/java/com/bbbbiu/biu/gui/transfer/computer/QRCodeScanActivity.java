@@ -2,13 +2,11 @@ package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
@@ -18,7 +16,6 @@ import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.zxing.Result;
-import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,12 +53,14 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     public static void scanForDownload(Context context) {
         Intent intent = new Intent(context, QRCodeScanActivity.class);
         intent.setAction(ACTION_DOWNLOAD);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
     public static void scanForUpload(Context context) {
         Intent intent = new Intent(context, QRCodeScanActivity.class);
         intent.setAction(ACTION_UPLOAD);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
@@ -97,12 +96,13 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                             fileItems.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
 
                         }
-                        //UploadActivity.startUpload(QRCodeScanActivity.this, HttpConstants.Computer.getUploadUrl(mUid), fileItems);
+                        UploadActivity.startUpload(QRCodeScanActivity.this, mUid, fileItems);
                         break;
 
                     case MSG_SERVER_ERROR:
                         Log.i(TAG, "Server error. Stop retrying");
                         Toast.makeText(QRCodeScanActivity.this, R.string.hint_net_server_error, Toast.LENGTH_SHORT).show();
+                        onBackPressed();
                         break;
                 }
                 return false;

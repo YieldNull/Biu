@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.lib.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -9,6 +10,10 @@ import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.internal.Util;
+import okio.BufferedSink;
+import okio.Okio;
+import okio.Source;
 
 /**
  * Created by YieldNull at 4/23/16
@@ -37,7 +42,7 @@ public class HttpManager {
         }
 
 
-        builder.addFormDataPart("files", file.getName(),
+        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, file.getName(),
                 new UploadRequestBody(null, file, notifier));
 
         return new Request.Builder()
@@ -60,4 +65,48 @@ public class HttpManager {
                 .build();
     }
 
+    /**
+     * Created by YieldNull at 4/22/16
+     */
+    public static class UploadRequestBody extends RequestBody {
+        MediaType contentType;
+        File file;
+        ProgressNotifier notifier;
+
+        final long DEFAULT_SEGMENT_SIZE = 8192;
+
+        public UploadRequestBody(MediaType contentType, File file, ProgressNotifier notifier) {
+            this.contentType = contentType;
+            this.file = file;
+            this.notifier = notifier;
+        }
+
+        @Override
+        public MediaType contentType() {
+            return contentType;
+        }
+
+        @Override
+        public long contentLength() {
+            return file.length();
+        }
+
+        @Override
+        public void writeTo(BufferedSink sink) throws IOException {
+            System.setProperty("http.keepAlive", "false");
+            Source source = null;
+            try {
+                source = Okio.source(file);
+                //sink.writeAll(source);
+
+                int read;
+                while ((read = (int) source.read(sink.buffer(), DEFAULT_SEGMENT_SIZE)) != -1) {
+                    sink.flush();
+                    notifier.noteBytesRead(read);
+                }
+            } finally {
+                Util.closeQuietly(source);
+            }
+        }
+    }
 }

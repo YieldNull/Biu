@@ -7,7 +7,6 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.bbbbiu.biu.gui.transfer.apple.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;

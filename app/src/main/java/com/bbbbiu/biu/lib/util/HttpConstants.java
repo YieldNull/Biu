@@ -1,28 +1,22 @@
 package com.bbbbiu.biu.lib.util;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.Log;
-
-import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.HashMap;
-import java.util.Properties;
 
 /**
  * Created by YieldNull at 4/23/16
  */
 public class HttpConstants {
+    public static final String FILE_FORM_NAME = "files";
+
     public static class Computer {
-        public static final String HOST = "http://www.bbbbiu.com";
+        public static final String HOST = "http://www.bbbbiu.com";//"http://192.168.1.102";;
+
         public static final String URL_BIND = HOST + "/bind";
         public static final String URL_UPLOAD = HOST + "/api/upload";
         public static final String URL_FILE_LIST = HOST + "/api/filelist";
-
 
         private static final String BIND_WHAT_UPLOAD = "upload";
         private static final String BIND_WHAT_DOWNLOAD = "download";
@@ -36,7 +30,7 @@ public class HttpConstants {
         }
 
         public static String getUploadUrl(String uid) {
-            return URL_UPLOAD + "?uid=" + uid;
+            return URL_UPLOAD;
         }
 
         public static HashMap<String, String> getUploadFormData(String uid) {
