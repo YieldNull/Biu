@@ -64,7 +64,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      */
     public static void startChoosing(Context context, Class<? extends ChooseBaseActivity> theClass) {
         Intent intent = new Intent(context, theClass);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
@@ -437,7 +437,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      * 加载数据时显示loading动画
      */
     @Override
-    public void OnStartLoadingData() {
+    public void onStartLoadingData() {
         mLoadingIndicatorView.setVisibility(View.VISIBLE);
     }
 
@@ -445,7 +445,7 @@ public abstract class ChooseBaseActivity extends AppCompatActivity implements
      * 数据加载完毕，关闭loading动画
      */
     @Override
-    public void OnFinishLoadingData() {
+    public void onFinishLoadingData() {
         mLoadingIndicatorView.setVisibility(View.GONE);
     }
 

@@ -35,24 +35,12 @@
             android:name="DOMAIN_PACKAGE_NAME"
             android:value="com.bbbbiu.biu.db" />
 
-        <receiver
-            android:name=".service.DiskScanService$ScanAlarmReceiver"
-            android:process=":remote">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
         <service
             android:name=".service.HttpdService"
             android:enabled="true"
             android:exported="false" />
         <service
             android:name=".service.PollingService"
-            android:enabled="true"
-            android:exported="false" />
-        <service
-            android:name=".service.DiskScanService"
             android:enabled="true"
             android:exported="false" />
         <service

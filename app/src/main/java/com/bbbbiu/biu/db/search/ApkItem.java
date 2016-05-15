@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 
 @Table(database = FileItem.MyDatabase.class)
@@ -56,35 +55,11 @@ public class ApkItem extends ModelItem {
     }
 
     /**
-     * 将APK信息存到数据库
+     * 从数据库中读取指定类型的APK
      *
-     * @param context 　context
-     * @param type    APK类型 {@value TYPE_APK_NORMAL,TYPE_APK_STANDALONE,TYPE_APK_SYSTEM}
-     * @param pathSet 路径集合
+     * @return APK列表
      */
-    public static void storeApk(Context context, int type, Set<String> pathSet) {
-        for (String path : pathSet) {
-            String name = StorageUtil.getApkName(context, path);
-            String packageName = StorageUtil.getApkPackageName(context, path);
-
-            if (name == null || packageName == null) {
-                continue;
-            }
-
-            ApkItem apkItem = new ApkItem(path, name, packageName, type);
-
-            if (apkItem.storeIcon(context)) {
-                apkItem.save();
-            }
-        }
-    }
-
-    /**
-     * 获取系统apk
-     *
-     * @return 已更新过的系统APK
-     */
-    public static List<ApkItem> getApkList(int type) {
+    public static List<ApkItem> queryApkItem(int type) {
         List<ApkItem> items = SQLite.select()
                 .from(ApkItem.class)
                 .where(ApkItem_Table.type.eq(type))
@@ -95,20 +70,6 @@ public class ApkItem extends ModelItem {
         return items;
     }
 
-    /**
-     * 是否已安装
-     *
-     * @param context context
-     * @return 安装与否
-     */
-    public boolean isInstalled(Context context) {
-        try {
-            context.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-        return true;
-    }
 
     @Override
     public String getPath() {
@@ -125,6 +86,7 @@ public class ApkItem extends ModelItem {
     public String getParentDirName() {
         return getFile().getParentFile().getName();
     }
+
 
     /**
      * 获取对应的Apk文件
@@ -143,7 +105,7 @@ public class ApkItem extends ModelItem {
      * @return 图标文件
      */
     public File getCachedIconFile(Context context) {
-        return new File(getIconPath(context));
+        return new File(getCachedIconPath(context));
     }
 
     /**
@@ -156,9 +118,20 @@ public class ApkItem extends ModelItem {
         return StorageUtil.getApkIcon(context, path);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ApkItem && ((ApkItem) o).path.equals(path);
+
+    /**
+     * 是否已安装
+     *
+     * @param context context
+     * @return 安装与否
+     */
+    public boolean isInstalled(Context context) {
+        try {
+            context.getPackageManager().getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -167,7 +140,7 @@ public class ApkItem extends ModelItem {
      * @param context context
      * @return 路径
      */
-    private String getIconPath(Context context) {
+    public String getCachedIconPath(Context context) {
         return new File(
                 context.getDir(ICON_DIR, Context.MODE_PRIVATE), packageName)
                 .getAbsolutePath();
@@ -179,7 +152,7 @@ public class ApkItem extends ModelItem {
      * @param context context
      * @return 是否储存成功
      */
-    private boolean storeIcon(Context context) {
+    public boolean storeIcon(Context context) {
         Drawable drawable = StorageUtil.getApkIcon(context, path);
         if (drawable == null) {
             return false;
@@ -189,7 +162,7 @@ public class ApkItem extends ModelItem {
 
         FileOutputStream out = null;
         try {
-            out = new FileOutputStream(getIconPath(context));
+            out = new FileOutputStream(getCachedIconPath(context));
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (Exception e) {
             Log.w(TAG, e.toString());

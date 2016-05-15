@@ -11,7 +11,7 @@ import java.util.Set;
 public class PreferenceUtil {
     private static final String TAG = PreferenceUtil.class.getSimpleName();
 
-    private static final String SCHEMA_FILES_TO_SEND = "Temp";
+    private static final String SCHEMA_HELPER = "Helper";
     private static final String KEY_FILE_PATHS_TO_SEND = "FILE_TO_SEND";
 
     /**
@@ -21,7 +21,7 @@ public class PreferenceUtil {
      * @param files   文件路径列表
      */
     public static void storeFilesToSend(Context context, Set<String> files) {
-        SharedPreferences preferences = context.getSharedPreferences(SCHEMA_FILES_TO_SEND, Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(SCHEMA_HELPER, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.putStringSet(KEY_FILE_PATHS_TO_SEND, files);
@@ -35,9 +35,8 @@ public class PreferenceUtil {
      * @return 文件集合
      */
     public static Set<String> getFilesToSend(Context context) {
-        SharedPreferences preferences = context.getSharedPreferences(SCHEMA_FILES_TO_SEND, Context.MODE_PRIVATE);
+        SharedPreferences preferences = context.getSharedPreferences(SCHEMA_HELPER, Context.MODE_PRIVATE);
 
         return preferences.getStringSet(KEY_FILE_PATHS_TO_SEND, null);
     }
-
 }

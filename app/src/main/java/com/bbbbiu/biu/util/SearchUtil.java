@@ -6,174 +6,51 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.media.MediaMetadataRetriever;
+import android.mtp.MtpConstants;
 import android.net.Uri;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.db.search.MediaItem;
-import com.bbbbiu.biu.service.DiskScanService;
-import com.google.common.collect.ImmutableMap;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 /**
- * 全盘扫描，并将文件分类
- * 扫描以安装应用
+ * 扫描各类文件
  * <p/>
  * Created by YieldNull at 4/7/16
  */
 public class SearchUtil {
     private static final String TAG = SearchUtil.class.getSimpleName();
 
-    /**
-     * 文件类型与后缀名
-     */
-    private static final Map<Integer, List<String>> typeExtensionMap = new ImmutableMap.Builder<Integer, List<String>>().
-            put(ModelItem.TYPE_APK, StorageUtil.EXTENSION_APK).
-            put(ModelItem.TYPE_MUSIC, StorageUtil.EXTENSION_MUSIC).
-            put(ModelItem.TYPE_VIDEO, StorageUtil.EXTENSION_VIDEO).
-//            put(FileItem.TYPE_IMG, StorageUtil.EXTENSION_IMG).  // 通过 ContentProvider扫描
-        put(ModelItem.TYPE_ARCHIVE, StorageUtil.EXTENSION_ARCHIVE).
-//                    put(ModelItem.TYPE_WORD, StorageUtil.EXTENSION_WORD).
-//                    put(ModelItem.TYPE_EXCEL, StorageUtil.EXTENSION_EXCEL).
-//                    put(ModelItem.TYPE_PPT, StorageUtil.EXTENSION_PPT).
-//                    put(ModelItem.TYPE_PDF, StorageUtil.EXTENSION_PDF)
-        put(ModelItem.TYPE_DOC, StorageUtil.EXTENSION_DOC) // 不分类了
-            .build();
 
     /**
-     * 各类别文件大小的阈值
-     */
-    private static final long THRESHOLD_IMG = 1024 * 20;// 20KB
-    private static final long THRESHOLD_VIDEO = 1024 * 1024 * 5;//5MB
-    private static final long THRESHOLD_ARCHIVE = 1024 * 10;//10KB;
-    private static final long THRESHOLD_MUSIC = 1024 * 1024;// 1MB;
-
-    /**
-     * 文件类型与阈值
-     */
-    private static final Map<Integer, Long> typeThresholdMap = ImmutableMap.of(
-//            FileItem.TYPE_IMG, THRESHOLD_IMG,
-            ModelItem.TYPE_VIDEO, THRESHOLD_VIDEO,
-            ModelItem.TYPE_ARCHIVE, THRESHOLD_ARCHIVE,
-            ModelItem.TYPE_MUSIC, THRESHOLD_MUSIC
-    );
-
-    /**
-     * 开始全盘扫描
+     * 利用包管理器，获取已安装的APK列表。
      *
-     * @param context context
+     * @param context Context
+     * @return map with key set: {@link ApkItem#TYPE_APK_SYSTEM}, {@link ApkItem#TYPE_APK_NORMAL}
      */
-    public static void startSearch(final Context context) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SearchUtil.scanDisk(context);
-            }
-        });
+    public static Map<Integer, List<ApkItem>> scanInstalledApkItem(Context context) {
+        Log.i(TAG, "Start scanning installed apk");
 
-        Thread thread1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SearchUtil.scanApkInstalled(context);
-            }
-        });
+        Map<Integer, List<ApkItem>> map = new HashMap<>();
 
-        Thread thread2 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SearchUtil.scanImg(context);
-            }
-        });
-
-        thread.start();
-        thread1.start();
-        thread2.start();
-
-        try {
-            thread.join();
-            thread1.join();
-            thread2.join();
-            DiskScanService.stopService(context);
-
-        } catch (InterruptedException e) {
-            Log.w(TAG, e);
-        }
-
-    }
-
-    /**
-     * 全盘扫描各种文件类型，并持久化
-     * <p/>
-     * 分内部储存和外部储存扫描。不直接从根目录“/”下扫描，
-     * 因为有时候会莫名其妙地访问不了或者是出现将SD卡挂载到多个文件夹下的情况
-     */
-    public static void scanDisk(final Context context) {
-        Log.i(TAG, currentThread() + "Start scanning disk");
-
-        Integer[] typeArr = typeExtensionMap.keySet().toArray(new Integer[typeExtensionMap.size()]);
-
-        int count = StorageUtil.getExternalDirCount(context);
-        Map<Integer, Set<String>> result;
-
-        if (count == 0) {
-            result = BFSSearch(new File(StorageUtil.PATH_STORAGE), typeArr);
-        } else if (count == 1) {
-            result = BFSSearch(StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL), typeArr);
-        } else {
-            result = BFSSearch(StorageUtil.getRootDir(context, StorageUtil.TYPE_INTERNAL), typeArr);
-            BFSSearch(result, StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL), typeArr);
-        }
-
-
-        Log.i(TAG, currentThread() + "Storing apk doc archive files to Database");
-
-        for (final Map.Entry<Integer, Set<String>> cateEntry : result.entrySet()) {
-            final int type = cateEntry.getKey();
-
-            if (type == ModelItem.TYPE_APK) {
-                ApkItem.storeApk(context, ApkItem.TYPE_APK_STANDALONE, cateEntry.getValue());
-            } else if (type == ModelItem.TYPE_VIDEO || type == ModelItem.TYPE_MUSIC) {
-
-                Log.i(TAG, currentThread() + "Starting storing video | music");
-                MediaItem.storeMediaItems(context, type, cateEntry.getValue());
-                Log.i(TAG, currentThread() + "Finish storing");
-
-            } else {
-                FileItem.storeFileItems(cateEntry.getKey(), cateEntry.getValue());
-            }
-        }
-
-        Log.i(TAG, currentThread() + "Finish storing");
-    }
-
-    /**
-     * 扫描已安装的APK列表，并持久化
-     * <p/>
-     * 包括更新过的系统应用以及用户安装的普通应用
-     *
-     * @param context context
-     */
-    public static void scanApkInstalled(Context context) {
-        Log.i(TAG, currentThread() + "Start scanning installed apk");
+        List<ApkItem> sysApkList = new ArrayList<>();
+        List<ApkItem> normalApkList = new ArrayList<>();
 
         PackageManager manager = context.getPackageManager();
-        Set<String> sysApkSet = new HashSet<>();
-        Set<String> normalApkSet = new HashSet<>();
-
 
         List<PackageInfo> infoList = manager.getInstalledPackages(PackageManager.GET_ACTIVITIES);
         for (PackageInfo info : infoList) {
@@ -185,203 +62,481 @@ public class SearchUtil {
             }
 
             String path = info.applicationInfo.sourceDir;
+            String packageName = info.packageName;
+            String name = (String) manager.getApplicationLabel(info.applicationInfo);
 
+            ApkItem apkItem;
 
             if ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) > 0) {
-                sysApkSet.add(path);
+                apkItem = new ApkItem(path, name, packageName, ApkItem.TYPE_APK_SYSTEM);
+                sysApkList.add(apkItem);
             } else {
-                normalApkSet.add(path);
+                apkItem = new ApkItem(path, name, packageName, ApkItem.TYPE_APK_NORMAL);
+                normalApkList.add(apkItem);
             }
+
+            apkItem.storeIcon(context);
+            apkItem.save();
         }
 
 
-        Log.i(TAG, currentThread() + "Storing apk paths to Database");
+        Log.i(TAG, "Finish Scanning. Amount:" + (sysApkList.size() + normalApkList.size()));
 
-        ApkItem.storeApk(context, ApkItem.TYPE_APK_SYSTEM, sysApkSet);
-        ApkItem.storeApk(context, ApkItem.TYPE_APK_NORMAL, normalApkSet);
+        map.put(ApkItem.TYPE_APK_SYSTEM, sysApkList);
+        map.put(ApkItem.TYPE_APK_NORMAL, normalApkList);
 
-        Log.i(TAG, currentThread() + "Finish storing");
+        return map;
     }
 
     /**
-     * 利用ContentProvider扫描图片
+     * 从MediaStore读取APK安装包。
      *
      * @param context context
+     * @return APK列表
      */
-    public static void scanImg(Context context) {
-        Log.i(TAG, currentThread() + "Start scanning img");
+    public static List<ApkItem> scanStandAloneApkItem(Context context) {
+        Log.i(TAG, "Start scanning standalone apk");
 
-        Uri mImageUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver mContentResolver = context.getContentResolver();
+        List<ApkItem> apkItemList = new ArrayList<>();
+
+        for (String path : getFilePath(context, StorageUtil.EXTENSION_APK)) {
+            String name = StorageUtil.getApkName(context, path);
+            String packageName = StorageUtil.getApkPackageName(context, path);
+
+            ApkItem apkItem = new ApkItem(path, name, packageName, ApkItem.TYPE_APK_STANDALONE);
+
+            if (!apkItem.isInstalled(context)) {
+                apkItemList.add(apkItem);
+
+                apkItem.storeIcon(context);
+                apkItem.save();
+            }
+        }
+
+        Log.i(TAG, "Finish Scanning. Amount:" + apkItemList.size());
+
+        return apkItemList;
+    }
+
+    /**
+     * 利用MediaStore 扫描图片
+     *
+     * @param context context
+     * @return 图片列表
+     */
+    public static List<FileItem> scanImageItem(Context context) {
+        List<FileItem> fileItems = new ArrayList<>();
+
+        Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+        ContentResolver contentResolver = context.getContentResolver();
 
         //只查询jpeg和png的图片
-        Cursor mCursor = mContentResolver.query(mImageUri, null,
+        Cursor cursor = contentResolver.query(
+                contentUri,
+                new String[]{MediaStore.Images.Media.DATA},
                 MediaStore.Images.Media.MIME_TYPE + "=? or "
                         + MediaStore.Images.Media.MIME_TYPE + "=?",
-                new String[]{"image/jpeg", "image/png"}, MediaStore.Images.Media.DATE_MODIFIED);
+                new String[]{"image/jpeg", "image/png"},
+                null);
 
-        if (mCursor == null) {
-            return;
+        if (cursor == null) {
+            return fileItems;
         }
 
-        Log.i(TAG, currentThread() + "Storing img info to Database");
-
-        while (mCursor.moveToNext()) {
+        while (cursor.moveToNext()) {
             //获取图片的路径
-            String path = mCursor.getString(mCursor
-                    .getColumnIndex(MediaStore.Images.Media.DATA));
+            String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
 
-            new FileItem(path, ModelItem.TYPE_IMG).save();
+            FileItem item = new FileItem(path, ModelItem.TYPE_IMG);
+            fileItems.add(item);
 
+            item.save();
         }
-        mCursor.close();
+        cursor.close();
 
-        Log.i(TAG, currentThread() + "Finish storing");
+        return fileItems;
     }
 
     /**
-     * 在指定目录搜索指定类型的文件
+     * 利用MediaStore 扫描视频
      *
-     * @param root 目录
-     * @param type 文件类型
-     * @return 文件集合
-     * @see FileItem
+     * @param context context
+     * @return 视频列表
      */
-    public static Set<String> searchFileAt(File root, int type) {
-        return BFSSearch(root, type).get(type);
-    }
+    public static List<MediaItem> scanVideoItem(Context context) {
+        List<MediaItem> fileItems = new ArrayList<>();
 
-    /**
-     * 在指定目录下，宽度优先搜索指定类型的文件
-     *
-     * @param root     根目录
-     * @param typeList 文件类型
-     * @return 各种文件类型对应的文件路径集合
-     */
-    private static Map<Integer, Set<String>> BFSSearch(File root, Integer... typeList) {
-        HashMap<Integer, Set<String>> destMap = new HashMap<>();
-        BFSSearch(destMap, root, typeList);
-        return destMap;
-    }
+        Uri contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+        ContentResolver contentResolver = context.getContentResolver();
 
-    /**
-     * 在指定目录下，宽度优先搜索指定类型的文件。将结果存入destMap
-     *
-     * @param destMap  结果将存入此Map
-     * @param root     根目录
-     * @param typeList 文件类型
-     */
-    private static void BFSSearch(@NonNull Map<Integer, Set<String>> destMap, @NonNull File root, Integer... typeList) {
-        Log.i(TAG, currentThread() + "Start scanning all files under \"" + root.getAbsolutePath() + "\"");
+        Cursor cursor = contentResolver.query(
+                contentUri,
+                new String[]{
+                        MediaStore.Video.Media.DATA,
+                        MediaStore.Video.Media.TITLE,
+                        MediaStore.Video.Media.DURATION
+                },
+                null,
+                null,
+                null);
 
-        HashMap<String, Integer> extensionMap = new HashMap<>();
-
-        for (int type : typeList) {
-            if (destMap.get(type) == null) {
-                Set<String> pathSet = new HashSet<>();
-                destMap.put(type, pathSet);
-            }
-
-            for (String ext : getFileTypeExtension(type)) {
-                extensionMap.put(ext, type);
-            }
+        if (cursor == null) {
+            return fileItems;
         }
 
-        // BFS
-        Queue<File> queue = new LinkedList<>();
-        queue.add(root);
 
-        while (!queue.isEmpty()) {
-            File f = queue.remove();
+        while (cursor.moveToNext()) {
+            String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
+            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
+            String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
 
-            if (!f.canRead() || f.isHidden()) { // 不扫描隐藏文件以及不可读的文件
+            MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
+            fileItems.add(item);
+
+            item.save();
+
+        }
+        cursor.close();
+
+        return fileItems;
+    }
+
+    /**
+     * 从MediaStore扫描音乐
+     *
+     * @param context context
+     * @return 音乐列表
+     */
+    public static List<MediaItem> scanMusicItem(Context context) {
+
+        List<MediaItem> itemList = new ArrayList<>();
+
+        Set<String> pathSet = getFilePath(context, StorageUtil.EXTENSION_MUSIC);
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+
+        for (String path : pathSet) {
+            Uri uri = Uri.fromFile(new File(path));
+            mediaMetadataRetriever.setDataSource(context, uri);
+
+            String title, artist;
+
+            title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+            artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+            String duration;
+            try {
+                duration = MediaItem.formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
+                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            } catch (NumberFormatException e) {
                 continue;
             }
 
-            if (f.isDirectory()) {
-                // 不知道为什么，空文件夹会返回null "/storage/emulated/0/baidu/pushservice"
-                File[] files = f.listFiles();
-                if (files == null) {
-                    continue;
-                }
+            MediaItem item = new MediaItem(path, ModelItem.TYPE_MUSIC, title, artist, duration);
+            itemList.add(item);
 
-                // 获取Canonical Path
-                Set<File> subFiles = new HashSet<>();
+            item.save();
+        }
 
+        return itemList;
+    }
 
-                for (File file : files) {
-                    if (f.isHidden()) {
-                        continue;
-                    }
+    /**
+     * 从MediaStore 读取文档
+     *
+     * @param context context
+     * @return 文档列表
+     */
+    public static List<FileItem> scanDocItem(Context context) {
+        Set<String> pathList = getFilePath(context, StorageUtil.EXTENSION_DOC);
 
-                    try {
-                        String cp = file.getCanonicalPath();
-                        if (!cp.equals(StorageUtil.PATH_LEGACY)) { // 排除 LEGACY
-                            subFiles.add(new File(cp));
-                        }
-                    } catch (IOException e) {
-                        Log.w(TAG, e);
-                    }
-                }
-                queue.addAll(subFiles);
+        List<FileItem> fileItems = new ArrayList<>();
 
-            } else {
-                String path = "";
-                try {
-                    path = f.getCanonicalPath(); // 获取绝对路径，避免符号链接浪费时间
-                } catch (IOException e) {
-                    Log.w(TAG, e.toString());
-                }
-                String extension = StorageUtil.getFileExtension(path);
+        for (String path : pathList) {
+            FileItem item = new FileItem(path, ModelItem.TYPE_DOC);
+            fileItems.add(item);
 
-                Integer type = extensionMap.get(extension); // 获取类别
+            item.save();
+        }
 
-                // 判断大小
-                if (type != null && hasMatchThreshold(type, f.length())) {
-                    destMap.get(type).add(path);//加入指定类别
-                }
+        return fileItems;
+    }
+
+    /**
+     * 从MediaStore读取 压缩文件
+     *
+     * @param context context
+     * @return 压缩文件列表
+     */
+    public static List<FileItem> scanArchiveItem(Context context) {
+        Set<String> pathList = getFilePath(context, StorageUtil.EXTENSION_ARCHIVE);
+
+        List<FileItem> fileItems = new ArrayList<>();
+
+        for (String path : pathList) {
+            FileItem item = new FileItem(path, ModelItem.TYPE_ARCHIVE);
+            fileItems.add(item);
+
+            item.save();
+        }
+
+        return fileItems;
+    }
+
+    /**
+     * 从MediaStore读取相应后缀名的文件路径
+     *
+     * @param context   context
+     * @param extension 后缀名列表
+     * @return 文件列表
+     */
+    public static Set<String> getFilePath(Context context, List<String> extension) {
+        Set<String> resultSet = new HashSet<>();
+
+        Set<String> mimeList = new HashSet<>();
+
+        for (String ext : extension) {
+            String mime = MediaFile.getMimeTypeForFile("." + ext);
+            if (mime != null) {
+                mimeList.add(mime);
             }
         }
 
-        Log.i(TAG, currentThread() + "Finish scanning");
-    }
-
-
-    /**
-     * 获取指定文件类型的后缀名列表
-     *
-     * @param type 类型
-     * @return 后缀名列表
-     */
-    private static List<String> getFileTypeExtension(int type) {
-        List<String> result = typeExtensionMap.get(type);
-
-        if (result == null) {
-            result = new ArrayList<>();
+        if (mimeList.size() == 0) {
+            return resultSet;
         }
 
-        return result;
+        StringBuilder selectionBuilder = new StringBuilder();
+        int count = 0;
+        for (String ignored : mimeList) {
+            if (count != 0) {
+                selectionBuilder.append(" OR " + MediaStore.Files.FileColumns.MIME_TYPE + "=?");
+            } else {
+                selectionBuilder.append(MediaStore.Files.FileColumns.MIME_TYPE + "=?");
+            }
+            count++;
+        }
+
+        ContentResolver contentResolver = context.getContentResolver();
+        Uri uri = MediaStore.Files.getContentUri("external");
+
+        Cursor cursor = contentResolver.query(
+                uri,
+                new String[]{MediaStore.Files.FileColumns.DATA},
+                selectionBuilder.toString(),
+                mimeList.toArray(new String[mimeList.size()]),
+                null
+        );
+
+        if (cursor == null) {
+            return resultSet;
+        }
+
+        while (cursor.moveToNext()) {
+            String path = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
+
+            File file = new File(path);
+
+            if (file.exists()) {
+                resultSet.add(path);
+            }
+        }
+
+        cursor.close();
+
+        return resultSet;
     }
 
     /**
-     * 图片视频等文件大小是否达到阈值，为了过滤小文件
-     *
-     * @param type 文件类型
-     * @param size 文件大小 bytes
-     * @return 是否达到阈值
+     * Android MediaScanner Helper Class.
+     * <p/>
+     * Part of the source of <a href="https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java">android.media.MediaFile</a>
+     * <p/>
+     * 用{@link MimeTypeMap }计算得到的MIME TYPE与 MediaStore查到的不同。故直接用其源码算了
      */
-    private static boolean hasMatchThreshold(Integer type, long size) {
-        if (type == null) {
-            return false;
+    public static class MediaFile {
+        // Audio file types
+        public static final int FILE_TYPE_MP3 = 1;
+        public static final int FILE_TYPE_M4A = 2;
+        public static final int FILE_TYPE_WAV = 3;
+        public static final int FILE_TYPE_AMR = 4;
+        public static final int FILE_TYPE_AWB = 5;
+        public static final int FILE_TYPE_WMA = 6;
+        public static final int FILE_TYPE_OGG = 7;
+        public static final int FILE_TYPE_AAC = 8;
+        public static final int FILE_TYPE_MKA = 9;
+        public static final int FILE_TYPE_FLAC = 10;
+        private static final int FIRST_AUDIO_FILE_TYPE = FILE_TYPE_MP3;
+        private static final int LAST_AUDIO_FILE_TYPE = FILE_TYPE_FLAC;
+        // MIDI file types
+        public static final int FILE_TYPE_MID = 11;
+        public static final int FILE_TYPE_SMF = 12;
+        public static final int FILE_TYPE_IMY = 13;
+        private static final int FIRST_MIDI_FILE_TYPE = FILE_TYPE_MID;
+        private static final int LAST_MIDI_FILE_TYPE = FILE_TYPE_IMY;
+
+        // Video file types
+        public static final int FILE_TYPE_MP4 = 21;
+        public static final int FILE_TYPE_M4V = 22;
+        public static final int FILE_TYPE_3GPP = 23;
+        public static final int FILE_TYPE_3GPP2 = 24;
+        public static final int FILE_TYPE_WMV = 25;
+        public static final int FILE_TYPE_ASF = 26;
+        public static final int FILE_TYPE_MKV = 27;
+        public static final int FILE_TYPE_MP2TS = 28;
+        public static final int FILE_TYPE_AVI = 29;
+        public static final int FILE_TYPE_WEBM = 30;
+        private static final int FIRST_VIDEO_FILE_TYPE = FILE_TYPE_MP4;
+        private static final int LAST_VIDEO_FILE_TYPE = FILE_TYPE_WEBM;
+
+        // More video file types
+        public static final int FILE_TYPE_MP2PS = 200;
+        private static final int FIRST_VIDEO_FILE_TYPE2 = FILE_TYPE_MP2PS;
+        private static final int LAST_VIDEO_FILE_TYPE2 = FILE_TYPE_MP2PS;
+        // Image file types
+        public static final int FILE_TYPE_JPEG = 31;
+        public static final int FILE_TYPE_GIF = 32;
+        public static final int FILE_TYPE_PNG = 33;
+        public static final int FILE_TYPE_BMP = 34;
+        public static final int FILE_TYPE_WBMP = 35;
+        public static final int FILE_TYPE_WEBP = 36;
+        private static final int FIRST_IMAGE_FILE_TYPE = FILE_TYPE_JPEG;
+        private static final int LAST_IMAGE_FILE_TYPE = FILE_TYPE_WEBP;
+
+        // Playlist file types
+        public static final int FILE_TYPE_M3U = 41;
+        public static final int FILE_TYPE_PLS = 42;
+        public static final int FILE_TYPE_WPL = 43;
+        public static final int FILE_TYPE_HTTPLIVE = 44;
+        private static final int FIRST_PLAYLIST_FILE_TYPE = FILE_TYPE_M3U;
+        private static final int LAST_PLAYLIST_FILE_TYPE = FILE_TYPE_HTTPLIVE;
+        // Drm file types
+        public static final int FILE_TYPE_FL = 51;
+        private static final int FIRST_DRM_FILE_TYPE = FILE_TYPE_FL;
+        private static final int LAST_DRM_FILE_TYPE = FILE_TYPE_FL;
+        // Other popular file types
+        public static final int FILE_TYPE_TEXT = 100;
+        public static final int FILE_TYPE_HTML = 101;
+        public static final int FILE_TYPE_PDF = 102;
+        public static final int FILE_TYPE_XML = 103;
+        public static final int FILE_TYPE_MS_WORD = 104;
+        public static final int FILE_TYPE_MS_EXCEL = 105;
+        public static final int FILE_TYPE_MS_POWERPOINT = 106;
+        public static final int FILE_TYPE_ZIP = 107;
+
+        public static class MediaFileType {
+            public final int fileType;
+            public final String mimeType;
+
+            MediaFileType(int fileType, String mimeType) {
+                this.fileType = fileType;
+                this.mimeType = mimeType;
+            }
         }
 
-        Long threshold = typeThresholdMap.get(type);
+        private static final HashMap<String, MediaFileType> sFileTypeMap
+                = new HashMap<String, MediaFileType>();
+        private static final HashMap<String, Integer> sMimeTypeMap
+                = new HashMap<String, Integer>();
+        // maps file extension to MTP format code
+        private static final HashMap<String, Integer> sFileTypeToFormatMap
+                = new HashMap<String, Integer>();
+        // maps mime type to MTP format code
+        private static final HashMap<String, Integer> sMimeTypeToFormatMap
+                = new HashMap<String, Integer>();
+        // maps MTP format code to mime type
+        private static final HashMap<Integer, String> sFormatToMimeTypeMap
+                = new HashMap<Integer, String>();
 
-        return threshold == null || size >= threshold;
+        static void addFileType(String extension, int fileType, String mimeType) {
+            sFileTypeMap.put(extension, new MediaFileType(fileType, mimeType));
+            sMimeTypeMap.put(mimeType, Integer.valueOf(fileType));
+        }
+
+        static void addFileType(String extension, int fileType, String mimeType, int mtpFormatCode) {
+            addFileType(extension, fileType, mimeType);
+            sFileTypeToFormatMap.put(extension, Integer.valueOf(mtpFormatCode));
+            sMimeTypeToFormatMap.put(mimeType, Integer.valueOf(mtpFormatCode));
+            sFormatToMimeTypeMap.put(mtpFormatCode, mimeType);
+        }
+
+        static {
+            addFileType("MP3", FILE_TYPE_MP3, "audio/mpeg", MtpConstants.FORMAT_MP3);
+            addFileType("MPGA", FILE_TYPE_MP3, "audio/mpeg", MtpConstants.FORMAT_MP3);
+            addFileType("M4A", FILE_TYPE_M4A, "audio/mp4", MtpConstants.FORMAT_MPEG);
+            addFileType("WAV", FILE_TYPE_WAV, "audio/x-wav", MtpConstants.FORMAT_WAV);
+            addFileType("AMR", FILE_TYPE_AMR, "audio/amr");
+            addFileType("AWB", FILE_TYPE_AWB, "audio/amr-wb");
+
+            addFileType("OGG", FILE_TYPE_OGG, "audio/ogg", MtpConstants.FORMAT_OGG);
+            addFileType("OGG", FILE_TYPE_OGG, "application/ogg", MtpConstants.FORMAT_OGG);
+            addFileType("OGA", FILE_TYPE_OGG, "application/ogg", MtpConstants.FORMAT_OGG);
+            addFileType("AAC", FILE_TYPE_AAC, "audio/aac", MtpConstants.FORMAT_AAC);
+            addFileType("AAC", FILE_TYPE_AAC, "audio/aac-adts", MtpConstants.FORMAT_AAC);
+            addFileType("MKA", FILE_TYPE_MKA, "audio/x-matroska");
+
+            addFileType("MID", FILE_TYPE_MID, "audio/midi");
+            addFileType("MIDI", FILE_TYPE_MID, "audio/midi");
+            addFileType("XMF", FILE_TYPE_MID, "audio/midi");
+            addFileType("RTTTL", FILE_TYPE_MID, "audio/midi");
+            addFileType("SMF", FILE_TYPE_SMF, "audio/sp-midi");
+            addFileType("IMY", FILE_TYPE_IMY, "audio/imelody");
+            addFileType("RTX", FILE_TYPE_MID, "audio/midi");
+            addFileType("OTA", FILE_TYPE_MID, "audio/midi");
+            addFileType("MXMF", FILE_TYPE_MID, "audio/midi");
+
+            addFileType("MPEG", FILE_TYPE_MP4, "video/mpeg", MtpConstants.FORMAT_MPEG);
+            addFileType("MPG", FILE_TYPE_MP4, "video/mpeg", MtpConstants.FORMAT_MPEG);
+            addFileType("MP4", FILE_TYPE_MP4, "video/mp4", MtpConstants.FORMAT_MPEG);
+            addFileType("M4V", FILE_TYPE_M4V, "video/mp4", MtpConstants.FORMAT_MPEG);
+            addFileType("3GP", FILE_TYPE_3GPP, "video/3gpp", MtpConstants.FORMAT_3GP_CONTAINER);
+            addFileType("3GPP", FILE_TYPE_3GPP, "video/3gpp", MtpConstants.FORMAT_3GP_CONTAINER);
+            addFileType("3G2", FILE_TYPE_3GPP2, "video/3gpp2", MtpConstants.FORMAT_3GP_CONTAINER);
+            addFileType("3GPP2", FILE_TYPE_3GPP2, "video/3gpp2", MtpConstants.FORMAT_3GP_CONTAINER);
+            addFileType("MKV", FILE_TYPE_MKV, "video/x-matroska");
+            addFileType("WEBM", FILE_TYPE_WEBM, "video/webm");
+            addFileType("TS", FILE_TYPE_MP2TS, "video/mp2ts");
+            addFileType("AVI", FILE_TYPE_AVI, "video/avi");
+
+            addFileType("JPG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG);
+            addFileType("JPEG", FILE_TYPE_JPEG, "image/jpeg", MtpConstants.FORMAT_EXIF_JPEG);
+            addFileType("GIF", FILE_TYPE_GIF, "image/gif", MtpConstants.FORMAT_GIF);
+            addFileType("PNG", FILE_TYPE_PNG, "image/png", MtpConstants.FORMAT_PNG);
+            addFileType("BMP", FILE_TYPE_BMP, "image/x-ms-bmp", MtpConstants.FORMAT_BMP);
+            addFileType("WBMP", FILE_TYPE_WBMP, "image/vnd.wap.wbmp");
+            addFileType("WEBP", FILE_TYPE_WEBP, "image/webp");
+
+            addFileType("M3U", FILE_TYPE_M3U, "audio/x-mpegurl", MtpConstants.FORMAT_M3U_PLAYLIST);
+            addFileType("M3U", FILE_TYPE_M3U, "application/x-mpegurl", MtpConstants.FORMAT_M3U_PLAYLIST);
+            addFileType("PLS", FILE_TYPE_PLS, "audio/x-scpls", MtpConstants.FORMAT_PLS_PLAYLIST);
+            addFileType("WPL", FILE_TYPE_WPL, "application/vnd.ms-wpl", MtpConstants.FORMAT_WPL_PLAYLIST);
+            addFileType("M3U8", FILE_TYPE_HTTPLIVE, "application/vnd.apple.mpegurl");
+            addFileType("M3U8", FILE_TYPE_HTTPLIVE, "audio/mpegurl");
+            addFileType("M3U8", FILE_TYPE_HTTPLIVE, "audio/x-mpegurl");
+            addFileType("FL", FILE_TYPE_FL, "application/x-android-drm-fl");
+            addFileType("TXT", FILE_TYPE_TEXT, "text/plain", MtpConstants.FORMAT_TEXT);
+            addFileType("HTM", FILE_TYPE_HTML, "text/html", MtpConstants.FORMAT_HTML);
+            addFileType("HTML", FILE_TYPE_HTML, "text/html", MtpConstants.FORMAT_HTML);
+            addFileType("PDF", FILE_TYPE_PDF, "application/pdf");
+            addFileType("DOC", FILE_TYPE_MS_WORD, "application/msword", MtpConstants.FORMAT_MS_WORD_DOCUMENT);
+            addFileType("XLS", FILE_TYPE_MS_EXCEL, "application/vnd.ms-excel", MtpConstants.FORMAT_MS_EXCEL_SPREADSHEET);
+            addFileType("PPT", FILE_TYPE_MS_POWERPOINT, "application/mspowerpoint", MtpConstants.FORMAT_MS_POWERPOINT_PRESENTATION);
+            addFileType("FLAC", FILE_TYPE_FLAC, "audio/flac", MtpConstants.FORMAT_FLAC);
+            addFileType("ZIP", FILE_TYPE_ZIP, "application/zip");
+            addFileType("MPG", FILE_TYPE_MP2PS, "video/mp2p");
+            addFileType("MPEG", FILE_TYPE_MP2PS, "video/mp2p");
+        }
+
+        private static MediaFileType getFileType(String path) {
+            int lastDot = path.lastIndexOf('.');
+            if (lastDot < 0)
+                return null;
+            return sFileTypeMap.get(path.substring(lastDot + 1).toUpperCase(Locale.ROOT));
+        }
+
+        public static String getMimeTypeForFile(String path) {
+            MediaFileType mediaFileType = getFileType(path);
+            return (mediaFileType == null ? null : mediaFileType.mimeType);
+        }
+
     }
-
-    private static String currentThread() {
-        return "[" + Thread.currentThread().getName() + "] ";
-    }
-
 }

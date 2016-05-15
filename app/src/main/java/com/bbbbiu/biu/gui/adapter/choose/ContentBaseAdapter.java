@@ -2,6 +2,7 @@ package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,9 +30,9 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     public static final int VIEW_TYPE_HEADER = 0;
     public static final int VIEW_TYPE_ITEM = 1;
 
-    private OnLoadingDataListener loadingDataListener;
-    private OnChoosingListener onChoosingListener;
-    private OnItemOptionClickListener onItemOptionClickListener;
+    private OnLoadingDataListener mLoadingDataListener;
+    private OnChoosingListener mOnChoosingListener;
+    private OnItemOptionClickListener mOnItemOptionClickListener;
 
     protected Context context;
 
@@ -52,18 +53,74 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
     /**
-     * 取消当前未完成的PicassoTask
+     * OnBackPress时，取消当前未完成的PicassoTask
      */
     public abstract void cancelPicassoTask();
 
-    public abstract RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
+    /**
+     * 生成数据项的 ViewHolder
+     *
+     * @param inflater LayoutInflater
+     * @param parent   parent
+     * @return ViewHolder
+     */
+    public abstract RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
-    public ContentBaseAdapter(ChooseBaseActivity context) {
-        loadingDataListener = context;
-        onChoosingListener = context;
-        onItemOptionClickListener = context;
+
+    /**
+     * 构造函数
+     *
+     * @param context 需要实现{@link OnLoadingDataListener},{@link OnChoosingListener},{@link OnItemOptionClickListener}
+     */
+    public ContentBaseAdapter(final ChooseBaseActivity context) {
+        mLoadingDataListener = context;
+        mOnChoosingListener = context;
+        mOnItemOptionClickListener = context;
         this.context = context;
+
+        notifyStartLoadingData();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean hasData = readDataFromDB();
+                boolean loadFromDb = true;
+
+                if (!hasData) {
+                    hasData = readDataFromSys();
+                    loadFromDb = false;
+                }
+
+                final boolean finalHasData = hasData;
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyFinishLoadingData(); // 取消加载动画
+
+                        if (finalHasData) {
+                            notifyDataSetChanged();
+                        } else {
+                            // TODO 显示空界面
+                        }
+                    }
+                });
+
+                if (loadFromDb) {
+                    Log.i(TAG, "Updating database");
+                    updateDatabase();
+                    Log.i(TAG, "Finish updating");
+                }
+
+            }
+        }).start();
     }
+
+
+    protected abstract boolean readDataFromDB();
+
+    protected abstract boolean readDataFromSys();
+
+    protected abstract void updateDatabase();
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -74,7 +131,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
             itemView = inflater.inflate(R.layout.list_header_common, parent, false);
             return new HeaderViewHolder(itemView);
         } else {
-            return OnCreateItemViewHolder(inflater, parent);
+            return onCreateItemViewHolder(inflater, parent);
         }
     }
 
@@ -188,14 +245,24 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
     /**
-     * 查询数据库中对应类型文件的数据
+     * 查询数据库中对应类型文件的数据,将查询所得Item按文件夹分类
      *
      * @param type 类型
      * @return 是否没有纪录
-     * @see ModelItem
+     * @see ModelItem#queryModelItems(int)
      */
     protected boolean queryModelItems(int type) {
-        for (Map.Entry<String, List<ModelItem>> entry : ModelItem.queryModelItems(type).entrySet()) {
+        return setDataSet(ModelItem.queryModelItems(type));
+    }
+
+    /**
+     * 设置数据集
+     *
+     * @param sortedItems 已经按文件夹分好类的数据
+     * @return 设置完成后数据集是否为空
+     */
+    protected boolean setDataSet(Map<String, List<ModelItem>> sortedItems) {
+        for (Map.Entry<String, List<ModelItem>> entry : sortedItems.entrySet()) {
             List<ModelItem> list = entry.getValue();
             if (list.size() > 0) {
                 mDataSetItems.add(null);
@@ -205,18 +272,21 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         return mDataSetItems.size() != 0;
     }
 
+
+    /***********************************与Activity进行交互***********************************/
+
     /**
-     * notify正在加载
+     * notify正在加载数据
      */
     protected void notifyStartLoadingData() {
-        loadingDataListener.OnStartLoadingData();
+        mLoadingDataListener.onStartLoadingData();
     }
 
     /**
-     * notify加载完成
+     * notify 数据加载完成
      */
     protected void notifyFinishLoadingData() {
-        loadingDataListener.OnFinishLoadingData();
+        mLoadingDataListener.onFinishLoadingData();
     }
 
 
@@ -228,7 +298,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      * @param filePath 文件路径
      */
     protected void notifyFileChosen(String filePath) {
-        onChoosingListener.onFileChosen(filePath);
+        mOnChoosingListener.onFileChosen(filePath);
     }
 
     /**
@@ -237,7 +307,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      * @param filePath 文件路径
      */
     protected void notifyFileDismissed(String filePath) {
-        onChoosingListener.onFileDismissed(filePath);
+        mOnChoosingListener.onFileDismissed(filePath);
     }
 
     /**
@@ -246,7 +316,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      * @param file 文件
      */
     protected void notifyFileItemOptionClicked(File file) {
-        onItemOptionClickListener.onFileOptionClick(file);
+        mOnItemOptionClickListener.onFileOptionClick(file);
     }
 
 

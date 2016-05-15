@@ -15,7 +15,6 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
-import com.bbbbiu.biu.service.DiskScanService;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -30,27 +29,27 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Bind(R.id.float_action_menu_main)
-    FloatingActionMenu actionMenu;
+    FloatingActionMenu mActionMenu;
 
     @Bind(R.id.recyclerView)
-    RecyclerView recyclerView;
+    RecyclerView mRecyclerView;
 
     @OnClick(R.id.fbtn_receive_computer)
     void receiveComputer() {
-        actionMenu.toggle(false);
+        mActionMenu.toggle(false);
 
         ConnectingActivity.connectForReceiving(this);
     }
 
     @OnClick(R.id.fbtn_receive_ios)
     void receiveApple() {
-        actionMenu.toggle(false);
+        mActionMenu.toggle(false);
         com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(this);
     }
 
     @OnClick(R.id.fbtn_receive_android)
     void receiveAndroid() {
-        actionMenu.toggle(false);
+        mActionMenu.toggle(false);
         ReceivingActivity.startConnection(this);
     }
 
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         final MainAdapter adapter = new MainAdapter(this);
-        recyclerView.setAdapter(adapter);
+        mRecyclerView.setAdapter(adapter);
 
         GridLayoutManager manager = new GridLayoutManager(this, MainAdapter.SPAN_COUNT);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -82,20 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 return adapter.getSpanSize(position);
             }
         });
-        recyclerView.setLayoutManager(manager);
+        mRecyclerView.setLayoutManager(manager);
 
 
-        actionMenu.setIconAnimated(false);
-        actionMenu.setClosedOnTouchOutside(true);
-
+        mActionMenu.setIconAnimated(false);
+        mActionMenu.setClosedOnTouchOutside(true);
     }
 
-    @Override
-    protected void onDestroy() {
-        DiskScanService.scheduleAlarm(this);
-
-        super.onDestroy();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

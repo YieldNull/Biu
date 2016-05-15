@@ -1,6 +1,5 @@
 package com.bbbbiu.biu.gui.adapter.choose;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,7 @@ import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.db.search.MediaItem;
 import com.bbbbiu.biu.db.search.ModelItem;
+import com.bbbbiu.biu.util.SearchUtil;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -25,14 +25,25 @@ import butterknife.ButterKnife;
 public class MusicContentAdapter extends ContentBaseAdapter {
     private static final String TAG = MusicContentAdapter.class.getSimpleName();
 
-    private Context context;
 
     public MusicContentAdapter(final ChooseBaseActivity context) {
         super(context);
-        this.context = context;
+    }
 
-        if (!queryModelItems(ModelItem.TYPE_MUSIC)) {
-        }
+
+    @Override
+    protected boolean readDataFromDB() {
+        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_MUSIC));
+    }
+
+    @Override
+    protected boolean readDataFromSys() {
+        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanMusicItem(context)));
+    }
+
+    @Override
+    protected void updateDatabase() {
+        SearchUtil.scanMusicItem(context);
     }
 
     @Override
@@ -41,7 +52,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new MusicViewHolder(inflater.inflate(R.layout.list_music_item, parent, false));
     }
 

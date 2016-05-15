@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
@@ -28,10 +29,21 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
 
     public DocumentContentAdapter(ChooseBaseActivity context) {
         super(context);
+    }
 
-        if (!queryModelItems(ModelItem.TYPE_DOC)) {
+    @Override
+    protected boolean readDataFromDB() {
+        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_DOC));
+    }
 
-        }
+    @Override
+    protected boolean readDataFromSys() {
+        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanDocItem(context)));
+    }
+
+    @Override
+    protected void updateDatabase() {
+        SearchUtil.scanDocItem(context);
     }
 
     @Override
@@ -40,7 +52,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
     }
 

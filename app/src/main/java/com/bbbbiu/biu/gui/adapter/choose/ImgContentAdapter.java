@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.squareup.picasso.Picasso;
@@ -27,7 +28,7 @@ public class ImgContentAdapter extends ContentBaseAdapter {
     private int mImgWidth;
     private Drawable mPlaceholder;
 
-    public ImgContentAdapter(ChooseBaseActivity context) {
+    public ImgContentAdapter(final ChooseBaseActivity context) {
         super(context);
 
         this.context = context;
@@ -43,9 +44,21 @@ public class ImgContentAdapter extends ContentBaseAdapter {
         mPlaceholder = DrawableCompat.wrap(drawable);
         DrawableCompat.setTint(mPlaceholder, context.getResources().getColor(R.color.img_placeholder));
 
-        if (!queryModelItems(ModelItem.TYPE_IMG)) {
-            // TODO 空空空啊啊啊啊啊
-        }
+    }
+
+    @Override
+    protected boolean readDataFromDB() {
+        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_IMG));
+    }
+
+    @Override
+    protected boolean readDataFromSys() {
+        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanImageItem(context)));
+    }
+
+    @Override
+    protected void updateDatabase() {
+        SearchUtil.scanImageItem(context);
     }
 
     @Override
@@ -54,7 +67,7 @@ public class ImgContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new ImgViewHolder(inflater.inflate(R.layout.list_img_item, parent, false));
     }
 

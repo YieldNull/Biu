@@ -71,7 +71,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_delete:
-                for (ApkItem apkItem : mApkAdapter.getChosenApks()) {
+                for (ApkItem apkItem : mApkAdapter.getChosenApk()) {
                     if (apkItem.isInstalled(this)) {
                         mApkToUninstallQueue.add(apkItem);
                     } else {

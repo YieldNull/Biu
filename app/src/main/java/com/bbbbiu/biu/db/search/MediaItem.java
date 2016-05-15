@@ -130,7 +130,7 @@ public class MediaItem extends ModelItem {
      * @param time time as long integer
      * @return 格式化之后的时间 如 05:20 表示5min 20sec
      */
-    private static String formatTime(long time) {
+    public static String formatTime(long time) {
         String min = time / (1000 * 60) + "";
         String sec = time % (1000 * 60) + "";
         if (min.length() < 2)

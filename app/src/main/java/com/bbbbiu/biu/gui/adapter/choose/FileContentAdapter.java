@@ -37,8 +37,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
     private static final String TAG = FileContentAdapter.class.getSimpleName();
 
-    private Context context;
-
     private OnChangeDirListener mOnChangeDirListener;
 
     /**
@@ -64,6 +62,8 @@ public class FileContentAdapter extends ContentBaseAdapter {
      */
     private Set<File> mChosenFiles = new HashSet<>();
 
+    private File mRootDir;
+
     private boolean showHidden;
 
 
@@ -75,8 +75,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
     public FileContentAdapter(ChooseBaseActivity context, File rootDir) {
         super(context);
 
-        this.context = context;
-
         Picasso.Builder builder = new Picasso.Builder(context);
         builder.addRequestHandler(new VideoIconRequestHandler());
         mVideoPicasso = builder.build();
@@ -84,11 +82,28 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
         mOnChangeDirListener = (OnChangeDirListener) context;
 
-        setCurrentDir(rootDir);
+        this.mRootDir = rootDir;
     }
 
     public File getCurrentDir() {
         return mCurrentDir;
+    }
+
+
+    @Override
+    protected boolean readDataFromDB() {
+        setCurrentDir(mRootDir);
+        return true;
+    }
+
+    @Override
+    protected boolean readDataFromSys() {
+        return true;
+    }
+
+    @Override
+    protected void updateDatabase() {
+
     }
 
     /**
@@ -233,7 +248,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new ItemViewHolder(inflater.inflate(R.layout.list_file_item, parent, false), context);
     }
 

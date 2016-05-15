@@ -90,7 +90,7 @@ public class StorageUtil {
 
 
     /**
-     * 获取下载目录。4.4有两个存储卡，就放到第二个。TODO 在设置里面给用户选择下载目录
+     * 获取下载目录。有两个存储卡，就放到第二个。
      */
     public static File getDownloadDir(Context context) {
         File downloads;
@@ -123,7 +123,7 @@ public class StorageUtil {
     }
 
     /**
-     * 获取4.4的物理外置存储卡。
+     * 获取物理外置存储卡中本APP 文件的存放路径。
      */
     public static File getSecondaryExternalDir(Context context) {
         if (getExternalDirCount(context) != 2) {
@@ -170,7 +170,7 @@ public class StorageUtil {
         int externalDirCount = getExternalDirCount(context);
 
         if (type == TYPE_INTERNAL) {
-            if (getExternalDirCount(context) == 2) {  // 有两个外置，则用第一个表示手机存储，点击进入第一个外置
+            if (getExternalDirCount(context) == 2) {  // 有两个外置，则用第一个表示手机存储
                 root = Environment.getExternalStorageDirectory();
             } else {
                 if (externalDirCount == 1 && (!hasRealExternal(context))) {  // 有一个外置,但是不是真的外置,emulated
@@ -363,6 +363,7 @@ public class StorageUtil {
 
             ApplicationInfo appInfo = packageInfo.applicationInfo;
 
+            // IMPORTANT !!!
             appInfo.sourceDir = path;
             appInfo.publicSourceDir = path;
             name = (String) manager.getApplicationLabel(packageInfo.applicationInfo);

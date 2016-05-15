@@ -32,21 +32,11 @@ public abstract class ModelItem extends BaseModel {
 
     public abstract String getParentDirName();
 
-
-    public static <T extends ModelItem> void filter(List<T> items) {
-        List<T> itemsToDelete = new ArrayList<>();
-
-        for (T t : items) {
-            File file = new File(t.getPath());
-            if (!file.exists()) {
-                itemsToDelete.add(t);
-
-                t.delete(); // 删除纪录
-            }
-        }
-
-        items.removeAll(itemsToDelete);
+    @Override
+    public boolean equals(Object o) {
+        return (o instanceof ModelItem) && ((ModelItem) o).getPath().equals(getPath());
     }
+
 
     /**
      * 从数据库中读取指定类型的文件
@@ -78,9 +68,21 @@ public abstract class ModelItem extends BaseModel {
             allRecords.addAll(records);
         }
 
+        return sortModelItems(allRecords);
+    }
+
+
+    /**
+     * 将Item按文件夹分类
+     *
+     * @param items 待分类列表
+     * @param <T>   ModelItem
+     * @return {“Folder”:itemList}
+     */
+    public static <T extends ModelItem> Map<String, List<ModelItem>> sortModelItems(List<T> items) {
         Map<String, List<ModelItem>> dirItemMap = new HashMap<>();
 
-        for (ModelItem item : allRecords) {
+        for (ModelItem item : items) {
             String pDirName = item.getParentDirName();
             List<ModelItem> list = dirItemMap.get(pDirName);
 
@@ -93,5 +95,32 @@ public abstract class ModelItem extends BaseModel {
         }
 
         return dirItemMap;
+    }
+
+    /**
+     * 剔除不存在的文件
+     *
+     * @param items ModelItems
+     * @param <T>   ModelItems
+     */
+    public static <T extends ModelItem> void filter(List<T> items) {
+        List<T> itemsToDelete = new ArrayList<>();
+
+        for (T t : items) {
+            File file = new File(t.getPath());
+            if (!file.exists()) {
+                itemsToDelete.add(t);
+
+                t.delete(); // 删除纪录
+            }
+        }
+
+        items.removeAll(itemsToDelete);
+    }
+
+    public static <T extends ModelItem> void storeItems(List<T> items) {
+        for (ModelItem item : items) {
+            item.save();
+        }
     }
 }

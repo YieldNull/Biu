@@ -13,6 +13,7 @@ import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
+import com.bbbbiu.biu.util.SearchUtil;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -25,9 +26,21 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
 
     public ArchiveContentAdapter(ChooseBaseActivity context) {
         super(context);
+    }
 
-        if (!queryModelItems(ModelItem.TYPE_ARCHIVE)) {
-        }
+    @Override
+    protected boolean readDataFromDB() {
+        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_ARCHIVE));
+    }
+
+    @Override
+    protected boolean readDataFromSys() {
+        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanArchiveItem(context)));
+    }
+
+    @Override
+    protected void updateDatabase() {
+        SearchUtil.scanArchiveItem(context);
     }
 
     @Override
@@ -36,7 +49,7 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new ArchiveViewHolder(inflater.inflate(R.layout.list_archive_item, parent, false));
     }
 

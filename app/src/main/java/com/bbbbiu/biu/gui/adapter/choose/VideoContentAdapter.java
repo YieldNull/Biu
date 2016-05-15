@@ -13,6 +13,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.db.search.MediaItem;
 import com.bbbbiu.biu.db.search.ModelItem;
@@ -42,10 +43,22 @@ public class VideoContentAdapter extends ContentBaseAdapter {
         builder.addRequestHandler(new VideoIconRequestHandler());
         mPicasso = builder.build();
 
+    }
 
-        if (!queryModelItems(ModelItem.TYPE_VIDEO)) {
 
-        }
+    @Override
+    protected boolean readDataFromDB() {
+        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_VIDEO));
+    }
+
+    @Override
+    protected boolean readDataFromSys() {
+        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanVideoItem(context)));
+    }
+
+    @Override
+    protected void updateDatabase() {
+        SearchUtil.scanVideoItem(context);
     }
 
 
@@ -56,7 +69,7 @@ public class VideoContentAdapter extends ContentBaseAdapter {
 
 
     @Override
-    public RecyclerView.ViewHolder OnCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new VideoViewHolder(inflater.inflate(R.layout.list_video_item, parent, false));
     }
 
