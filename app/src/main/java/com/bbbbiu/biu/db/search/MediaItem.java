@@ -1,8 +1,7 @@
 package com.bbbbiu.biu.db.search;
 
-import android.content.Context;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
+
+import android.support.annotation.Nullable;
 
 import com.bbbbiu.biu.util.StorageUtil;
 import com.raizlabs.android.dbflow.annotation.Column;
@@ -12,10 +11,9 @@ import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 
 import java.io.File;
-import java.util.Set;
 
 /**
- * 视频，音频
+ * 视频，音频等要纪录时长的
  * <p/>
  * Created by YieldNull at 4/18/16
  */
@@ -50,8 +48,16 @@ public class MediaItem extends ModelItem {
     public MediaItem() {
     }
 
-
-    public MediaItem(String path, int type, String title, String artist, String duration) {
+    /**
+     * 构造函数
+     *
+     * @param path     路径
+     * @param type     类型{@link ModelItem#TYPE_MUSIC},{@link ModelItem#TYPE_VIDEO}
+     * @param title    名称
+     * @param artist   歌手，艺术家，可为空
+     * @param duration 时长，{@link com.bbbbiu.biu.util.SearchUtil#formatMediaDuration(long)}
+     */
+    public MediaItem(String path, int type, String title, @Nullable String artist, String duration) {
         this.path = path;
         this.type = type;
         this.title = title;
@@ -59,50 +65,6 @@ public class MediaItem extends ModelItem {
         this.duration = duration;
     }
 
-
-    /**
-     * 存到数据库
-     *
-     * @param context context
-     * @param type    类型
-     * @param pathSet 文件绝对路径集合
-     */
-    public static void storeMediaItems(Context context, int type, Set<String> pathSet) {
-
-        // 获取Music的Metadata
-        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-
-        for (String path : pathSet) {
-            File file = new File(path);
-
-            if (!file.exists()) {
-                continue;
-            }
-
-            Uri uri = Uri.fromFile(file);
-            mediaMetadataRetriever.setDataSource(context, uri);
-
-            String title, artist;
-
-            if (type == ModelItem.TYPE_VIDEO) {
-                title = file.getName();
-                artist = null;
-            } else {
-                title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            }
-
-            String duration;
-            try {
-                duration = formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            } catch (NumberFormatException e) {
-                continue;
-            }
-
-            new MediaItem(path, type, title, artist, duration).save();
-        }
-    }
 
     @Override
     public String getParentDirName() {
@@ -124,21 +86,4 @@ public class MediaItem extends ModelItem {
         return path;
     }
 
-    /**
-     * 格式化时间
-     *
-     * @param time time as long integer
-     * @return 格式化之后的时间 如 05:20 表示5min 20sec
-     */
-    public static String formatTime(long time) {
-        String min = time / (1000 * 60) + "";
-        String sec = time % (1000 * 60) + "";
-        if (min.length() < 2)
-            min = "0" + min;
-        if (sec.length() == 4)
-            sec = "0" + sec;
-        else if (sec.length() <= 3)
-            sec = "00" + sec;
-        return min + ":" + sec.trim().substring(0, 2);
-    }
 }

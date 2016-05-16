@@ -48,12 +48,12 @@ public class ImgContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_IMG));
+        return queryModelItemFromDb(ModelItem.TYPE_IMG);
     }
 
     @Override
     protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanImageItem(context)));
+        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanImageItem(context)));
     }
 
     @Override

@@ -30,12 +30,12 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_ARCHIVE));
+        return queryModelItemFromDb(ModelItem.TYPE_ARCHIVE);
     }
 
     @Override
     protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanArchiveItem(context)));
+        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanArchiveItem(context)));
     }
 
     @Override

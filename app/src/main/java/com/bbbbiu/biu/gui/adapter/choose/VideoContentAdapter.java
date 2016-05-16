@@ -48,12 +48,12 @@ public class VideoContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_VIDEO));
+        return queryModelItemFromDb(ModelItem.TYPE_VIDEO);
     }
 
     @Override
     protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanVideoItem(context)));
+        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanVideoItem(context)));
     }
 
     @Override

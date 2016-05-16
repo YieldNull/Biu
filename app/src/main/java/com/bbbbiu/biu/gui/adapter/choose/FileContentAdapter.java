@@ -62,8 +62,6 @@ public class FileContentAdapter extends ContentBaseAdapter {
      */
     private Set<File> mChosenFiles = new HashSet<>();
 
-    private File mRootDir;
-
     private boolean showHidden;
 
 
@@ -82,7 +80,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
         mOnChangeDirListener = (OnChangeDirListener) context;
 
-        this.mRootDir = rootDir;
+        setCurrentDir(rootDir);
     }
 
     public File getCurrentDir() {
@@ -92,8 +90,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        setCurrentDir(mRootDir);
-        return true;
+        return false;
     }
 
     @Override
@@ -103,6 +100,11 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected void updateDatabase() {
+
+    }
+
+    @Override
+    protected void updateDataSet() {
 
     }
 

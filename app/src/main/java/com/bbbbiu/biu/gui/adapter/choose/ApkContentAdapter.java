@@ -84,11 +84,20 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         SearchUtil.scanStandAloneApkItem(context);
     }
 
+    @Override
+    protected void updateDataSet() {
+        mApkDataSet.clear();
+        readDataFromDB();
+    }
+
     /**
      * 由包管理器扫描已安装的APK，并显示
      */
     private void scanInstalledApk(boolean fromDatabase) {
         Log.i(TAG, "Scanning installed APK from " + (fromDatabase ? "database" : "system"));
+
+        mNormalApkList.clear();
+        mSystemApkList.clear();
 
         List<ApkItem> systemList, normalList;
 
@@ -130,6 +139,8 @@ public class ApkContentAdapter extends ContentBaseAdapter {
      */
     private void scanStandaloneApk(boolean fromDatabase) {
         Log.i(TAG, "Scanning standalone APK from " + (fromDatabase ? "database" : "system"));
+
+        mStandaloneApkList.clear();
 
         List<ApkItem> standaloneList;
 

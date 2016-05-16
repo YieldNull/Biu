@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 数据库基类，提供公有接口
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
 public abstract class ModelItem extends BaseModel {
@@ -24,19 +26,44 @@ public abstract class ModelItem extends BaseModel {
     public static final int TYPE_APK = 9; // APK 安装包
     public static final int TYPE_DOC = 10;
 
+    /**
+     * 获取对应的路径
+     *
+     * @return 路径
+     */
     public abstract String getPath();
 
+    /**
+     * 获取对应的文件
+     *
+     * @return 文件
+     */
     public abstract File getFile();
 
+    /**
+     * 获取MediaFile{@link com.bbbbiu.biu.util.StorageUtil#getReadableSize(long)}
+     *
+     * @return MediaFile
+     */
     public abstract String getSize();
 
+    /**
+     * 获取父文件夹的名称
+     *
+     * @return 名称
+     */
     public abstract String getParentDirName();
 
+    /**
+     * 根据path确定唯一性
+     *
+     * @param o object
+     * @return 是否相等
+     */
     @Override
     public boolean equals(Object o) {
         return (o instanceof ModelItem) && ((ModelItem) o).getPath().equals(getPath());
     }
-
 
     /**
      * 从数据库中读取指定类型的文件
@@ -45,7 +72,7 @@ public abstract class ModelItem extends BaseModel {
      * @param type 类型
      * @return {“Folder”:itemList}
      */
-    public static Map<String, List<ModelItem>> queryModelItems(int type) {
+    public static Map<String, List<ModelItem>> queryItemToDir(int type) {
         List<ModelItem> allRecords = new ArrayList<>();
 
         if (type == TYPE_MUSIC || type == TYPE_VIDEO) {
@@ -54,7 +81,7 @@ public abstract class ModelItem extends BaseModel {
                     .where(MediaItem_Table.type.eq(type))
                     .queryList();
 
-            filter(records);
+            removeNotExisting(records);
 
             allRecords.addAll(records);
         } else {
@@ -63,12 +90,12 @@ public abstract class ModelItem extends BaseModel {
                     .where(FileItem_Table.type.eq(type))
                     .queryList();
 
-            filter(records);
+            removeNotExisting(records);
 
             allRecords.addAll(records);
         }
 
-        return sortModelItems(allRecords);
+        return sortItemWithDir(allRecords);
     }
 
 
@@ -79,7 +106,7 @@ public abstract class ModelItem extends BaseModel {
      * @param <T>   ModelItem
      * @return {“Folder”:itemList}
      */
-    public static <T extends ModelItem> Map<String, List<ModelItem>> sortModelItems(List<T> items) {
+    public static <T extends ModelItem> Map<String, List<ModelItem>> sortItemWithDir(List<T> items) {
         Map<String, List<ModelItem>> dirItemMap = new HashMap<>();
 
         for (ModelItem item : items) {
@@ -103,7 +130,7 @@ public abstract class ModelItem extends BaseModel {
      * @param items ModelItems
      * @param <T>   ModelItems
      */
-    public static <T extends ModelItem> void filter(List<T> items) {
+    public static <T extends ModelItem> void removeNotExisting(List<T> items) {
         List<T> itemsToDelete = new ArrayList<>();
 
         for (T t : items) {
@@ -116,11 +143,5 @@ public abstract class ModelItem extends BaseModel {
         }
 
         items.removeAll(itemsToDelete);
-    }
-
-    public static <T extends ModelItem> void storeItems(List<T> items) {
-        for (ModelItem item : items) {
-            item.save();
-        }
     }
 }

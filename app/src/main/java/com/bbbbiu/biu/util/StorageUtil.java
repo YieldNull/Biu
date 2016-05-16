@@ -88,6 +88,9 @@ public class StorageUtil {
                 Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
     }
 
+    public static boolean hasSecondaryStorage() {
+        return System.getenv("SECONDARY_STORAGE") != null;
+    }
 
     /**
      * 获取下载目录。有两个存储卡，就放到第二个。

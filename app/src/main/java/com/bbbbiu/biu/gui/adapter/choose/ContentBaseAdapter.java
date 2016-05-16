@@ -22,6 +22,20 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * 选择文件时，显示数据的Adapter基类。
+ * <p/>
+ * 如何获取数据：
+ * <p/>
+ * - 先从数据库读数据 {@link ContentBaseAdapter#readDataFromDB()}，要是没有则
+ * <p/>
+ * - 从系统中 {@link ContentBaseAdapter#readDataFromSys()} 读取数据
+ * <p/>
+ * - 将数据显示（没有则显示空）
+ * <p/>
+ * - 要数据是从数据库中读取的，那么就后台再扫描一遍MediaStore，存入数据库 {@link ContentBaseAdapter#updateDatabase()}
+ * <p/>
+ * - 然后更新数据集并显示，{@link ContentBaseAdapter#updateDataSet()}
+ * <p/>
  * Created by YieldNull at 3/26/16
  */
 public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -66,7 +80,6 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     public abstract RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
-
     /**
      * 构造函数
      *
@@ -109,18 +122,51 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
                     Log.i(TAG, "Updating database");
                     updateDatabase();
                     Log.i(TAG, "Finish updating");
+
+                    context.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.i(TAG, "updating dataSet");
+                            updateDataSet();
+                            notifyDataSetChanged();
+                            Log.i(TAG, "notify dataSet updated");
+                        }
+                    });
                 }
 
             }
         }).start();
     }
 
+    /***********************************获取数据***************************************/
 
+    /**
+     * 从数据库读取数据，并设置为Adapter的数据集
+     *
+     * @return 是否有数据
+     */
     protected abstract boolean readDataFromDB();
 
+    /**
+     * 直接从MediaStore读取数据，并设置为Adapter的数据集
+     *
+     * @return 是否有数据
+     */
     protected abstract boolean readDataFromSys();
 
+    /**
+     * 更新数据库
+     */
     protected abstract void updateDatabase();
+
+    /**
+     * 更新Adapter的数据集
+     */
+    protected void updateDataSet() {
+        readDataFromDB();
+    }
+
+    /***********************************************************************************/
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -168,6 +214,30 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     /**
+     * 当前数据集全被选
+     */
+    public void setFileAllChosen() {
+        mChosenItems.clear();
+
+        for (ModelItem item : mDataSetItems) {
+            if (item != null) {
+                mChosenItems.add(item);
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    /**
+     * 清除所有已选项目
+     */
+    public void setFileAllDismissed() {
+        mChosenItems.clear();
+        notifyDataSetChanged();
+    }
+
+
+    /**
      * 获取数据集中position处的项
      *
      * @param position position
@@ -205,29 +275,6 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         notifyDataSetChanged();
     }
 
-    /**
-     * 当前数据集全被选
-     */
-    public void setFileAllChosen() {
-        mChosenItems.clear();
-
-        for (ModelItem item : mDataSetItems) {
-            if (item != null) {
-                mChosenItems.add(item);
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    /**
-     * 清除所有已选项目
-     */
-    public void setFileAllDismissed() {
-        mChosenItems.clear();
-        notifyDataSetChanged();
-    }
-
 
     /**
      * header text
@@ -243,16 +290,15 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         }
     }
 
-
     /**
      * 查询数据库中对应类型文件的数据,将查询所得Item按文件夹分类
      *
      * @param type 类型
      * @return 是否没有纪录
-     * @see ModelItem#queryModelItems(int)
+     * @see ModelItem#queryItemToDir(int)
      */
-    protected boolean queryModelItems(int type) {
-        return setDataSet(ModelItem.queryModelItems(type));
+    protected boolean queryModelItemFromDb(int type) {
+        return setDataSet(ModelItem.queryItemToDir(type));
     }
 
     /**
@@ -262,6 +308,8 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      * @return 设置完成后数据集是否为空
      */
     protected boolean setDataSet(Map<String, List<ModelItem>> sortedItems) {
+        mDataSetItems.clear();
+
         for (Map.Entry<String, List<ModelItem>> entry : sortedItems.entrySet()) {
             List<ModelItem> list = entry.getValue();
             if (list.size() > 0) {
@@ -318,6 +366,4 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     protected void notifyFileItemOptionClicked(File file) {
         mOnItemOptionClickListener.onFileOptionClick(file);
     }
-
-
 }

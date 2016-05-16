@@ -33,12 +33,12 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_DOC));
+        return queryModelItemFromDb(ModelItem.TYPE_DOC);
     }
 
     @Override
     protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanDocItem(context)));
+        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanDocItem(context)));
     }
 
     @Override

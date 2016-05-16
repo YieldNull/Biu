@@ -8,7 +8,6 @@ import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
 
 import java.io.File;
-import java.util.Set;
 
 /**
  * 文档，压缩包，图片
@@ -40,18 +39,6 @@ public class FileItem extends ModelItem {
     public FileItem(String path, int type) {
         this.path = path;
         this.type = type;
-    }
-
-    /**
-     * 存储将全盘扫描之后得到的文件分类
-     *
-     * @param type    文件分类
-     * @param pathSet 文件绝对路径集合
-     */
-    public static void storeFileItems(int type, Set<String> pathSet) {
-        for (String path : pathSet) {
-            new FileItem(path, type).save();
-        }
     }
 
     @Override

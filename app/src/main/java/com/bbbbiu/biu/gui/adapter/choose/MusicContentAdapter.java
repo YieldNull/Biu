@@ -33,12 +33,12 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
     @Override
     protected boolean readDataFromDB() {
-        return setDataSet(ModelItem.queryModelItems(ModelItem.TYPE_MUSIC));
+        return queryModelItemFromDb(ModelItem.TYPE_MUSIC);
     }
 
     @Override
     protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortModelItems(SearchUtil.scanMusicItem(context)));
+        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanMusicItem(context)));
     }
 
     @Override

@@ -20,6 +20,9 @@ import java.io.IOException;
 import java.util.List;
 
 
+/**
+ * APK。将应用图标缓存到磁盘中
+ */
 @Table(database = FileItem.MyDatabase.class)
 public class ApkItem extends ModelItem {
 
@@ -47,6 +50,14 @@ public class ApkItem extends ModelItem {
     public ApkItem() {
     }
 
+    /**
+     * 构造函数
+     *
+     * @param path        路径
+     * @param name        应用名
+     * @param packageName 包名
+     * @param type        类型{@link ApkItem#TYPE_APK_SYSTEM},{@link ApkItem#TYPE_APK_NORMAL},{@link ApkItem#TYPE_APK_STANDALONE}
+     */
     public ApkItem(String path, String name, String packageName, int type) {
         this.path = path;
         this.name = name;
@@ -65,7 +76,7 @@ public class ApkItem extends ModelItem {
                 .where(ApkItem_Table.type.eq(type))
                 .queryList();
 
-        filter(items);
+        removeNotExisting(items);
 
         return items;
     }
@@ -99,16 +110,6 @@ public class ApkItem extends ModelItem {
 
 
     /**
-     * 获取图标文件
-     *
-     * @param context context
-     * @return 图标文件
-     */
-    public File getCachedIconFile(Context context) {
-        return new File(getCachedIconPath(context));
-    }
-
-    /**
      * 获取ICON
      *
      * @param context context
@@ -135,6 +136,17 @@ public class ApkItem extends ModelItem {
     }
 
     /**
+     * 获取图标文件
+     *
+     * @param context context
+     * @return 图标文件
+     */
+    public File getCachedIconFile(Context context) {
+        return new File(getCachedIconPath(context));
+    }
+
+
+    /**
      * 获取图标文件的路径
      *
      * @param context context
@@ -152,7 +164,7 @@ public class ApkItem extends ModelItem {
      * @param context context
      * @return 是否储存成功
      */
-    public boolean storeIcon(Context context) {
+    public boolean storeCachedIcon(Context context) {
         Drawable drawable = StorageUtil.getApkIcon(context, path);
         if (drawable == null) {
             return false;

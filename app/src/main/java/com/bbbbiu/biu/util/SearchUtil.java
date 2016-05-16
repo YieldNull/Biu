@@ -28,7 +28,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 扫描各类文件
+ * 扫描各类文件,并存到数据库（{@link ModelItem#save()}）。已安装的APK从包管理器，其它从{@link MediaStore}
+ * <p/>
+ * 由于{@link MediaStore}中的数据不是实时的，因此查询出来的条目会先剔除出不存在的。
+ * <p/>
+ * 另因为{@link android.provider.MediaStore.Audio},{@link android.provider.MediaStore.Video}只有“Primary External Storage”中的数据,
+ * 当用户有多个存储卡时（“Secondary External Storage”），用{@link android.provider.MediaStore.Files}可以查出其它所有存储器中的数据
+ * <p/>
+ * 我认为{@link MediaStore}对“Secondary External Storage”中 “Android/data”下面的图片、视频、音频都没有分类到Images，Audio，Video中去，
+ * 而是直接纪录到Files里面了。由于聊天软件有很多表情啊什么的图片，就别用{@link android.provider.MediaStore.Files}查图片了。
+ * {@link android.provider.MediaStore.Images}能查出绝大部分图片。
  * <p/>
  * Created by YieldNull at 4/7/16
  */
@@ -75,8 +84,8 @@ public class SearchUtil {
                 normalApkList.add(apkItem);
             }
 
-            apkItem.storeIcon(context);
-            apkItem.save();
+            apkItem.storeCachedIcon(context);
+            apkItem.save(); // 存到数据库
         }
 
 
@@ -89,7 +98,7 @@ public class SearchUtil {
     }
 
     /**
-     * 从MediaStore读取APK安装包。
+     * 从MediaStore读取APK安装包。剔除不存在者,以及已安装的。
      *
      * @param context context
      * @return APK列表
@@ -99,7 +108,7 @@ public class SearchUtil {
 
         List<ApkItem> apkItemList = new ArrayList<>();
 
-        for (String path : getFilePath(context, StorageUtil.EXTENSION_APK)) {
+        for (String path : scanFileWithExtension(context, StorageUtil.EXTENSION_APK)) {
             String name = StorageUtil.getApkName(context, path);
             String packageName = StorageUtil.getApkPackageName(context, path);
 
@@ -108,7 +117,7 @@ public class SearchUtil {
             if (!apkItem.isInstalled(context)) {
                 apkItemList.add(apkItem);
 
-                apkItem.storeIcon(context);
+                apkItem.storeCachedIcon(context);
                 apkItem.save();
             }
         }
@@ -119,7 +128,7 @@ public class SearchUtil {
     }
 
     /**
-     * 利用MediaStore 扫描图片
+     * 利用MediaStore扫描图片,剔除不存在者
      *
      * @param context context
      * @return 图片列表
@@ -147,6 +156,10 @@ public class SearchUtil {
             //获取图片的路径
             String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
 
+            if (!(new File(path).exists())) {
+                continue;
+            }
+
             FileItem item = new FileItem(path, ModelItem.TYPE_IMG);
             fileItems.add(item);
 
@@ -158,96 +171,124 @@ public class SearchUtil {
     }
 
     /**
-     * 利用MediaStore 扫描视频
+     * 利用MediaStore 扫描视频。剔除不存在者。
      *
      * @param context context
      * @return 视频列表
      */
     public static List<MediaItem> scanVideoItem(Context context) {
-        List<MediaItem> fileItems = new ArrayList<>();
+        if (StorageUtil.hasSecondaryStorage()) {
 
-        Uri contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-        ContentResolver contentResolver = context.getContentResolver();
+            Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_VIDEO);
+            return getMediaItemFromPath(context, MediaItem.TYPE_VIDEO, pathSet);
 
-        Cursor cursor = contentResolver.query(
-                contentUri,
-                new String[]{
-                        MediaStore.Video.Media.DATA,
-                        MediaStore.Video.Media.TITLE,
-                        MediaStore.Video.Media.DURATION
-                },
-                null,
-                null,
-                null);
+        } else {
+            List<MediaItem> fileItems = new ArrayList<>();
 
-        if (cursor == null) {
+            Uri contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+            ContentResolver contentResolver = context.getContentResolver();
+
+            Cursor cursor = contentResolver.query(
+                    contentUri,
+                    new String[]{
+                            MediaStore.Video.Media.DATA,
+                            MediaStore.Video.Media.TITLE,
+                            MediaStore.Video.Media.DURATION
+                    },
+                    null,
+                    null,
+                    null);
+
+            if (cursor == null) {
+                return fileItems;
+            }
+
+
+            while (cursor.moveToNext()) {
+                String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
+                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
+                String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
+
+                if (!(new File(path).exists())) {
+                    continue;
+                }
+
+                MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
+                fileItems.add(item);
+
+                item.save();
+
+            }
+            cursor.close();
+
             return fileItems;
         }
-
-
-        while (cursor.moveToNext()) {
-            String path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA));
-            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
-            String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
-
-            MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
-            fileItems.add(item);
-
-            item.save();
-
-        }
-        cursor.close();
-
-        return fileItems;
     }
 
     /**
-     * 从MediaStore扫描音乐
+     * 从MediaStore扫描音乐。剔除不存在者
      *
      * @param context context
      * @return 音乐列表
      */
     public static List<MediaItem> scanMusicItem(Context context) {
+        if (StorageUtil.hasSecondaryStorage()) {
+            Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_MUSIC);
+            return getMediaItemFromPath(context, MediaItem.TYPE_MUSIC, pathSet);
 
-        List<MediaItem> itemList = new ArrayList<>();
+        } else {
+            List<MediaItem> fileItems = new ArrayList<>();
 
-        Set<String> pathSet = getFilePath(context, StorageUtil.EXTENSION_MUSIC);
-        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+            Uri contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+            ContentResolver contentResolver = context.getContentResolver();
 
-        for (String path : pathSet) {
-            Uri uri = Uri.fromFile(new File(path));
-            mediaMetadataRetriever.setDataSource(context, uri);
+            Cursor cursor = contentResolver.query(
+                    contentUri,
+                    new String[]{
+                            MediaStore.Audio.Media.DATA,
+                            MediaStore.Audio.Media.TITLE,
+                            MediaStore.Audio.Media.ARTIST,
+                            MediaStore.Audio.Media.DURATION
+                    },
+                    null,
+                    null,
+                    null);
 
-            String title, artist;
-
-            title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-            artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-
-            String duration;
-            try {
-                duration = MediaItem.formatTime(Long.valueOf(mediaMetadataRetriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            } catch (NumberFormatException e) {
-                continue;
+            if (cursor == null) {
+                return fileItems;
             }
 
-            MediaItem item = new MediaItem(path, ModelItem.TYPE_MUSIC, title, artist, duration);
-            itemList.add(item);
 
-            item.save();
+            while (cursor.moveToNext()) {
+                String path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+                String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+                String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+
+                if (!(new File(path).exists())) {
+                    continue;
+                }
+
+                MediaItem item = new MediaItem(path, MediaItem.TYPE_MUSIC, title, artist, duration);
+                fileItems.add(item);
+
+                item.save();
+
+            }
+            cursor.close();
+
+            return fileItems;
         }
-
-        return itemList;
     }
 
     /**
-     * 从MediaStore 读取文档
+     * 从MediaStore读取文档，剔除不存在者
      *
      * @param context context
      * @return 文档列表
      */
     public static List<FileItem> scanDocItem(Context context) {
-        Set<String> pathList = getFilePath(context, StorageUtil.EXTENSION_DOC);
+        Set<String> pathList = scanFileWithExtension(context, StorageUtil.EXTENSION_DOC);
 
         List<FileItem> fileItems = new ArrayList<>();
 
@@ -262,13 +303,13 @@ public class SearchUtil {
     }
 
     /**
-     * 从MediaStore读取 压缩文件
+     * 从MediaStore读取缩文件，剔除不存在者
      *
      * @param context context
      * @return 压缩文件列表
      */
     public static List<FileItem> scanArchiveItem(Context context) {
-        Set<String> pathList = getFilePath(context, StorageUtil.EXTENSION_ARCHIVE);
+        Set<String> pathList = scanFileWithExtension(context, StorageUtil.EXTENSION_ARCHIVE);
 
         List<FileItem> fileItems = new ArrayList<>();
 
@@ -283,13 +324,13 @@ public class SearchUtil {
     }
 
     /**
-     * 从MediaStore读取相应后缀名的文件路径
+     * 从MediaStore读取相应后缀名的文件路径,剔除不存在的文件
      *
      * @param context   context
      * @param extension 后缀名列表
      * @return 文件列表
      */
-    public static Set<String> getFilePath(Context context, List<String> extension) {
+    private static Set<String> scanFileWithExtension(Context context, List<String> extension) {
         Set<String> resultSet = new HashSet<>();
 
         Set<String> mimeList = new HashSet<>();
@@ -346,12 +387,79 @@ public class SearchUtil {
         return resultSet;
     }
 
+
     /**
+     * 从视频、音频文件的路径生成{@link MediaItem}。主要是解析出时长等信息
+     *
+     * @param context context
+     * @param type    类型
+     * @param pathSet 文件绝对路径集合
+     */
+    private static List<MediaItem> getMediaItemFromPath(Context context, int type, Set<String> pathSet) {
+        List<MediaItem> mediaItemList = new ArrayList<>();
+
+        // 获取Metadata
+        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+
+        for (String path : pathSet) {
+            File file = new File(path);
+
+            Uri uri = Uri.fromFile(file);
+            mediaMetadataRetriever.setDataSource(context, uri);
+
+            String title, artist;
+
+            if (type == ModelItem.TYPE_VIDEO) {
+                title = file.getName();
+                artist = null;
+            } else {
+                title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+            }
+
+            String duration;
+            try {
+                duration = formatMediaDuration(Long.valueOf(mediaMetadataRetriever.extractMetadata(
+                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
+            } catch (NumberFormatException e) {
+                continue;
+            }
+
+            MediaItem item = new MediaItem(path, type, title, artist, duration);
+            mediaItemList.add(item);
+
+            item.save();
+        }
+
+        return mediaItemList;
+    }
+
+
+    /**
+     * 格式化视频、音乐的时间
+     *
+     * @param time time as long integer
+     * @return 格式化之后的时间 如 05:20 表示5min 20sec
+     */
+    private static String formatMediaDuration(long time) {
+        String min = time / (1000 * 60) + "";
+        String sec = time % (1000 * 60) + "";
+        if (min.length() < 2)
+            min = "0" + min;
+        if (sec.length() == 4)
+            sec = "0" + sec;
+        else if (sec.length() <= 3)
+            sec = "00" + sec;
+        return min + ":" + sec.trim().substring(0, 2);
+    }
+
+    /**
+     * 用{@link MimeTypeMap }计算得到的“PPT”的MIME TYPE与 MediaStore查到的不同。故直接用其源码算了
+     * <p/>
      * Android MediaScanner Helper Class.
      * <p/>
      * Part of the source of <a href="https://android.googlesource.com/platform/frameworks/base/+/cd92588/media/java/android/media/MediaFile.java">android.media.MediaFile</a>
      * <p/>
-     * 用{@link MimeTypeMap }计算得到的MIME TYPE与 MediaStore查到的不同。故直接用其源码算了
      */
     public static class MediaFile {
         // Audio file types
