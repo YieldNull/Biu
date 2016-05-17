@@ -2,6 +2,7 @@ package com.bbbbiu.biu.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -14,6 +15,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.bbbbiu.biu.R;
 
@@ -23,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class StorageUtil {
+    private static final String TAG = StorageUtil.class.getSimpleName();
 
     public static final int TYPE_INTERNAL = 0;
     public static final int TYPE_EXTERNAL = 1;
@@ -55,11 +59,6 @@ public class StorageUtil {
     public static final List<String> EXTENSION_PPT = Arrays.asList("ppt", "pptx", "odp");
     public static final List<String> EXTENSION_PDF = Collections.singletonList("pdf");
     public static final List<String> EXTENSION_TEXT = Collections.singletonList("txt");
-
-
-    public static String getRealFilePath(Context context, Uri uri) {
-        return uri.getPath();
-    }
 
 
     /**
@@ -251,6 +250,31 @@ public class StorageUtil {
         }
 
         return context.getResources().getDrawable(id);
+    }
+
+    /**
+     * 用其它应用打开文件
+     *
+     * @param context context
+     * @param file    file
+     */
+    public static void openFile(Context context, File file) {
+        if (file == null) {
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        Uri uri = Uri.fromFile(file);
+
+        // MimeTypeMap.getFileExtensionFromUrl()对中文不起作用
+        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(StorageUtil.getFileExtension(file.getName()));
+
+        if (mime == null) {
+            mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension("txt");
+        }
+
+        intent.setDataAndType(uri, mime);
+        context.startActivity(intent);
     }
 
     /**

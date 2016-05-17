@@ -8,9 +8,12 @@
         android:id="@+id/imageView_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
         android:src="@drawable/ic_type_folder"
-        android:tint="@color/upPanel_icon_tint" />
+        android:tint="@color/option_panel_icon_tint" />
 
     <TextView
         android:id="@+id/textView_operation"
@@ -19,5 +22,5 @@
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="20dp"
         android:text="删除"
-        android:textColor="@color/upPanel_text" />
+        android:textColor="@color/option_panel_text" />
 </LinearLayout>

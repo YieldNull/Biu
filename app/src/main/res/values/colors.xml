@@ -28,10 +28,12 @@
     <color name="apk_chosen_shape">@color/fbtn</color>
     <color name="apk_chosen_bkg">#DD9E9E9E</color>
 
-    <color name="upPanel">@android:color/white</color>
-    <color name="upPanel_text">#232323</color>
-    <color name="upPanel_icon_tint">#616161</color>
-    <color name="upPanel_list_divider">#9E9E9E</color>
+    <color name="option_panel_bkgd">@android:color/white</color>
+    <color name="option_panel_text">#232323</color>
+    <color name="option_panel_icon_tint">#616161</color>
+    <color name="option_panel_list_divider">#9E9E9E</color>
+    <color name="option_panel_pressed">#E0E0E0</color>
+    <color name="option_toggle">#818181</color>
 
     <color name="apk_package_name">@android:color/black</color>
 

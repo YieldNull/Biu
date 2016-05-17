@@ -56,5 +56,5 @@
         android:id="@+id/recyclerView_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/upPanel" />
+        android:background="@color/option_panel_bkgd" />
 </com.sothree.slidinguppanel.SlidingUpPanelLayout>

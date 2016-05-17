@@ -11,8 +11,9 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.db.search.MediaItem;
@@ -26,7 +27,7 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class VideoContentAdapter extends ContentBaseAdapter {
+public class VideoContentAdapter extends CommonContentAdapter {
     private static final String TAG = VideoContentAdapter.class.getSimpleName();
 
     private Context context;
@@ -34,7 +35,7 @@ public class VideoContentAdapter extends ContentBaseAdapter {
 
     private static final int THUMB_SIZE = (int) SizeUtil.convertDpToPixel(24);
 
-    public VideoContentAdapter(ChooseBaseActivity context) {
+    public VideoContentAdapter(BaseChooseActivity context) {
         super(context);
         this.context = context;
 
@@ -79,7 +80,7 @@ public class VideoContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             VideoViewHolder holder = (VideoViewHolder) hd;
 
-            MediaItem item = (MediaItem) getItemAt(position);
+            final MediaItem item = (MediaItem) getItemAt(position);
 
             holder.nameText.setText(item.getFile().getName());
             holder.infoText.setText(String.format("%s  %s", item.duration, item.getSize()));
@@ -102,6 +103,14 @@ public class VideoContentAdapter extends ContentBaseAdapter {
                 @Override
                 public void onClick(View v) {
                     setItemChosen(position);
+                }
+            });
+
+            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+            holder.optionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    notifyOptionToggleClicked(item.getFile());
                 }
             });
 

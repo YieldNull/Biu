@@ -134,6 +134,8 @@ public class SearchUtil {
      * @return 图片列表
      */
     public static List<FileItem> scanImageItem(Context context) {
+        Log.i(TAG, "Start scanning image");
+
         List<FileItem> fileItems = new ArrayList<>();
 
         Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -167,6 +169,8 @@ public class SearchUtil {
         }
         cursor.close();
 
+        Log.i(TAG, "Finish Scanning. Amount:" + fileItems.size());
+
         return fileItems;
     }
 
@@ -177,6 +181,8 @@ public class SearchUtil {
      * @return 视频列表
      */
     public static List<MediaItem> scanVideoItem(Context context) {
+        Log.i(TAG, "Start scanning video");
+
         if (StorageUtil.hasSecondaryStorage()) {
 
             Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_VIDEO);
@@ -221,6 +227,7 @@ public class SearchUtil {
             }
             cursor.close();
 
+            Log.i(TAG, "Finish Scanning. Amount:" + fileItems.size());
             return fileItems;
         }
     }
@@ -232,6 +239,8 @@ public class SearchUtil {
      * @return 音乐列表
      */
     public static List<MediaItem> scanMusicItem(Context context) {
+        Log.i(TAG, "Start scanning music");
+
         if (StorageUtil.hasSecondaryStorage()) {
             Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_MUSIC);
             return getMediaItemFromPath(context, MediaItem.TYPE_MUSIC, pathSet);
@@ -277,6 +286,7 @@ public class SearchUtil {
             }
             cursor.close();
 
+            Log.i(TAG, "Finish Scanning. Amount:" + fileItems.size());
             return fileItems;
         }
     }
@@ -288,6 +298,8 @@ public class SearchUtil {
      * @return 文档列表
      */
     public static List<FileItem> scanDocItem(Context context) {
+        Log.i(TAG, "Start scanning doc");
+
         Set<String> pathList = scanFileWithExtension(context, StorageUtil.EXTENSION_DOC);
 
         List<FileItem> fileItems = new ArrayList<>();
@@ -299,6 +311,7 @@ public class SearchUtil {
             item.save();
         }
 
+        Log.i(TAG, "Finish Scanning. Amount:" + fileItems.size());
         return fileItems;
     }
 
@@ -309,6 +322,8 @@ public class SearchUtil {
      * @return 压缩文件列表
      */
     public static List<FileItem> scanArchiveItem(Context context) {
+        Log.i(TAG, "Start scanning archive");
+
         Set<String> pathList = scanFileWithExtension(context, StorageUtil.EXTENSION_ARCHIVE);
 
         List<FileItem> fileItems = new ArrayList<>();
@@ -320,6 +335,7 @@ public class SearchUtil {
             item.save();
         }
 
+        Log.i(TAG, "Finish Scanning. Amount:" + fileItems.size());
         return fileItems;
     }
 
@@ -405,7 +421,13 @@ public class SearchUtil {
             File file = new File(path);
 
             Uri uri = Uri.fromFile(file);
-            mediaMetadataRetriever.setDataSource(context, uri);
+
+            try {
+                // 为毛会出现这样的错误啊，卧槽
+                mediaMetadataRetriever.setDataSource(context, uri);
+            } catch (RuntimeException e) {
+                continue;
+            }
 
             String title, artist;
 

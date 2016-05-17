@@ -13,7 +13,8 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
 
@@ -33,7 +34,7 @@ import java.util.Set;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class FileContentAdapter extends ContentBaseAdapter {
+public class FileContentAdapter extends BaseContentAdapter {
 
     private static final String TAG = FileContentAdapter.class.getSimpleName();
 
@@ -42,20 +43,14 @@ public class FileContentAdapter extends ContentBaseAdapter {
     /**
      * 当前目录下的文件或文件夹
      */
-    private File[] dirs;
-    private File[] files;
-
-    /**
-     * 进入的文件夹Stack，栈底为初始进入的文件夹
-     */
-    private List<File> dirEnterStack = new ArrayList<>();
+    private File mCurrentDir;
+    private File[] mSubDirs;
+    private File[] mSubFiles;
 
     /**
      * 当前显示的文件列表
      */
-    private List<File> mFileList = new ArrayList<>();
-
-    private File mCurrentDir;
+    private List<File> mFileDataSet = new ArrayList<>();
 
     /**
      * 已选择的文件
@@ -64,13 +59,10 @@ public class FileContentAdapter extends ContentBaseAdapter {
 
     private boolean showHidden;
 
-
     private Picasso mVideoPicasso;
     private Picasso mImgPicasso;
 
-    private static final String PICASSO_TAG = "tag-img";
-
-    public FileContentAdapter(ChooseBaseActivity context, File rootDir) {
+    public FileContentAdapter(BaseChooseActivity context, File rootDir) {
         super(context);
 
         Picasso.Builder builder = new Picasso.Builder(context);
@@ -83,145 +75,35 @@ public class FileContentAdapter extends ContentBaseAdapter {
         setCurrentDir(rootDir);
     }
 
-    public File getCurrentDir() {
-        return mCurrentDir;
-    }
-
-
-    @Override
-    protected boolean readDataFromDB() {
-        return false;
-    }
-
-    @Override
-    protected boolean readDataFromSys() {
-        return true;
-    }
-
-    @Override
-    protected void updateDatabase() {
-
-    }
-
-    @Override
-    protected void updateDataSet() {
-
-    }
-
-    /**
-     * 设置当前文件夹
-     */
-    public void setCurrentDir(File rootDir) {
-        mCurrentDir = rootDir;
-
-        files = rootDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return (showHidden || (!pathname.isHidden())) && pathname.isFile() && pathname.canRead();
-            }
-        });
-
-        dirs = rootDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-
-                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory() && pathname.canExecute() && pathname.canRead();
-            }
-        });
-
-        // 默认升序排列
-        Comparator<File> comparator = new Comparator<File>() {
-            @Override
-            public int compare(File lhs, File rhs) {
-                String name1 = lhs.getName().toLowerCase();
-                String name2 = rhs.getName().toLowerCase();
-                return name1.compareTo(name2); //升序
-            }
-        };
-
-        Arrays.sort(files, comparator);
-        Arrays.sort(dirs, comparator);
-
-        mFileList.clear();
-
-        // 优先显示文件夹，因此先加入文件夹
-        if (dirs.length > 0) {
-            mFileList.add(null);
-            Collections.addAll(mFileList, dirs);
-        }
-
-        if (files.length > 0) {
-            mFileList.add(null);
-            Collections.addAll(mFileList, files);
-        }
-    }
-
-    /**
-     * 获取当前显示的指定位置的文件
-     *
-     * @param position 位置
-     * @return 文件
-     */
-    public File getFileAt(int position) {
-        return mFileList.get(position);
-    }
-
-    /**
-     * 文件是否已经被选择
-     *
-     * @param position 位置
-     * @return 是否被选
-     */
-    public boolean isFileChosen(int position) {
-        return mChosenFiles.contains(getFileAt(position));
-    }
-
-
-    /**
-     * 选择文件
-     *
-     * @param position 位置
-     * @param chosen   true为选择，false为取消选择
-     */
-    public void setFileChosen(int position, boolean chosen) {
-        File file = getFileAt(position);
-
-        if (chosen) {
-            mChosenFiles.add(file);
-            notifyFileChosen(file.getAbsolutePath());
-        } else {
-            mChosenFiles.remove(file);
-            notifyFileDismissed(file.getAbsolutePath());
-        }
-        notifyDataSetChanged();
-    }
-
-    /**
-     * 取消所有已选文件
-     */
-    @Override
-    public void setFileAllDismissed() {
-        mChosenFiles.clear();
-        notifyDataSetChanged();
-    }
-
-    /**
-     * 全选所有文件
-     */
-    @Override
-    public void setFileAllChosen() {
-        for (File file : mFileList) {
-            if (file != null) {
-                mChosenFiles.add(file);
-            }
-        }
-        notifyDataSetChanged();
-    }
+    /***********************************************************************************
+     * ***************************** {@link BaseContentAdapter} ************************
+     **********************************************************************************/
 
     @Override
     public void cancelPicassoTask() {
         mVideoPicasso.cancelTag(PICASSO_TAG);
         mImgPicasso.cancelTag(PICASSO_TAG);
+    }
+
+    @Override
+    public void updateDataSet() {
+        setCurrentDir(mCurrentDir);
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean isHeaderView(int position) {
+        return getFileAt(position) == null;
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ItemViewHolder(inflater.inflate(R.layout.list_file_item, parent, false), context);
+    }
+
+    @Override
+    public boolean isFileChosen(File file) {
+        return mChosenFiles.contains(file);
     }
 
 
@@ -240,30 +122,39 @@ public class FileContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
+    public void setFileAllDismissed() {
+        mChosenFiles.clear();
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        for (File file : mFileDataSet) {
+            if (file != null) {
+                mChosenFiles.add(file);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    /********************************************************************************************/
+
+
+    @Override
     public int getItemCount() {
-        return mFileList.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return getFileAt(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
-    }
-
-    @Override
-    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        return new ItemViewHolder(inflater.inflate(R.layout.list_file_item, parent, false), context);
+        return mFileDataSet.size();
     }
 
 
     @SuppressLint("DefaultLocale")
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder h, @SuppressLint("RecyclerView") final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder h, final int position) {
         int viewType = getItemViewType(position);
 
         // 判断Layout类型
         if (viewType == VIEW_TYPE_HEADER) {
             HeaderViewHolder holder = (HeaderViewHolder) h;
-            if (position == 0 && dirs.length > 0) {
+            if (position == 0 && mSubDirs.length > 0) {
                 holder.headerText.setText(context.getString(R.string.file_header_folder));
             } else {
                 holder.headerText.setText(context.getString(R.string.file_header_file));
@@ -275,7 +166,7 @@ public class FileContentAdapter extends ContentBaseAdapter {
             // 设置文件信息
             final File file = getFileAt(position);
             String name = file.getName();
-            holder.fileNameTextView.setText(name);
+            holder.nameText.setText(name);
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
             String modifyTime = dateFormat.format(new Date(file.lastModified()));
@@ -288,13 +179,16 @@ public class FileContentAdapter extends ContentBaseAdapter {
                     }
                 }).length;
 
-                holder.fileInfoTextView.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.file_header_file), itemCount));
-                holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
+                holder.infoText.setText(String.format("%s  %s %d ", modifyTime,
+                        context.getString(R.string.file_header_file), itemCount));
+
+                holder.iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
 
             } else { // 文件
-                holder.fileInfoTextView.setText(String.format("%s  %s", modifyTime, StorageUtil.getReadableSize(file.length())));
+                holder.infoText.setText(String.format("%s  %s", modifyTime,
+                        StorageUtil.getReadableSize(file.length())));
 
-                holder.fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_default));
+                holder.iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_default));
             }
 
             // 设置文件图标背景等样式
@@ -305,15 +199,14 @@ public class FileContentAdapter extends ContentBaseAdapter {
             }
 
             //事件监听
-            holder.optionsImageView.setOnClickListener(new View.OnClickListener() {
+            holder.optionToggleImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyFileItemOptionClicked(file);
+                    notifyOptionToggleClicked(file);
                 }
             });
 
-
-            holder.fileIconImageView.setOnClickListener(new View.OnClickListener() {
+            holder.iconImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (isFileChosen(position)) {
@@ -326,20 +219,124 @@ public class FileContentAdapter extends ContentBaseAdapter {
         }
     }
 
+    /**************************************************************************************************/
+
+    public File getCurrentDir() {
+        return mCurrentDir;
+    }
+
+    /**
+     * 设置当前文件夹
+     */
+    public void setCurrentDir(File rootDir) {
+        mCurrentDir = rootDir;
+
+        mSubFiles = rootDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return (showHidden || (!pathname.isHidden())) && pathname.isFile() && pathname.canRead();
+            }
+        });
+
+        mSubDirs = rootDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+
+                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory() && pathname.canExecute() && pathname.canRead();
+            }
+        });
+
+        // 默认升序排列
+        Comparator<File> comparator = new Comparator<File>() {
+            @Override
+            public int compare(File lhs, File rhs) {
+                String name1 = lhs.getName().toLowerCase();
+                String name2 = rhs.getName().toLowerCase();
+                return name1.compareTo(name2); //升序
+            }
+        };
+
+        Arrays.sort(mSubFiles, comparator);
+        Arrays.sort(mSubDirs, comparator);
+
+        mFileDataSet.clear();
+
+        // 优先显示文件夹，因此先加入文件夹
+        if (mSubDirs.length > 0) {
+            mFileDataSet.add(null);
+            Collections.addAll(mFileDataSet, mSubDirs);
+        }
+
+        if (mSubFiles.length > 0) {
+            mFileDataSet.add(null);
+            Collections.addAll(mFileDataSet, mSubFiles);
+        }
+    }
+
+    /**
+     * 获取当前显示的指定位置的文件
+     *
+     * @param position 位置
+     * @return 文件
+     */
+    public File getFileAt(int position) {
+        return mFileDataSet.get(position);
+    }
+
+
+    /**
+     * 文件是否已经被选择
+     *
+     * @param position 位置
+     * @return 是否被选
+     */
+    public boolean isFileChosen(int position) {
+        return isFileChosen(getFileAt(position));
+    }
+
+
+    /**
+     * 选择文件或取消选择
+     *
+     * @param position 位置
+     * @param chosen   true为选择，false为取消选择
+     */
+    public void setFileChosen(int position, boolean chosen) {
+        File file = getFileAt(position);
+
+        setFileChosen(file, chosen);
+    }
+
+    /**
+     * 选择文件或取消选择
+     *
+     * @param file   文件
+     * @param chosen 选择与否
+     */
+    public void setFileChosen(File file, boolean chosen) {
+        if (chosen) {
+            mChosenFiles.add(file);
+            notifyFileChosen(file.getAbsolutePath());
+        } else {
+            mChosenFiles.remove(file);
+            notifyFileDismissed(file.getAbsolutePath());
+        }
+        notifyDataSetChanged();
+    }
 
     class ItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         @Bind(R.id.imageView_icon)
-        ImageView fileIconImageView;
+        ImageView iconImage;
 
         @Bind(R.id.textView_name)
-        TextView fileNameTextView;
+        TextView nameText;
 
         @Bind(R.id.textView_info)
-        TextView fileInfoTextView;
+        TextView infoText;
 
         @Bind(R.id.imageButton_option)
-        ImageButton optionsImageView;
+        ImageButton optionToggleImage;
 
         private int position;
         private Context context;
@@ -363,24 +360,24 @@ public class FileContentAdapter extends ContentBaseAdapter {
          */
         public void setItemStyleChoosing(File file) {
             itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
-//            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
-            fileIconImageView.setBackgroundDrawable(null);
+//            iconImage.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
+            iconImage.setBackgroundDrawable(null);
 
             if (StorageUtil.isVideoFile(file.getPath())) {
                 mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
                         .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_video)
                         .tag(PICASSO_TAG)
-                        .into(fileIconImageView);
+                        .into(iconImage);
 
             } else if (StorageUtil.isImgFile(file.getPath())) {
                 mImgPicasso.load(file)
                         .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_img)
                         .tag(PICASSO_TAG)
-                        .into(fileIconImageView);
+                        .into(iconImage);
             } else {
-                fileIconImageView.setImageDrawable(StorageUtil.getFileIcon(context, file));
+                iconImage.setImageDrawable(StorageUtil.getFileIcon(context, file));
             }
         }
 
@@ -389,8 +386,8 @@ public class FileContentAdapter extends ContentBaseAdapter {
          */
         public void setItemStyleChosen(File file) {
             itemView.setBackgroundColor(context.getResources().getColor(R.color.file_item_chosen));
-            fileIconImageView.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
-            fileIconImageView.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
+            iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
+            iconImage.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
         }
 
 

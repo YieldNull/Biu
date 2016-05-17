@@ -3,9 +3,10 @@ package com.bbbbiu.biu.gui.choose;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.DocumentContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
@@ -13,17 +14,17 @@ import java.io.File;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class DocumentChooseActivity extends ChooseBaseActivity {
+public class DocumentChooseActivity extends BaseChooseActivity {
     private static final String TAG = DocumentChooseActivity.class.getSimpleName();
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.normal_common;
+        return R.menu.common_normal;
     }
 
     @Override
     protected int getChosenMenuId() {
-        return R.menu.chosen_common;
+        return R.menu.common_chosen;
     }
 
     @Override
@@ -32,8 +33,13 @@ public class DocumentChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected ContentBaseAdapter onCreateContentAdapter() {
+    protected BaseContentAdapter onCreateContentAdapter() {
         return new DocumentContentAdapter(this);
+    }
+
+    @Override
+    public void onOptionToggleClicked(File file) {
+        StorageUtil.openFile(this, file);
     }
 
     @Override
@@ -47,7 +53,7 @@ public class DocumentChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected PanelBaseAdapter onCreatePanelAdapter() {
+    protected BaseOptionAdapter onCreatePanelAdapter() {
         return null;
     }
 

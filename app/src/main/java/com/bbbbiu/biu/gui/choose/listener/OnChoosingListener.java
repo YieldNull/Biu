@@ -1,6 +1,4 @@
-package com.bbbbiu.biu.gui.choose;
-
-import java.io.File;
+package com.bbbbiu.biu.gui.choose.listener;
 
 public interface OnChoosingListener {
     void onFileChosen(String filePath);

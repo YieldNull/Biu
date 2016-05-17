@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.choose.listener;
 
 /**
  * Created by YieldNull at 4/7/16

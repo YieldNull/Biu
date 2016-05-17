@@ -1,10 +1,13 @@
 package com.bbbbiu.biu.gui.adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -45,8 +48,12 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<FileItem> mFinishedList = new ArrayList<>();
     private FileItem mWorkingItem;
 
+    private File mDownloadDir;
+
+
     public TransferAdapter(Context context) {
         this.context = context;
+        mDownloadDir = StorageUtil.getDownloadDir(context);
     }
 
 
@@ -249,9 +256,18 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         } else {
             FinishedViewHolder holder = (FinishedViewHolder) hd;
-            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, new File(fileItem.uri)));
+            final File downloadedFile = new File(mDownloadDir, fileItem.name);
+
+            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, downloadedFile));
             holder.nameText.setText(fileItem.name);
             holder.infoText.setText(StorageUtil.getReadableSize(fileItem.size));
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StorageUtil.openFile(context, downloadedFile);
+                }
+            });
         }
     }
 
@@ -312,7 +328,6 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super(itemView);
 
             ButterKnife.bind(this, itemView);
-
         }
     }
 }

@@ -65,7 +65,8 @@
         <activity
             android:name=".gui.choose.FileChooseActivity"
             android:label="@string/title_activity_choose_file"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".gui.choose.MusicChooseActivity"
             android:label="@string/title_activity_choose_music"
@@ -118,16 +119,23 @@
             android:name=".gui.HistoryActivity"
             android:label="@string/title_activity_history"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".gui.transfer.computer.UploadActivity"
             android:label="@string/title_activity_upload"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".gui.transfer.computer.DownloadActivity"
             android:label="@string/title_activity_download"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gui.choose.FileMoveActivity"
+            android:label="@string/title_activity_file_move"
+            android:parentActivityName=".gui.choose.FileChooseActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.bbbbiu.biu.gui.choose.FileChooseActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -9,9 +9,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_margin="16dp"
-        android:src="@drawable/ic_type_folder"
-        android:tint="@color/upPanel_icon_tint" />
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="26dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_type_folder" />
 
     <TextView
         android:id="@+id/textView_name"
@@ -23,5 +25,15 @@
         android:layout_marginRight="64dp"
         android:layout_toRightOf="@id/imageView_icon"
         android:text="filenamedsadsadasdasdasdsadasdasdasdasdasdasd"
-        android:textColor="@color/upPanel_text" />
+        android:textColor="@color/option_panel_text" />
+
+    <ImageView
+        android:id="@+id/imageView_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="16dp"
+        android:src="@drawable/ic_action_open"
+        android:tint="@color/option_panel_icon_tint" />
 </RelativeLayout>

@@ -4,12 +4,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.db.search.MediaItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.util.SearchUtil;
@@ -22,11 +24,11 @@ import butterknife.ButterKnife;
  * <p/>
  * Updated by YieldNull
  */
-public class MusicContentAdapter extends ContentBaseAdapter {
+public class MusicContentAdapter extends CommonContentAdapter {
     private static final String TAG = MusicContentAdapter.class.getSimpleName();
 
 
-    public MusicContentAdapter(final ChooseBaseActivity context) {
+    public MusicContentAdapter(final BaseChooseActivity context) {
         super(context);
     }
 
@@ -62,7 +64,7 @@ public class MusicContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             MusicViewHolder holder = (MusicViewHolder) hd;
 
-            MediaItem item = (MediaItem) getItemAt(position);
+            final MediaItem item = (MediaItem) getItemAt(position);
             holder.title.setText(item.title);
             holder.singer.setText(item.artist);
             holder.size.setText(item.getSize());
@@ -78,6 +80,14 @@ public class MusicContentAdapter extends ContentBaseAdapter {
                 @Override
                 public void onClick(View v) {
                     setItemChosen(position);
+                }
+            });
+
+            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+            holder.optionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    notifyOptionToggleClicked(item.getFile());
                 }
             });
 
@@ -104,6 +114,9 @@ public class MusicContentAdapter extends ContentBaseAdapter {
 
         @Bind(R.id.imageView_icon)
         ImageView iconImage;
+
+        @Bind(R.id.imageButton_option)
+        ImageButton optionButton;
 
         public MusicViewHolder(View itemView) {
             super(itemView);

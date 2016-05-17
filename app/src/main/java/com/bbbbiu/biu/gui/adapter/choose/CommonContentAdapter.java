@@ -1,17 +1,11 @@
 package com.bbbbiu.biu.gui.adapter.choose;
 
-import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
-import com.bbbbiu.biu.gui.choose.OnChoosingListener;
-import com.bbbbiu.biu.gui.choose.OnItemOptionClickListener;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
+import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
+import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 import com.bbbbiu.biu.db.search.ModelItem;
 
 import java.io.File;
@@ -22,33 +16,28 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 选择文件时，显示数据的Adapter基类。
+ * 从各个类别选文件时的CommonAdapter
  * <p/>
  * 如何获取数据：
  * <p/>
- * - 先从数据库读数据 {@link ContentBaseAdapter#readDataFromDB()}，要是没有则
+ * - 先从数据库读数据 {@link CommonContentAdapter#readDataFromDB()}，要是没有则
  * <p/>
- * - 从系统中 {@link ContentBaseAdapter#readDataFromSys()} 读取数据
+ * - 从系统中 {@link CommonContentAdapter#readDataFromSys()} 读取数据
  * <p/>
  * - 将数据显示（没有则显示空）
  * <p/>
- * - 要数据是从数据库中读取的，那么就后台再扫描一遍MediaStore，存入数据库 {@link ContentBaseAdapter#updateDatabase()}
+ * - 要数据是从数据库中读取的，那么就后台再扫描一遍MediaStore，存入数据库 {@link CommonContentAdapter#updateDatabase()}
  * <p/>
- * - 然后更新数据集并显示，{@link ContentBaseAdapter#updateDataSet()}
+ * - 然后更新数据集并显示，{@link CommonContentAdapter#updateDataSet()}
+ * <p/>
+ * <p/>
+ * 如何显示 TODO
  * <p/>
  * Created by YieldNull at 3/26/16
  */
-public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private static final String TAG = ContentBaseAdapter.class.getSimpleName();
+public abstract class CommonContentAdapter extends BaseContentAdapter {
+    private static final String TAG = CommonContentAdapter.class.getSimpleName();
 
-    public static final int VIEW_TYPE_HEADER = 0;
-    public static final int VIEW_TYPE_ITEM = 1;
-
-    private OnLoadingDataListener mLoadingDataListener;
-    private OnChoosingListener mOnChoosingListener;
-    private OnItemOptionClickListener mOnItemOptionClickListener;
-
-    protected Context context;
 
     /**
      * 数据集，用于显示
@@ -60,36 +49,14 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     protected List<ModelItem> mChosenItems = new ArrayList<>();
 
-    /**
-     * 为所有Picasso请求打上标签，以便之后取消
-     */
-    protected static final String PICASSO_TAG = "tag-img";
-
-
-    /**
-     * OnBackPress时，取消当前未完成的PicassoTask
-     */
-    public abstract void cancelPicassoTask();
-
-    /**
-     * 生成数据项的 ViewHolder
-     *
-     * @param inflater LayoutInflater
-     * @param parent   parent
-     * @return ViewHolder
-     */
-    public abstract RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
     /**
      * 构造函数
      *
-     * @param context 需要实现{@link OnLoadingDataListener},{@link OnChoosingListener},{@link OnItemOptionClickListener}
+     * @param context 需要实现{@link OnLoadingDataListener},{@link OnChoosingListener},{@link OptionPanelActionListener}
      */
-    public ContentBaseAdapter(final ChooseBaseActivity context) {
-        mLoadingDataListener = context;
-        mOnChoosingListener = context;
-        mOnItemOptionClickListener = context;
-        this.context = context;
+    public CommonContentAdapter(final BaseChooseActivity context) {
+        super(context);
 
         notifyStartLoadingData();
 
@@ -115,6 +82,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
                         } else {
                             // TODO 显示空界面
                         }
+
                     }
                 });
 
@@ -128,7 +96,6 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
                         public void run() {
                             Log.i(TAG, "updating dataSet");
                             updateDataSet();
-                            notifyDataSetChanged();
                             Log.i(TAG, "notify dataSet updated");
                         }
                     });
@@ -159,26 +126,21 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     protected abstract void updateDatabase();
 
-    /**
-     * 更新Adapter的数据集
-     */
-    protected void updateDataSet() {
-        readDataFromDB();
-    }
 
     /***********************************************************************************/
 
+    /***********************************************************************************
+     * ***************   实现 ContentBaseAdapter 中的抽象方法   **************************
+     **********************************************************************************/
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
+    public void updateDataSet() {
+        readDataFromDB();
+        notifyDataSetChanged();
+    }
 
-        if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
-        } else {
-            return onCreateItemViewHolder(inflater, parent);
-        }
+    @Override
+    public boolean isHeaderView(int position) {
+        return getItemAt(position) == null;
     }
 
     @Override
@@ -187,15 +149,12 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     @Override
-    public int getItemViewType(int position) {
-        return getItemAt(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
+    public int getChosenCount() {
+        return mChosenItems.size();
     }
 
-    /**
-     * 获取已选文件的路径集
-     *
-     * @return 绝对路径集
-     */
+
+    @Override
     public Set<String> getChosenFiles() {
         Set<String> set = new HashSet<>();
         for (ModelItem item : mChosenItems) {
@@ -204,18 +163,13 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         return set;
     }
 
-    /**
-     * 已选项数量
-     *
-     * @return 数量
-     */
-    public int getChosenCount() {
-        return mChosenItems.size();
+
+    @Override
+    public boolean isFileChosen(File file) {
+        return getChosenFiles().contains(file.getAbsolutePath());
     }
 
-    /**
-     * 当前数据集全被选
-     */
+    @Override
     public void setFileAllChosen() {
         mChosenItems.clear();
 
@@ -228,14 +182,13 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
         notifyDataSetChanged();
     }
 
-    /**
-     * 清除所有已选项目
-     */
+    @Override
     public void setFileAllDismissed() {
         mChosenItems.clear();
         notifyDataSetChanged();
     }
 
+    /***********************************************************************************/
 
     /**
      * 获取数据集中position处的项
@@ -277,20 +230,6 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
     /**
-     * header text
-     *
-     * @param position position of header view item
-     * @return header text if it's a header at that position else null
-     */
-    protected String getHeaderText(int position) {
-        if (getItemAt(position) == null) {
-            return getItemAt(position + 1).getParentDirName();
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * 查询数据库中对应类型文件的数据,将查询所得Item按文件夹分类
      *
      * @param type 类型
@@ -302,7 +241,7 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     /**
-     * 设置数据集
+     * 设置数据集，先清空再设置
      *
      * @param sortedItems 已经按文件夹分好类的数据
      * @return 设置完成后数据集是否为空
@@ -321,49 +260,17 @@ public abstract class ContentBaseAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
 
-    /***********************************与Activity进行交互***********************************/
-
     /**
-     * notify正在加载数据
-     */
-    protected void notifyStartLoadingData() {
-        mLoadingDataListener.onStartLoadingData();
-    }
-
-    /**
-     * notify 数据加载完成
-     */
-    protected void notifyFinishLoadingData() {
-        mLoadingDataListener.onFinishLoadingData();
-    }
-
-
-    /**
-     * notify文件被选
-     * <p/>
-     * 要在添加或删除文件之后进行notify
+     * header text，获取文件夹的名称
      *
-     * @param filePath 文件路径
+     * @param position position of header view item
+     * @return header text if it's a header at that position else null
      */
-    protected void notifyFileChosen(String filePath) {
-        mOnChoosingListener.onFileChosen(filePath);
-    }
-
-    /**
-     * notify文件被取消选择
-     *
-     * @param filePath 文件路径
-     */
-    protected void notifyFileDismissed(String filePath) {
-        mOnChoosingListener.onFileDismissed(filePath);
-    }
-
-    /**
-     * notify 文件选项菜单被点击
-     *
-     * @param file 文件
-     */
-    protected void notifyFileItemOptionClicked(File file) {
-        mOnItemOptionClickListener.onFileOptionClick(file);
+    protected String getHeaderText(int position) {
+        if (getItemAt(position) == null) {
+            return getItemAt(position + 1).getParentDirName();
+        } else {
+            return null;
+        }
     }
 }

@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.choose.ApkChooseActivity;
 import com.bbbbiu.biu.gui.choose.ArchiveChooseActivity;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.gui.choose.DocumentChooseActivity;
 import com.bbbbiu.biu.gui.choose.FileChooseActivity;
 import com.bbbbiu.biu.gui.choose.ImgChooseActivity;
@@ -111,7 +111,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             break;
                     }
                     if (theClass != null) {
-                        ChooseBaseActivity.startChoosing(context, theClass);
+                        BaseChooseActivity.startChoosing(context, theClass);
                     }
                 }
             });

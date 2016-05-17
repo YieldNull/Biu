@@ -10,7 +10,8 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.bbbbiu.biu.db.search.FileItem;
@@ -24,10 +25,10 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class DocumentContentAdapter extends ContentBaseAdapter {
+public class DocumentContentAdapter extends CommonContentAdapter {
     private static final String TAG = DocumentContentAdapter.class.getSimpleName();
 
-    public DocumentContentAdapter(ChooseBaseActivity context) {
+    public DocumentContentAdapter(BaseChooseActivity context) {
         super(context);
     }
 
@@ -51,6 +52,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
 
     }
 
+
     @Override
     public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
@@ -61,7 +63,7 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
 
             DocumentViewHolder holder = (DocumentViewHolder) hd;
-            FileItem item = (FileItem) getItemAt(position);
+            final FileItem item = (FileItem) getItemAt(position);
 
             holder.nameText.setText(item.getFile().getName());
             holder.infoText.setText(item.getSize());
@@ -76,6 +78,14 @@ public class DocumentContentAdapter extends ContentBaseAdapter {
                 @Override
                 public void onClick(View v) {
                     setItemChosen(position);
+                }
+            });
+
+            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+            holder.optionButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    notifyOptionToggleClicked(item.getFile());
                 }
             });
 

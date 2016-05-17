@@ -89,6 +89,7 @@
             android:background="@android:color/transparent"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:src="@drawable/ic_action_more" />
+            android:tint="@color/option_toggle"
+            android:src="@drawable/ic_action_view" />
     </LinearLayout>
 </RelativeLayout>

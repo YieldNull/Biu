@@ -5,16 +5,17 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.CommonContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.ImgContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
 
 import java.io.File;
 
 /**
  * Created by YieldNull at 4/17/16
  */
-public class ImgChooseActivity extends ChooseBaseActivity {
+public class ImgChooseActivity extends BaseChooseActivity {
     private static final String TAG = ImgChooseActivity.class.getSimpleName();
     private ImgContentAdapter mImgAdapter;
 
@@ -27,12 +28,12 @@ public class ImgChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.normal_common;
+        return R.menu.common_normal;
     }
 
     @Override
     protected int getChosenMenuId() {
-        return R.menu.chosen_common;
+        return R.menu.common_chosen;
     }
 
     @Override
@@ -41,7 +42,7 @@ public class ImgChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected ContentBaseAdapter onCreateContentAdapter() {
+    protected BaseContentAdapter onCreateContentAdapter() {
         return new ImgContentAdapter(this);
     }
 
@@ -56,7 +57,7 @@ public class ImgChooseActivity extends ChooseBaseActivity {
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return mImgAdapter.getItemViewType(position) == ContentBaseAdapter.VIEW_TYPE_HEADER
+                return mImgAdapter.getItemViewType(position) == CommonContentAdapter.VIEW_TYPE_HEADER
                         ? manager.getSpanCount() : 1;
             }
         });
@@ -64,7 +65,7 @@ public class ImgChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected PanelBaseAdapter onCreatePanelAdapter() {
+    protected BaseOptionAdapter onCreatePanelAdapter() {
         return null;
     }
 

@@ -1,38 +1,29 @@
 package com.bbbbiu.biu.gui.choose;
 
 import android.support.v7.widget.RecyclerView;
-import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.MusicContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 
-public class MusicChooseActivity extends ChooseBaseActivity {
+public class MusicChooseActivity extends BaseChooseActivity {
 
     public static String TAG = MusicChooseActivity.class.getSimpleName();
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_delete:
-                break;
-            case R.id.action_search:
-                break;
-            default:
-                break;
-        }
-
-
-        return super.onOptionsItemSelected(item);
+    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
+        return new HorizontalDividerItemDecoration.Builder(this).build();
     }
 
     @Override
-    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
-        return new HorizontalDividerItemDecoration.Builder(this).build();
+    public void onOptionToggleClicked(File file) {
+
+        StorageUtil.openFile(this, file);
     }
 
     @Override
@@ -42,12 +33,12 @@ public class MusicChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.music_normal;
+        return R.menu.common_normal;
     }
 
     @Override
     protected int getChosenMenuId() {
-        return R.menu.chosen_common;
+        return R.menu.common_chosen;
     }
 
     @Override
@@ -56,7 +47,7 @@ public class MusicChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected ContentBaseAdapter onCreateContentAdapter() {
+    protected BaseContentAdapter onCreateContentAdapter() {
         return new MusicContentAdapter(this);
     }
 
@@ -66,7 +57,7 @@ public class MusicChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected PanelBaseAdapter onCreatePanelAdapter() {
+    protected BaseOptionAdapter onCreatePanelAdapter() {
         return null;
     }
 }

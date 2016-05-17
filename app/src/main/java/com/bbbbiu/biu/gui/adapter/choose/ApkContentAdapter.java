@@ -12,12 +12,13 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.bbbbiu.biu.db.search.ApkItem;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,7 +35,7 @@ import butterknife.ButterKnife;
  * <p/>
  * Update by YiledNull
  */
-public class ApkContentAdapter extends ContentBaseAdapter {
+public class ApkContentAdapter extends CommonContentAdapter {
     private static final String TAG = ApkContentAdapter.class.getSimpleName();
 
     private List<ApkItem> mApkDataSet = new ArrayList<>();
@@ -46,7 +47,6 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     private List<ApkItem> mChosenApkList = new ArrayList<>();
 
     private Picasso mPicasso;
-    private static final String PICASSO_TAG = "tag-img"; //所有请求加TAG，退出时cancel all
 
     // 默认升序排列
     private Comparator<ApkItem> mComparator = new Comparator<ApkItem>() {
@@ -59,10 +59,54 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     };
 
 
-    public ApkContentAdapter(final ChooseBaseActivity context) {
+    public ApkContentAdapter(final BaseChooseActivity context) {
         super(context);
+
         mPicasso = Picasso.with(context);
     }
+
+
+    /***********************************************************************************
+     * ******** {@link BaseContentAdapter} (覆盖 {@link CommonContentAdapter}) **********
+     **********************************************************************************/
+    @Override
+    public boolean isHeaderView(int position) {
+        return getApkAt(position) == null;
+    }
+
+    @Override
+    public int getChosenCount() {
+        return mChosenApkList.size();
+    }
+
+    @Override
+    public Set<String> getChosenFiles() {
+        Set<String> files = new HashSet<>();
+        for (ApkItem apkItem : mChosenApkList) {
+            files.add(apkItem.path);
+        }
+        return files;
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        for (ApkItem apkItem : mApkDataSet) {
+            if (apkItem != null) { // 去掉placeholder
+                mChosenApkList.add(apkItem);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+        mChosenApkList.clear();
+        notifyDataSetChanged();
+    }
+
+    /***********************************************************************************
+     * *******************  {@link CommonContentAdapter}   *****************************
+     **********************************************************************************/
 
     @Override
     protected boolean readDataFromDB() {
@@ -85,10 +129,77 @@ public class ApkContentAdapter extends ContentBaseAdapter {
     }
 
     @Override
-    protected void updateDataSet() {
+    public void updateDataSet() {
         mApkDataSet.clear();
         readDataFromDB();
     }
+
+    @Override
+    public void cancelPicassoTask() {
+        mPicasso.cancelTag(PICASSO_TAG);
+    }
+
+
+    @Override
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ApkViewHolder(inflater.inflate(R.layout.list_apk_item, parent, false));
+    }
+
+    /********************************************************************************************/
+
+    @Override
+    public int getItemCount() {
+        return mApkDataSet.size();
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
+        if (getItemViewType(position) == VIEW_TYPE_HEADER) {
+            HeaderViewHolder holder = (HeaderViewHolder) hd;
+            if (mSystemApkList.contains(getApkAt(position + 1))) {
+                holder.headerText.setText(context.getString(R.string.apk_header_system));
+            } else if (mNormalApkList.contains(getApkAt(position + 1))) {
+                holder.headerText.setText(context.getString(R.string.apk_header_normal));
+            } else {
+                holder.headerText.setText(context.getString(R.string.apk_header_standalone));
+            }
+        } else {
+            final ApkViewHolder holder = (ApkViewHolder) hd;
+            final ApkItem apkItem = mApkDataSet.get(position);
+
+            // 应用名
+            holder.apkNameText.setText(apkItem.name);
+
+            // 文件大小
+            long size = apkItem.getFile().length();
+            holder.apkSize.setText(StorageUtil.getReadableSize(size));
+
+            // 加载图标
+            mPicasso.load(apkItem.getCachedIconFile(context))
+                    .tag(PICASSO_TAG)
+                    .into(holder.apkIconImage);
+
+            // 选中或不选中的样式
+            final CardView cardView = (CardView) holder.itemView;
+
+            if (mChosenApkList.contains(apkItem)) {
+                cardView.setForeground(context.getResources().getDrawable(R.drawable.ic_chosen_check));
+                cardView.setForegroundGravity(Gravity.TOP | Gravity.RIGHT);
+            } else {
+                cardView.setForeground(null);
+            }
+
+            // 监听选择
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onApkClicked(apkItem);
+                }
+            });
+        }
+    }
+
+    /********************************************************************************************/
 
     /**
      * 由包管理器扫描已安装的APK，并显示
@@ -194,104 +305,6 @@ public class ApkContentAdapter extends ContentBaseAdapter {
         notifyDataSetChanged();
     }
 
-    @Override
-    public void cancelPicassoTask() {
-        mPicasso.cancelTag(PICASSO_TAG);
-    }
-
-
-    @Override
-    public int getItemCount() {
-        return mApkDataSet.size();
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return getApkAt(position) == null ? VIEW_TYPE_HEADER : VIEW_TYPE_ITEM;
-    }
-
-    @Override
-    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        return new ApkViewHolder(inflater.inflate(R.layout.list_apk_item, parent, false));
-    }
-
-
-    @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
-        if (getItemViewType(position) == VIEW_TYPE_HEADER) {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-            if (mSystemApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText(context.getString(R.string.apk_header_system));
-            } else if (mNormalApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText(context.getString(R.string.apk_header_normal));
-            } else {
-                holder.headerText.setText(context.getString(R.string.apk_header_standalone));
-            }
-        } else {
-            final ApkViewHolder holder = (ApkViewHolder) hd;
-            final ApkItem apkItem = mApkDataSet.get(position);
-
-            // 应用名
-            holder.apkNameText.setText(apkItem.name);
-
-            // 文件大小
-            long size = apkItem.getFile().length();
-            holder.apkSize.setText(StorageUtil.getReadableSize(size));
-
-            // 加载图标
-            mPicasso.load(apkItem.getCachedIconFile(context))
-                    .tag(PICASSO_TAG)
-                    .into(holder.apkIconImage);
-
-            // 选中或不选中的样式
-            final CardView cardView = (CardView) holder.itemView;
-
-            if (mChosenApkList.contains(apkItem)) {
-                cardView.setForeground(context.getResources().getDrawable(R.drawable.ic_chosen_check));
-                cardView.setForegroundGravity(Gravity.TOP | Gravity.RIGHT);
-            } else {
-                cardView.setForeground(null);
-            }
-
-            // 监听选择
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onApkClicked(apkItem);
-                }
-            });
-        }
-    }
-
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> files = new HashSet<>();
-        for (ApkItem apkItem : mChosenApkList) {
-            files.add(apkItem.path);
-        }
-        return files;
-    }
-
-    @Override
-    public int getChosenCount() {
-        return mChosenApkList.size();
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        for (ApkItem apkItem : mApkDataSet) {
-            if (apkItem != null) { // 去掉placeholder
-                mChosenApkList.add(apkItem);
-            }
-        }
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChosenApkList.clear();
-        notifyDataSetChanged();
-    }
 
     private ApkItem getApkAt(int position) {
         return mApkDataSet.get(position);

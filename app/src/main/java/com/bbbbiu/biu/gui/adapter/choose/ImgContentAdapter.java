@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.db.search.ModelItem;
@@ -23,12 +23,13 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/17/16
  */
-public class ImgContentAdapter extends ContentBaseAdapter {
+public class ImgContentAdapter extends CommonContentAdapter {
     private Picasso mPicasso;
+
     private int mImgWidth;
     private Drawable mPlaceholder;
 
-    public ImgContentAdapter(final ChooseBaseActivity context) {
+    public ImgContentAdapter(final BaseChooseActivity context) {
         super(context);
 
         this.context = context;

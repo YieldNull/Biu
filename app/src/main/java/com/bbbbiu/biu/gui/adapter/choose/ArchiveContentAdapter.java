@@ -10,7 +10,8 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
-import com.bbbbiu.biu.gui.choose.ChooseBaseActivity;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
+import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.util.SearchUtil;
@@ -21,10 +22,10 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class ArchiveContentAdapter extends ContentBaseAdapter {
+public class ArchiveContentAdapter extends CommonContentAdapter {
     private static final String TAG = ArchiveContentAdapter.class.getSimpleName();
 
-    public ArchiveContentAdapter(ChooseBaseActivity context) {
+    public ArchiveContentAdapter(BaseChooseActivity context) {
         super(context);
     }
 
@@ -45,7 +46,6 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
 
     @Override
     public void cancelPicassoTask() {
-
     }
 
     @Override
@@ -58,7 +58,7 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
     public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             ArchiveViewHolder holder = (ArchiveViewHolder) hd;
-            FileItem item = (FileItem) getItemAt(position);
+            final FileItem item = (FileItem) getItemAt(position);
 
             holder.nameText.setText(item.getFile().getName());
             holder.infoText.setText(item.getSize());
@@ -75,6 +75,15 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
                     setItemChosen(position);
                 }
             });
+
+            holder.optionImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    notifyOptionToggleClicked(item.getFile());
+                }
+            });
+
+            holder.optionImage.setOnTouchListener(OnViewTouchListener.getSingleton(context));
 
         } else {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
@@ -94,7 +103,7 @@ public class ArchiveContentAdapter extends ContentBaseAdapter {
         TextView infoText;
 
         @Bind(R.id.imageButton_option)
-        ImageButton optionButton;
+        ImageButton optionImage;
 
         public ArchiveViewHolder(View itemView) {
             super(itemView);

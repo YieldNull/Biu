@@ -15,8 +15,9 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.ApkContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.PanelBaseAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.ContentBaseAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.CommonContentAdapter;
 import com.bbbbiu.biu.db.search.ApkItem;
 
 import java.io.File;
@@ -30,7 +31,7 @@ import java.util.Queue;
  * 然后先从未安装的队列依次取出文件进行删除，再从已安装的队列中取。
  * 每次删除成功之后要更新界面，及从Adapter中取出删除对应的APK，刷新View
  */
-public class ApkChooseActivity extends ChooseBaseActivity {
+public class ApkChooseActivity extends BaseChooseActivity {
     private static String TAG = ApkChooseActivity.class.getSimpleName();
 
     private static final int REQUEST_CODE_UNINSTALL = 1;
@@ -79,7 +80,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
                     }
                 }
                 mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
-                break;
+                return true;
             default:
                 break;
         }
@@ -103,11 +104,11 @@ public class ApkChooseActivity extends ChooseBaseActivity {
 
                         if (!file.delete()) {
                             Toast.makeText(ApkChooseActivity.this,
-                                    getString(R.string.apk_delete_failed), Toast.LENGTH_LONG)
+                                    getString(R.string.delete_failed), Toast.LENGTH_LONG)
                                     .show();
                         } else {
                             Toast.makeText(ApkChooseActivity.this,
-                                    getString(R.string.apk_delete_succeeded),
+                                    getString(R.string.delete_succeeded),
                                     Toast.LENGTH_SHORT).show();
 
                             onFinishDelete(apkItem);
@@ -117,7 +118,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(ApkChooseActivity.this, R.string.apk_delete_dismissed,
+                        Toast.makeText(ApkChooseActivity.this, R.string.delete_dismissed,
                                 Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -196,12 +197,12 @@ public class ApkChooseActivity extends ChooseBaseActivity {
 
     @Override
     protected int getNormalMenuId() {
-        return R.menu.apk_normal;
+        return R.menu.common_normal;
     }
 
     @Override
     protected int getChosenMenuId() {
-        return R.menu.chosen_common;
+        return R.menu.common_chosen;
     }
 
     @Override
@@ -220,7 +221,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return mApkAdapter.getItemViewType(position) == ContentBaseAdapter.VIEW_TYPE_HEADER
+                return mApkAdapter.getItemViewType(position) == CommonContentAdapter.VIEW_TYPE_HEADER
                         ? manager.getSpanCount() : 1;
             }
         });
@@ -228,7 +229,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected ContentBaseAdapter onCreateContentAdapter() {
+    protected BaseContentAdapter onCreateContentAdapter() {
         return new ApkContentAdapter(this);
     }
 
@@ -237,8 +238,7 @@ public class ApkChooseActivity extends ChooseBaseActivity {
     }
 
     @Override
-    protected PanelBaseAdapter onCreatePanelAdapter() {
+    protected BaseOptionAdapter onCreatePanelAdapter() {
         return null;
     }
-
 }
