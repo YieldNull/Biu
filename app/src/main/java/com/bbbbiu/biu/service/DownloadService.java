@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
+import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.ProgressListener;
 import com.bbbbiu.biu.lib.util.ProgressNotifier;
@@ -25,6 +26,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+/**
+ * 从服务器下载
+ */
 public class DownloadService extends Service {
     private static final String TAG = DownloadService.class.getSimpleName();
 
@@ -188,6 +192,12 @@ public class DownloadService extends Service {
                 body.close();
             }
         }
+
+        //存到数据库
+        new RevRecord(
+                System.currentTimeMillis(),
+                destFile.getName(),
+                destFile.length()).save();
 
         return true;
     }

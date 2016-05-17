@@ -98,5 +98,6 @@
     <string name="file_operation_canceled">操作已取消</string>
     <string name="file_background_running">正在后台执行操作</string>
     <string name="file_background_run">后台运行</string>
+    <string name="action_about">关于</string>
 
 </resources>

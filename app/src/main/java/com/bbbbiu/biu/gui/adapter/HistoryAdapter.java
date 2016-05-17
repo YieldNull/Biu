@@ -59,7 +59,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
         RevRecord revRecord = mDataSet.get(position);
-        File revFile = revRecord.getFile(context);
+        final File revFile = revRecord.getFile(context);
 
         HistoryViewHolder holder = (HistoryViewHolder) hd;
 
@@ -84,6 +84,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         holder.infoText.setText(String.format("%s %s",
                 format.format(new Date(revRecord.timestamp)),
                 StorageUtil.getReadableSize(revRecord.size)));
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                StorageUtil.openFile(context, revFile);
+            }
+        });
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -26,18 +27,20 @@ public class ConnectingActivity extends AppCompatActivity {
     public static void connectForSending(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_SEND);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
     public static void connectForReceiving(Context context) {
         Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_RECEIVE);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
     private String mAction;
 
-    @OnClick(R.id.textView_computer_scan)
+    @OnClick(R.id.linearLayout_computer_scan)
     void scanQRCode() {
         if (mAction.equals(ACTION_RECEIVE)) {
             QRCodeScanActivity.scanForDownload(this);
@@ -46,7 +49,7 @@ public class ConnectingActivity extends AppCompatActivity {
         }
     }
 
-    @OnClick(R.id.textView_computer_jump)
+    @OnClick(R.id.linearLayout_computer_jump)
     void jumpToWebSending() {
         if (mAction.equals(ACTION_SEND)) {
             com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForSending(this);
@@ -87,5 +90,14 @@ public class ConnectingActivity extends AppCompatActivity {
 
         mScanQRCodeTextView.setPaintFlags(mScanQRCodeTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         mJumpTextView.setPaintFlags(mJumpTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
