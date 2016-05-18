@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -21,13 +21,17 @@ import com.bbbbiu.biu.db.search.ModelItem;
 import com.squareup.picasso.Picasso;
 
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
  * Created by YieldNull at 4/18/16
  */
-public class VideoContentAdapter extends CommonContentAdapter {
+public class VideoContentAdapter extends CommonSortedAdapter {
     private static final String TAG = VideoContentAdapter.class.getSimpleName();
 
     private Context context;
@@ -46,15 +50,19 @@ public class VideoContentAdapter extends CommonContentAdapter {
 
     }
 
-
     @Override
-    protected boolean readDataFromDB() {
-        return queryModelItemFromDb(ModelItem.TYPE_VIDEO);
+    public Comparator<ModelItem> getItemComparator() {
+        return getDefaultItemComparator();
     }
 
     @Override
-    protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanVideoItem(context)));
+    protected Map<String, List<ModelItem>> readSortedDataFromDB() {
+        return ModelItem.queryItemToDir(ModelItem.TYPE_VIDEO);
+    }
+
+    @Override
+    protected Map<String, List<ModelItem>> readSortedDataFromSys() {
+        return ModelItem.sortItemWithDir(SearchUtil.scanVideoItem(context));
     }
 
     @Override
@@ -76,48 +84,42 @@ public class VideoContentAdapter extends CommonContentAdapter {
 
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
-        if (getItemViewType(position) == VIEW_TYPE_ITEM) {
-            VideoViewHolder holder = (VideoViewHolder) hd;
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+        VideoViewHolder holder = (VideoViewHolder) hd;
 
-            final MediaItem item = (MediaItem) getItemAt(position);
+        final MediaItem item = (MediaItem) getItemAt(position);
 
-            holder.nameText.setText(item.getFile().getName());
-            holder.infoText.setText(String.format("%s  %s", item.duration, item.getSize()));
+        holder.nameText.setText(item.getFile().getName());
+        holder.infoText.setText(String.format("%s  %s", item.duration, item.getSize()));
 
 
-            if (mChosenItems.contains(item)) {
-                holder.setItemStyleChosen();
-            } else {
-                holder.setItemStyleChoosing();
-
-                mPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + item.path)
-                        .resize(THUMB_SIZE, THUMB_SIZE)
-                        .tag(PICASSO_TAG)
-                        .placeholder(R.drawable.ic_type_video)
-                        .onlyScaleDown()
-                        .into(holder.iconImg);
-            }
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setItemChosen(position);
-                }
-            });
-
-            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
-            holder.optionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyOptionToggleClicked(item.getFile());
-                }
-            });
-
+        if (mChosenItems.contains(item)) {
+            holder.setItemStyleChosen();
         } else {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(getHeaderText(position));
+            holder.setItemStyleChoosing();
+
+            mPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + item.path)
+                    .resize(THUMB_SIZE, THUMB_SIZE)
+                    .tag(PICASSO_TAG)
+                    .placeholder(R.drawable.ic_type_video)
+                    .onlyScaleDown()
+                    .into(holder.iconImg);
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
+            }
+        });
+
+        holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.optionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notifyOptionToggleClicked(item.getFile());
+            }
+        });
     }
 
     class VideoViewHolder extends RecyclerView.ViewHolder {

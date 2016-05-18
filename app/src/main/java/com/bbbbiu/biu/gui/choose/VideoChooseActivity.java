@@ -3,9 +3,9 @@ package com.bbbbiu.biu.gui.choose;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.VideoContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.VideoContentAdapter;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 

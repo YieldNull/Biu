@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +16,10 @@ import com.bbbbiu.biu.db.search.MediaItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.util.SearchUtil;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -24,7 +28,7 @@ import butterknife.ButterKnife;
  * <p/>
  * Updated by YieldNull
  */
-public class MusicContentAdapter extends CommonContentAdapter {
+public class MusicContentAdapter extends CommonSortedAdapter {
     private static final String TAG = MusicContentAdapter.class.getSimpleName();
 
 
@@ -32,15 +36,27 @@ public class MusicContentAdapter extends CommonContentAdapter {
         super(context);
     }
 
-
     @Override
-    protected boolean readDataFromDB() {
-        return queryModelItemFromDb(ModelItem.TYPE_MUSIC);
+    public Comparator<ModelItem> getItemComparator() {
+        return new Comparator<ModelItem>() {
+            @Override
+            public int compare(ModelItem lhs, ModelItem rhs) {
+                MediaItem lMedia = (MediaItem) lhs;
+                MediaItem rMedia = (MediaItem) rhs;
+
+                return lMedia.title.compareTo(rMedia.title);
+            }
+        };
     }
 
     @Override
-    protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanMusicItem(context)));
+    protected Map<String, List<ModelItem>> readSortedDataFromDB() {
+        return ModelItem.queryItemToDir(ModelItem.TYPE_MUSIC);
+    }
+
+    @Override
+    protected Map<String, List<ModelItem>> readSortedDataFromSys() {
+        return ModelItem.sortItemWithDir(SearchUtil.scanMusicItem(context));
     }
 
     @Override
@@ -58,44 +74,36 @@ public class MusicContentAdapter extends CommonContentAdapter {
         return new MusicViewHolder(inflater.inflate(R.layout.list_music_item, parent, false));
     }
 
-
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
-        if (getItemViewType(position) == VIEW_TYPE_ITEM) {
-            MusicViewHolder holder = (MusicViewHolder) hd;
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+        MusicViewHolder holder = (MusicViewHolder) hd;
 
-            final MediaItem item = (MediaItem) getItemAt(position);
-            holder.title.setText(item.title);
-            holder.singer.setText(item.artist);
-            holder.size.setText(item.getSize());
-            holder.duration.setText(item.duration);
+        final MediaItem item = (MediaItem) getItemAt(position);
+        holder.title.setText(item.title);
+        holder.singer.setText(item.artist);
+        holder.size.setText(item.getSize());
+        holder.duration.setText(item.duration);
 
-            if (isItemChosen(position)) {
-                holder.setItemStyleChosen();
-            } else {
-                holder.setItemStyleChoosing();
-            }
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setItemChosen(position);
-                }
-            });
-
-            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
-            holder.optionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyOptionToggleClicked(item.getFile());
-                }
-            });
-
+        if (isItemChosen(position)) {
+            holder.setItemStyleChosen();
         } else {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(getHeaderText(position));
+            holder.setItemStyleChoosing();
         }
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
+            }
+        });
+
+        holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.optionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notifyOptionToggleClicked(item.getFile());
+            }
+        });
     }
 
     public class MusicViewHolder extends RecyclerView.ViewHolder {

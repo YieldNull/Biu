@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -10,12 +10,15 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.squareup.picasso.Picasso;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -23,11 +26,21 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/17/16
  */
-public class ImgContentAdapter extends CommonContentAdapter {
+public class ImgContentAdapter extends CommonSortedAdapter {
     private Picasso mPicasso;
 
     private int mImgWidth;
     private Drawable mPlaceholder;
+
+    @Override
+    public Comparator<ModelItem> getItemComparator() {
+        return new Comparator<ModelItem>() {
+            @Override
+            public int compare(ModelItem lhs, ModelItem rhs) {
+                return Long.valueOf(rhs.getFile().lastModified()).compareTo(lhs.getFile().lastModified());
+            }
+        };
+    }
 
     public ImgContentAdapter(final BaseChooseActivity context) {
         super(context);
@@ -48,13 +61,13 @@ public class ImgContentAdapter extends CommonContentAdapter {
     }
 
     @Override
-    protected boolean readDataFromDB() {
-        return queryModelItemFromDb(ModelItem.TYPE_IMG);
+    protected Map<String, List<ModelItem>> readSortedDataFromDB() {
+        return ModelItem.queryItemToDir(ModelItem.TYPE_IMG);
     }
 
     @Override
-    protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanImageItem(context)));
+    protected Map<String, List<ModelItem>> readSortedDataFromSys() {
+        return ModelItem.sortItemWithDir(SearchUtil.scanImageItem(context));
     }
 
     @Override
@@ -72,44 +85,35 @@ public class ImgContentAdapter extends CommonContentAdapter {
         return new ImgViewHolder(inflater.inflate(R.layout.list_img_item, parent, false));
     }
 
-
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
-        if (getItemViewType(position) == VIEW_TYPE_ITEM) {
-            ImgViewHolder holder = (ImgViewHolder) hd;
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+        ImgViewHolder holder = (ImgViewHolder) hd;
+        final ModelItem item = getItemAt(position);
+        mPicasso.load(item.getFile())
+                .tag(PICASSO_TAG)
+                .resize(mImgWidth, mImgWidth)
+                .placeholder(mPlaceholder)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(holder.imageView);
 
+        // 设置图片大小，不然高度会出现问题，会多出来一点点
+        holder.imageView.setLayoutParams(new FrameLayout.LayoutParams(mImgWidth, mImgWidth));
 
-            mPicasso.load(getItemAt(position).getFile())
-                    .tag(PICASSO_TAG)
-                    .resize(mImgWidth, mImgWidth)
-                    .placeholder(mPlaceholder)
-                    .onlyScaleDown()
-                    .centerCrop()
-                    .into(holder.imageView);
-
-            // 设置图片大小，不然高度会出现问题，会多出来一点点
-            holder.imageView.setLayoutParams(new FrameLayout.LayoutParams(mImgWidth, mImgWidth));
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setItemChosen(position);
-                }
-            });
-
-
-            if (isItemChosen(position)) {
-                holder.chosenImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_chosen_check));
-            } else if (getChosenCount() == 0) {
-                holder.chosenImage.setImageDrawable(null);
-            } else {
-                holder.chosenImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_choosing_circle));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
             }
+        });
 
+
+        if (isItemChosen(position)) {
+            holder.chosenImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_chosen_check));
+        } else if (getChosenCount() == 0) {
+            holder.chosenImage.setImageDrawable(null);
         } else {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-
-            holder.headerText.setText(getHeaderText(position));
+            holder.chosenImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_choosing_circle));
         }
 
     }

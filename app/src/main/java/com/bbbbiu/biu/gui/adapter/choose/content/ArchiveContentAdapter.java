@@ -1,7 +1,9 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -16,13 +18,17 @@ import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.util.SearchUtil;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
  * Created by YieldNull at 4/18/16
  */
-public class ArchiveContentAdapter extends CommonContentAdapter {
+public class ArchiveContentAdapter extends CommonSortedAdapter {
     private static final String TAG = ArchiveContentAdapter.class.getSimpleName();
 
     public ArchiveContentAdapter(BaseChooseActivity context) {
@@ -30,13 +36,19 @@ public class ArchiveContentAdapter extends CommonContentAdapter {
     }
 
     @Override
-    protected boolean readDataFromDB() {
-        return queryModelItemFromDb(ModelItem.TYPE_ARCHIVE);
+    public Comparator<ModelItem> getItemComparator() {
+        return getDefaultItemComparator();
+    }
+
+
+    @Override
+    protected Map<String, List<ModelItem>> readSortedDataFromDB() {
+        return ModelItem.queryItemToDir(ModelItem.TYPE_ARCHIVE);
     }
 
     @Override
-    protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanArchiveItem(context)));
+    protected Map<String, List<ModelItem>> readSortedDataFromSys() {
+        return ModelItem.sortItemWithDir(SearchUtil.scanArchiveItem(context));
     }
 
     @Override
@@ -53,42 +65,35 @@ public class ArchiveContentAdapter extends CommonContentAdapter {
         return new ArchiveViewHolder(inflater.inflate(R.layout.list_archive_item, parent, false));
     }
 
-
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
-        if (getItemViewType(position) == VIEW_TYPE_ITEM) {
-            ArchiveViewHolder holder = (ArchiveViewHolder) hd;
-            final FileItem item = (FileItem) getItemAt(position);
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+        ArchiveViewHolder holder = (ArchiveViewHolder) hd;
+        final FileItem item = (FileItem) getItemAt(position);
 
-            holder.nameText.setText(item.getFile().getName());
-            holder.infoText.setText(item.getSize());
+        holder.nameText.setText(item.getFile().getName());
+        holder.infoText.setText(item.getSize());
 
-            if (isItemChosen(position)) {
-                holder.setItemStyleChosen();
-            } else {
-                holder.setItemStyleChoosing();
-            }
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setItemChosen(position);
-                }
-            });
-
-            holder.optionImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyOptionToggleClicked(item.getFile());
-                }
-            });
-
-            holder.optionImage.setOnTouchListener(OnViewTouchListener.getSingleton(context));
-
+        if (isItemChosen(position)) {
+            holder.setItemStyleChosen();
         } else {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(getHeaderText(position));
+            holder.setItemStyleChoosing();
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
+            }
+        });
+
+        holder.optionImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notifyOptionToggleClicked(item.getFile());
+            }
+        });
+
+        holder.optionImage.setOnTouchListener(OnViewTouchListener.getSingleton(context));
     }
 
     class ArchiveViewHolder extends RecyclerView.ViewHolder {

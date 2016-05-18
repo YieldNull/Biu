@@ -57,8 +57,8 @@ public class FileItem extends ModelItem {
     }
 
     @Override
-    public String getParentDirName() {
-        return getFile().getParentFile().getName();
+    public File getParentFile() {
+        return getFile().getParentFile();
     }
 
 }

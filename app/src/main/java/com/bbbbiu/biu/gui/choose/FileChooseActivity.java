@@ -10,11 +10,11 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.FileOptionAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.option.FileOptionAdapter;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
-import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.FileContentAdapter;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 

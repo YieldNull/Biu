@@ -5,9 +5,13 @@ import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * 数据库基类，提供公有接口
@@ -52,7 +56,7 @@ public abstract class ModelItem extends BaseModel {
      *
      * @return 名称
      */
-    public abstract String getParentDirName();
+    public abstract File getParentFile();
 
     /**
      * 根据path确定唯一性
@@ -104,13 +108,14 @@ public abstract class ModelItem extends BaseModel {
      *
      * @param items 待分类列表
      * @param <T>   ModelItem
-     * @return {“Folder”:itemList}
+     * @return {“Folder（绝对路径）”:itemList}
      */
     public static <T extends ModelItem> Map<String, List<ModelItem>> sortItemWithDir(List<T> items) {
         Map<String, List<ModelItem>> dirItemMap = new HashMap<>();
 
+
         for (ModelItem item : items) {
-            String pDirName = item.getParentDirName();
+            String pDirName = item.getFile().getParentFile().getAbsolutePath();
             List<ModelItem> list = dirItemMap.get(pDirName);
 
             if (list == null) {

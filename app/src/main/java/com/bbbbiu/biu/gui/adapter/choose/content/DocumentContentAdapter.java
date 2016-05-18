@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +18,9 @@ import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 
 import java.io.File;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -25,7 +28,7 @@ import butterknife.ButterKnife;
 /**
  * Created by YieldNull at 4/18/16
  */
-public class DocumentContentAdapter extends CommonContentAdapter {
+public class DocumentContentAdapter extends CommonSortedAdapter {
     private static final String TAG = DocumentContentAdapter.class.getSimpleName();
 
     public DocumentContentAdapter(BaseChooseActivity context) {
@@ -33,13 +36,18 @@ public class DocumentContentAdapter extends CommonContentAdapter {
     }
 
     @Override
-    protected boolean readDataFromDB() {
-        return queryModelItemFromDb(ModelItem.TYPE_DOC);
+    public Comparator<ModelItem> getItemComparator() {
+        return getDefaultItemComparator();
     }
 
     @Override
-    protected boolean readDataFromSys() {
-        return setDataSet(ModelItem.sortItemWithDir(SearchUtil.scanDocItem(context)));
+    protected Map<String, List<ModelItem>> readSortedDataFromDB() {
+        return ModelItem.queryItemToDir(ModelItem.TYPE_DOC);
+    }
+
+    @Override
+    protected Map<String, List<ModelItem>> readSortedDataFromSys() {
+        return ModelItem.sortItemWithDir(SearchUtil.scanDocItem(context));
     }
 
     @Override
@@ -58,41 +66,35 @@ public class DocumentContentAdapter extends CommonContentAdapter {
         return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
     }
 
+
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
-        if (getItemViewType(position) == VIEW_TYPE_ITEM) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+        DocumentViewHolder holder = (DocumentViewHolder) hd;
+        final FileItem item = (FileItem) getItemAt(position);
 
-            DocumentViewHolder holder = (DocumentViewHolder) hd;
-            final FileItem item = (FileItem) getItemAt(position);
+        holder.nameText.setText(item.getFile().getName());
+        holder.infoText.setText(item.getSize());
 
-            holder.nameText.setText(item.getFile().getName());
-            holder.infoText.setText(item.getSize());
-
-            if (isItemChosen(position)) {
-                holder.setItemStyleChosen();
-            } else {
-                holder.setItemStyleChoosing(item.getFile());
-            }
-
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setItemChosen(position);
-                }
-            });
-
-            holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
-            holder.optionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyOptionToggleClicked(item.getFile());
-                }
-            });
-
+        if (isItemChosen(position)) {
+            holder.setItemStyleChosen();
         } else {
-            HeaderViewHolder holder = (HeaderViewHolder) hd;
-            holder.headerText.setText(getHeaderText(position));
+            holder.setItemStyleChoosing(item.getFile());
         }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
+            }
+        });
+
+        holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.optionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                notifyOptionToggleClicked(item.getFile());
+            }
+        });
     }
 
     class DocumentViewHolder extends RecyclerView.ViewHolder {

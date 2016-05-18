@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -17,7 +17,7 @@ import java.io.File;
 import java.util.Set;
 
 /**
- * 选择文件时，显示数据的Adapter基类。
+ * 选择文件时，显示数据的Adapter基类。定义了一些需要在Activity中使用的接口
  * <p/>
  * Created by YieldNull at 5/17/16
  */
@@ -35,6 +35,12 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     protected static final String PICASSO_TAG = "tag-img";
 
+
+    /**
+     * 构造函数
+     *
+     * @param context 需要实现{@link OnLoadingDataListener},{@link OnChoosingListener},{@link OptionPanelActionListener}
+     */
     public BaseContentAdapter(BaseChooseActivity context) {
         mLoadingDataListener = context;
         mOnChoosingListener = context;
@@ -60,6 +66,8 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     public abstract RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent);
 
+    public abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(LayoutInflater inflater, ViewGroup parent);
+
     public abstract boolean isHeaderView(int position);
 
     @Override
@@ -70,11 +78,9 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View itemView;
 
         if (viewType == VIEW_TYPE_HEADER) {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
+            return onCreateHeaderViewHolder(inflater, parent);
         } else {
             return onCreateItemViewHolder(inflater, parent);
         }

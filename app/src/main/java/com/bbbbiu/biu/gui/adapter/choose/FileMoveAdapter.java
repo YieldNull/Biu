@@ -123,8 +123,7 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             itemView = inflater.inflate(R.layout.list_file_item, parent, false);
             return new DirViewHolder(itemView);
         } else {
-            itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
+            return HeaderViewHolder.build(inflater, parent);
         }
     }
 

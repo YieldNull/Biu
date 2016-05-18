@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -67,8 +67,14 @@ public class ApkContentAdapter extends CommonContentAdapter {
 
 
     /***********************************************************************************
-     * ******** {@link BaseContentAdapter} (覆盖 {@link CommonContentAdapter}) **********
+     * **************************** {@link BaseContentAdapter} ************************
      **********************************************************************************/
+    @Override
+    public void cancelPicassoTask() {
+        mPicasso.cancelTag(PICASSO_TAG);
+    }
+
+
     @Override
     public boolean isHeaderView(int position) {
         return getApkAt(position) == null;
@@ -89,6 +95,11 @@ public class ApkContentAdapter extends CommonContentAdapter {
     }
 
     @Override
+    public boolean isFileChosen(File file) {
+        return false;
+    }
+
+    @Override
     public void setFileAllChosen() {
         for (ApkItem apkItem : mApkDataSet) {
             if (apkItem != null) { // 去掉placeholder
@@ -104,9 +115,27 @@ public class ApkContentAdapter extends CommonContentAdapter {
         notifyDataSetChanged();
     }
 
-    /***********************************************************************************
-     * *******************  {@link CommonContentAdapter}   *****************************
-     **********************************************************************************/
+    @Override
+    public void updateDataSet() {
+        mApkDataSet.clear();
+        readDataFromDB();
+    }
+
+
+    @Override
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new ApkViewHolder(inflater.inflate(R.layout.list_apk_item, parent, false));
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateHeaderViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return HeaderViewHolder.build(inflater, parent);
+    }
+
+
+    /********************************************************************************************
+     * ***************  ******{@link CommonContentAdapter}  *************************************
+     *********************************************************************************************/
 
     @Override
     protected boolean readDataFromDB() {
@@ -128,22 +157,6 @@ public class ApkContentAdapter extends CommonContentAdapter {
         SearchUtil.scanStandAloneApkItem(context);
     }
 
-    @Override
-    public void updateDataSet() {
-        mApkDataSet.clear();
-        readDataFromDB();
-    }
-
-    @Override
-    public void cancelPicassoTask() {
-        mPicasso.cancelTag(PICASSO_TAG);
-    }
-
-
-    @Override
-    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        return new ApkViewHolder(inflater.inflate(R.layout.list_apk_item, parent, false));
-    }
 
     /********************************************************************************************/
 

@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.option;
 
 import android.app.Activity;
 import android.content.Context;
@@ -128,11 +128,18 @@ public class FileOptionAdapter extends BaseOptionAdapter {
 
 
             if (mBoundFile != null && mBoundFile.isFile()) {
-                holder.openImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_open));
+                holder.openImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_action_view));
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        StorageUtil.openFile(context, mBoundFile);
+                        mOptionPanelListener.onOptionItemClicked(mBoundFile);
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                StorageUtil.openFile(context, mBoundFile);
+                            }
+                        }, 200);
                     }
                 });
             } else {

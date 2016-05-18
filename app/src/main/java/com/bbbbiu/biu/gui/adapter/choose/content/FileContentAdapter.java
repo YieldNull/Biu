@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose;
+package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -99,6 +99,11 @@ public class FileContentAdapter extends BaseContentAdapter {
     @Override
     public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
         return new ItemViewHolder(inflater.inflate(R.layout.list_file_item, parent, false), context);
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateHeaderViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return HeaderViewHolder.build(inflater, parent);
     }
 
     @Override

@@ -5,10 +5,12 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.choose.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.CommonContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.ImgContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.BaseOptionAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.CommonContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.ImgContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
+import com.yqritc.recyclerviewflexibledivider.FlexibleDividerDecoration;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.io.File;
 

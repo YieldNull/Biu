@@ -19,6 +19,8 @@
     <color name="fbtn_label_text">#424242</color>
 
     <color name="file_header">#EEEEEE</color>
+    <color name="file_header_pressed">#E0E0E0</color>
+
     <color name="file_name">@android:color/black</color>
     <color name="file_info">@android:color/tertiary_text_dark</color>
     <color name="file_icon">#E1E1E1</color>

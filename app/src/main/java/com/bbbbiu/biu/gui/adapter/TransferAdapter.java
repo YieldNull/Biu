@@ -209,8 +209,7 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         LayoutInflater inflater = LayoutInflater.from(context);
 
         if (viewType == VIEW_TYPE_HEADER) {
-            View itemView = inflater.inflate(R.layout.list_header_common, parent, false);
-            return new HeaderViewHolder(itemView);
+            return HeaderViewHolder.build(inflater, parent);
         } else if (viewType == VIEW_TYPE_WORKING) {
             View itemView = inflater.inflate(R.layout.list_transfer_working, parent, false);
             return new WorkingViewHolder(itemView);
