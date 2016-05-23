@@ -11,6 +11,7 @@ import com.bbbbiu.biu.lib.util.ProgressNotifier;
 import com.bbbbiu.biu.lib.servlet.ProgressBaseServlet;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,10 +76,13 @@ public class FileServlet extends ProgressBaseServlet {
 
         response.setProgressNotifier(new ProgressNotifier(getProgressListener(), file.length()));
 
+        // APK 名称
+        String name = StorageUtil.getFileNameToSend(context, file);
+
         response.addHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\";filename*=UTF-8''%s",
-                        file.getName(),
-                        Uri.encode(file.getName())));
+                        name,
+                        Uri.encode(name)));
 
 
         return response;

@@ -14,6 +14,7 @@ import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.google.zxing.Result;
 
 import java.io.File;
@@ -88,13 +89,8 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                     case MSG_ENTER_UPLOAD_ACTIVITY:
                         Log.i(TAG, "Bind succeeded. Enter upload activity");
 
-                        ArrayList<FileItem> fileItems = new ArrayList<>();
-                        for (String path : PreferenceUtil.getFilesToSend(QRCodeScanActivity.this)) {
-                            File file = new File(path);
-                            fileItems.add(new FileItem(file.getAbsolutePath(), file.getName(), file.length()));
-
-                        }
-                        UploadActivity.startUpload(QRCodeScanActivity.this, mUid, fileItems);
+                        UploadActivity.startUpload(QRCodeScanActivity.this, mUid,
+                                PreferenceUtil.getFileItemsToSend(QRCodeScanActivity.this));
                         break;
 
                     case MSG_SERVER_ERROR:

@@ -186,7 +186,8 @@ public class UploadService extends Service {
                                ProgressListener progressListener) {
 
         File file = new File(filePath);
-        Request request = HttpManager.newFileUploadRequest(uploadUrl, file, formData,
+        Request request = HttpManager.newFileUploadRequest(this,
+                uploadUrl, file, formData,
                 new ProgressNotifier(progressListener, file.length()));
 
 

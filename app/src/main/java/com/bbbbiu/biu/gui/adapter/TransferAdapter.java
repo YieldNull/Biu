@@ -1,13 +1,11 @@
 package com.bbbbiu.biu.gui.adapter;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -239,34 +237,46 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 holder.headerText.setText("已完成");
             }
 
-        } else if (type == VIEW_TYPE_WORKING) {
-            WorkingViewHolder holder = (WorkingViewHolder) hd;
-            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, new File(fileItem.uri)));
-            holder.nameText.setText(fileItem.name);
-            holder.infoText.setText(StorageUtil.getReadableSize(fileItem.size));
-            holder.progressBar.setMax(100);
-            holder.progressBar.setProgress(0);
-
-        } else if (type == VIEW_TYPE_WAITING) {
-            WaitingViewHolder holder = (WaitingViewHolder) hd;
-            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, new File(fileItem.uri)));
-            holder.nameText.setText(fileItem.name);
-            holder.sizeText.setText(StorageUtil.getReadableSize(fileItem.size));
-
         } else {
-            FinishedViewHolder holder = (FinishedViewHolder) hd;
-            final File downloadedFile = new File(mDownloadDir, fileItem.name);
+            Drawable iconDrawable = StorageUtil.getFileIcon(context, new File(fileItem.uri));
+            String name = fileItem.name;
+            String readableSize = StorageUtil.getReadableSize(fileItem.size);
 
-            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, downloadedFile));
-            holder.nameText.setText(fileItem.name);
-            holder.infoText.setText(StorageUtil.getReadableSize(fileItem.size));
+            if (type == VIEW_TYPE_WORKING) {
+                WorkingViewHolder holder = (WorkingViewHolder) hd;
+                holder.iconImage.setImageDrawable(iconDrawable);
+                holder.nameText.setText(name);
+                holder.infoText.setText(readableSize);
 
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    StorageUtil.openFile(context, downloadedFile);
+                holder.progressBar.setMax(100);
+                holder.progressBar.setProgress(0);
+
+            } else if (type == VIEW_TYPE_WAITING) {
+                WaitingViewHolder holder = (WaitingViewHolder) hd;
+                holder.iconImage.setImageDrawable(iconDrawable);
+                holder.nameText.setText(name);
+                holder.sizeText.setText(readableSize);
+
+            } else {
+                FinishedViewHolder holder = (FinishedViewHolder) hd;
+                File file = new File(mDownloadDir, fileItem.name);
+                if (!file.exists()) {
+                    file = new File(fileItem.uri);
                 }
-            });
+
+                holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, file));
+                holder.nameText.setText(name);
+                holder.infoText.setText(readableSize);
+
+
+                final File finalFile = file;
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        StorageUtil.openFile(context, finalFile);
+                    }
+                });
+            }
         }
     }
 

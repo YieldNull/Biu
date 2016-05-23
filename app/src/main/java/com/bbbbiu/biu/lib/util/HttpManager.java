@@ -1,5 +1,9 @@
 package com.bbbbiu.biu.lib.util;
 
+import android.content.Context;
+
+import com.bbbbiu.biu.util.StorageUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -29,7 +33,7 @@ public class HttpManager {
                 .build();
     }
 
-    public static Request newFileUploadRequest(String uploadUrl, File file,
+    public static Request newFileUploadRequest(Context context, String uploadUrl, File file,
                                                Map<String, String> formData, ProgressNotifier notifier) {
 
         MultipartBody.Builder builder = new MultipartBody.Builder()
@@ -42,7 +46,7 @@ public class HttpManager {
         }
 
 
-        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, file.getName(),
+        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, StorageUtil.getFileNameToSend(context, file),
                 new UploadRequestBody(null, file, notifier));
 
         return new Request.Builder()

@@ -3,6 +3,7 @@ package com.bbbbiu.biu.lib.servlet.apple;
 import android.content.Context;
 import android.util.Log;
 
+import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.httpd.HttpDaemon;
 import com.bbbbiu.biu.lib.httpd.HttpRequest;
 import com.bbbbiu.biu.lib.httpd.HttpResponse;
@@ -13,8 +14,6 @@ import com.bbbbiu.biu.util.PreferenceUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,13 +50,8 @@ public class DownloadServlet extends HttpServlet {
 
         Template template = Mustache.compiler().compile(html);
 
-        List<File> fileList = new ArrayList<>();
-
-        for (String path : PreferenceUtil.getFilesToSend(context)) {
-            fileList.add(new File(path));
-        }
-        Map<String, List<File>> map = new HashMap<>();
-        map.put("files", fileList);
+        Map<String, List<FileItem>> map = new HashMap<>();
+        map.put("files", PreferenceUtil.getFileItemsToSend(context));
 
         html = template.execute(map);
 

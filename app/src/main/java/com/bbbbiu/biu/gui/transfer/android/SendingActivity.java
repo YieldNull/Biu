@@ -276,7 +276,7 @@ public class SendingActivity extends TransferBaseActivity {
     private void genManifest(List<String> filePathList) {
         for (final String filePath : filePathList) {
             File file = new File(filePath);
-            String name = file.getAbsolutePath().endsWith("apk") ? StorageUtil.getApkName(this, filePath) : file.getName();
+            String name = StorageUtil.getFileNameToSend(this, file);
             mFileManifest.add(new FileItem(file.getAbsolutePath(), name, file.length()));
         }
     }

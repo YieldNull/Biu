@@ -3,6 +3,8 @@ package com.bbbbiu.biu.gui.transfer;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.File;
+
 /**
  * Created by YieldNull at 4/26/16
  */
@@ -39,6 +41,12 @@ public class FileItem implements Parcelable {
         this.uri = uri;
         this.name = name;
         this.size = size;
+    }
+
+    @Override
+    public int hashCode() {
+        File file = new File(uri);
+        return file.exists() ? file.hashCode() : super.hashCode();
     }
 
     protected FileItem(Parcel in) {

@@ -418,4 +418,25 @@ public class StorageUtil {
         }
         return null;
     }
+
+    public static String getFileNameToSend(Context context, File file) {
+        // APK 名称
+        String name = StorageUtil.getApkName(context, file.getAbsolutePath());
+        return name == null ? file.getName() : name + ".apk";
+    }
+
+    public static String genVersionedFileName(File repository, String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        int insertIndex = dotIndex >= 0 ? dotIndex : fileName.length();
+
+        int version = 1;
+        StringBuilder builder = new StringBuilder(fileName);
+        builder.insert(insertIndex, String.format("(%s)", String.valueOf(version)));
+
+        while (new File(repository, builder.toString()).exists()) {
+            builder.replace(insertIndex + 1, insertIndex + 2, String.valueOf(++version));
+        }
+
+        return builder.toString();
+    }
 }

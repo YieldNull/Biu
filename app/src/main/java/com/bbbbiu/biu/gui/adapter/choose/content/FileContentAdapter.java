@@ -135,7 +135,7 @@ public class FileContentAdapter extends BaseContentAdapter {
     @Override
     public void setFileAllChosen() {
         for (File file : mFileDataSet) {
-            if (file != null) {
+            if (file != null && file.isFile()) { // 禁止选文件夹
                 mChosenFiles.add(file);
             }
         }
@@ -211,16 +211,21 @@ public class FileContentAdapter extends BaseContentAdapter {
                 }
             });
 
-            holder.iconImage.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (isFileChosen(position)) {
-                        setFileChosen(position, false);
-                    } else {
-                        setFileChosen(position, true);
+            // 禁止选文件夹好了
+            if (file.isFile()) {
+                holder.iconImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (isFileChosen(position)) {
+                            setFileChosen(position, false);
+                        } else {
+                            setFileChosen(position, true);
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                holder.iconImage.setClickable(false); // ViewHolder是复用的，千万要记得删掉监听啊
+            }
         }
     }
 
