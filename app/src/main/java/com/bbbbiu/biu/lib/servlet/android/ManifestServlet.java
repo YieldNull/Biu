@@ -21,15 +21,8 @@ import java.util.ArrayList;
 public class ManifestServlet extends HttpServlet {
     private static final String TAG = ManifestServlet.class.getSimpleName();
 
-    private static ManifestServlet sManifestServlet;
-
     public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, getSingleton(context));
-    }
-
-    public static ManifestServlet getSingleton(Context context) {
-
-        return sManifestServlet != null ? sManifestServlet : (sManifestServlet = new ManifestServlet(context));
+        HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, new ManifestServlet(context));
     }
 
     private ManifestServlet(Context context) {

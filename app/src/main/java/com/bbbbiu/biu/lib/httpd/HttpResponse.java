@@ -148,15 +148,15 @@ public class HttpResponse {
 
     /**
      * 私有构造函数，会有工厂方法创建对象.
-     * <p/>
+     * <p>
      * {@link HttpResponse#newResponse(String)}
-     * <p/>
+     * <p>
      * {@link HttpResponse#newResponse(Status, String)}
-     * <p/>
+     * <p>
      * {@link HttpResponse#newResponse(InputStream, long)}
-     * <p/>
+     * <p>
      * {@link HttpResponse#newResponse(Status, String, InputStream, long)}
-     * <p/>
+     * <p>
      * {@link HttpResponse#newRedirectResponse(String)}
      *
      * @param status     返回状态码,默认为200
@@ -235,6 +235,31 @@ public class HttpResponse {
     /**
      * 从从输入流读取数据
      *
+     * @param mimeType   mimeType
+     * @param data       输入流
+     * @param totalBytes length
+     * @return {@link HttpResponse}
+     */
+    public static HttpResponse newResponse(String mimeType, InputStream data, long totalBytes) {
+        return newResponse(Status.OK, mimeType, data, totalBytes);
+    }
+
+
+    /**
+     * 返回指定MIME TYPE 的文本内容
+     *
+     * @param mime    类型
+     * @param content 源码
+     * @return {@link HttpResponse}
+     */
+    public static HttpResponse newResponse(String mime, String content) {
+        byte[] bytes = content.getBytes();
+        return newResponse(Status.OK, mime, new ByteArrayInputStream(bytes), bytes.length);
+    }
+
+    /**
+     * 从从输入流读取数据,并指定状态码,mime type
+     *
      * @param status     状态码，{@link Status}
      * @param mimeType   MIME ，{@link ContentType}
      * @param data       输入流
@@ -259,7 +284,7 @@ public class HttpResponse {
 
     /**
      * 将要发送给客户端的数据写入输出流。
-     * <p/>
+     * <p>
      *
      * @param outputStream OutputStream
      * @throws IOException

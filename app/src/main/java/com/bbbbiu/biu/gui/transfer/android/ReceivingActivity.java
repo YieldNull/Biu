@@ -93,4 +93,9 @@ public class ReceivingActivity extends TransferBaseActivity {
 
         super.onDestroy();
     }
+
+    @Override
+    protected void onCancelTransfer() {
+        HttpdService.stopService(this);
+    }
 }

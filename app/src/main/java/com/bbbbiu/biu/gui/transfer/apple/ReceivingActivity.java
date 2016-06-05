@@ -7,6 +7,7 @@ import android.os.PersistableBundle;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
+import com.bbbbiu.biu.service.HttpdService;
 
 import java.util.ArrayList;
 
@@ -43,5 +44,10 @@ public class ReceivingActivity extends TransferBaseActivity {
         super.onCreate(savedInstanceState);
 
         addTask(getIntent());
+    }
+
+    @Override
+    protected void onCancelTransfer() {
+        HttpdService.stopService(this);
     }
 }

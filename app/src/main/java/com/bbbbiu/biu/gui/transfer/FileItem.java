@@ -3,6 +3,8 @@ package com.bbbbiu.biu.gui.transfer;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.bbbbiu.biu.util.StorageUtil;
+
 import java.io.File;
 
 /**
@@ -53,6 +55,10 @@ public class FileItem implements Parcelable {
         this.uri = in.readString();
         this.name = in.readString();
         this.size = in.readLong();
+    }
+
+    public String readableSize() {
+        return StorageUtil.getReadableSize(size);
     }
 
 

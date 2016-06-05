@@ -109,6 +109,9 @@ public class UploadService extends Service {
      * @param context context
      */
     public static void stopUpload(Context context) {
+        Log.i(TAG, "Stopping Service");
+
+
         Intent intent = new Intent(context, UploadService.class);
 
         context.stopService(intent);
@@ -159,13 +162,19 @@ public class UploadService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        Log.i(TAG, "onDestroy");
+
         // 取消未完成的任务
         if (mCurrentHttpCall != null && mCurrentHttpCall.isExecuted()) {
+            Log.i(TAG, "Canceling current task");
+
             mCurrentHttpCall.cancel();
         }
 
         // 清空消息队列，退出Looper，进而终止工作线程
         if (mWorkerHandler != null) {
+            Log.i(TAG, "Quit working thread");
+
             mWorkerHandler.removeCallbacksAndMessages(null);
             mWorkerHandler.getLooper().quit();
         }

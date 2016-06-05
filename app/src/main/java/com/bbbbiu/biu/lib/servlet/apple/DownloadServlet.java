@@ -24,20 +24,11 @@ import java.util.Map;
 public class DownloadServlet extends HttpServlet {
     private static final String TAG = DownloadServlet.class.getSimpleName();
 
-
-    private static DownloadServlet sDownloadServlet;
-
     public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Apple.URL_DOWNLOAD, getSingleton(context));
-        HttpDaemon.registerServlet("/", getSingleton(context));
-    }
+        DownloadServlet downloadServlet = new DownloadServlet(context);
 
-    private static DownloadServlet getSingleton(Context context) {
-        if (sDownloadServlet == null) {
-            sDownloadServlet = new DownloadServlet(context);
-        }
-
-        return sDownloadServlet;
+        HttpDaemon.registerServlet(HttpConstants.Apple.URL_DOWNLOAD, downloadServlet);
+        HttpDaemon.registerServlet("/", downloadServlet);
     }
 
     private DownloadServlet(Context context) {

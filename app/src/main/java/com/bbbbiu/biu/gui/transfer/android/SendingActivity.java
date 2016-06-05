@@ -146,6 +146,11 @@ public class SendingActivity extends TransferBaseActivity {
         unregisterReceiver(mWifiListReceiver); // unregister receiver
     }
 
+    @Override
+    protected void onCancelTransfer() {
+        UploadService.stopUpload(this);
+    }
+
     /**
      * 接收到扫描结果的Broadcast之后，若列表中存在对方手机开的wifi，则连接
      * 否则继续扫描
@@ -294,6 +299,4 @@ public class SendingActivity extends TransferBaseActivity {
 
         return inetAddress;
     }
-
-
 }

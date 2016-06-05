@@ -74,6 +74,8 @@ public class DownloadService extends Service {
      * @param context context
      */
     public static void stopService(Context context) {
+        Log.i(TAG,"Stopping Service");
+
         Intent intent = new Intent(context, UploadService.class);
 
         context.stopService(intent);
@@ -127,11 +129,16 @@ public class DownloadService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        Log.i(TAG, "onDestroy");
+
         if (mCurrentHttpCall != null && mCurrentHttpCall.isExecuted()) {
+            Log.i(TAG, "Canceling current task");
             mCurrentHttpCall.cancel();
         }
 
         if (mHandler != null) {
+            Log.i(TAG, "Quit working thread");
+
             mHandler.removeCallbacksAndMessages(null);
             mHandler.getLooper().quit();
         }

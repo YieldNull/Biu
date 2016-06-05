@@ -62,6 +62,11 @@ public class DownloadActivity extends TransferBaseActivity {
     }
 
     @Override
+    protected void onCancelTransfer() {
+        DownloadService.stopService(this);
+    }
+
+    @Override
     protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
             DownloadService.addTask(this, item.uri, item.name, item.size, mProgressResultReceiver);

@@ -2,16 +2,41 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+
+    <title>Biu文件快传</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/css/normalize.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/download.css"/>
+
 </head>
 
 <body>
+<div class="header">
+    <a style=" color:#fff; ">下载</a>
+</div>
 
-<div style="text-align:center;margin-top:50%;">
+<div class="filelist">
     {{#files }}
-    <p><a href="/download/{{hashCode}}">{{name}}</a></p>
+    <div class="downItem" onclick="download({{hashCode}})">
+        <div class="ordername">
+            <div class="fileImg" style="background: url('/icon/{{name}}') no-repeat 0 0px;"></div>
+            <div class="filename">{{name}}</div>
+            <div class="size">{{readableSize}}</div>
+        </div>
+    </div>
     {{/files}}
 </div>
+
+<script>
+    function download(hashcode){
+        window.location="/download/"+hashcode;
+    }
+</script>
+
 </body>
 </html>
-

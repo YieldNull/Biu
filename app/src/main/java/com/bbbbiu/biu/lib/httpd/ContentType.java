@@ -12,6 +12,7 @@ public class ContentType {
     public static final String MIME_CSS = "text/css; charset=utf-8";
     public static final String MIME_JAVASCRIPT = "text/javascript; charset=UTF-8";
     public static final String MIME_STREAM = "application/octet-stream";
+    public static final String MIME_PNG = "image/png";
 
     private static final String ASCII_ENCODING = "US-ASCII";
     private static final String MULTIPART_FORM_DATA_HEADER = "multipart/form-data";

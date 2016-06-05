@@ -33,6 +33,11 @@ public class UploadActivity extends TransferBaseActivity {
     }
 
     @Override
+    protected void onCancelTransfer() {
+        UploadService.stopUpload(this);
+    }
+
+    @Override
     protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
             UploadService.startUpload(
@@ -43,4 +48,5 @@ public class UploadActivity extends TransferBaseActivity {
                     mProgressResultReceiver);
         }
     }
+
 }

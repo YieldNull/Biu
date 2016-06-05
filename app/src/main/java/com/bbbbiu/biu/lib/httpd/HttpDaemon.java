@@ -39,8 +39,6 @@ public class HttpDaemon {
      */
     private static HashMap<String, HttpServlet> servletMap = new HashMap<>();
 
-    public static final String STATIC_FILE_REG = "/static/.*";
-
 
     private static HttpDaemon sHttpDaemon;
 

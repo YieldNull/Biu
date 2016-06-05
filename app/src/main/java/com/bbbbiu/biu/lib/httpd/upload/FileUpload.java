@@ -65,42 +65,45 @@ public class FileUpload {
      * Processes an <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>
      * compliant <code>multipart/form-data</code> stream.
      *
-     * @param ctx The context for the request to be parsed.
+     * @param request The context for the request to be parsed.
      * @return A list of <code>FileItem</code> instances parsed from the
      * request, in the order that they were transmitted.
      * @throws FileUploadException if there are problems reading/parsing
      *                             the request or storing files.
      */
-    public List<FileItem> parseRequest(HttpRequest ctx)
+    public List<FileItem> parseRequest(HttpRequest request)
             throws FileUploadException {
-        List<FileItem> items = new ArrayList<FileItem>();
+
+        List<FileItem> items = new ArrayList<>();
         boolean successful = false;
+
         try {
-            FileItemIterator iter = getItemIterator(ctx);
-            FileItemFactory fac = getFileItemFactory();
-            if (fac == null) {
-                throw new NullPointerException("No FileItemFactory has been set.");
-            }
+            FileItemIterator iter = getItemIterator(request);
+            FileItemFactory factory = getFileItemFactory();
+
             while (iter.hasNext()) {
                 final FileItemStream item = iter.next();
                 // Don't use getName() here to prevent an InvalidFileNameException.
                 final String fileName = ((FileItemIteratorImpl.FileItemStreamImpl) item).name;
-                FileItem fileItem = fac.createItem(item.getFieldName(), item.getContentType(),
+                FileItem fileItem = factory.createItem(item.getFieldName(), item.getContentType(),
                         item.isFormField(), fileName);
                 items.add(fileItem);
+
                 try {
-                    Streams.copy(item.openStream(), fileItem.getOutputStream(), true,null);
+                    Streams.copy(item.openStream(), fileItem.getOutputStream(), true, null);
                 } catch (FileUploadIOException e) {
                     throw (FileUploadException) e.getCause();
                 } catch (IOException e) {
                     throw new IOFileUploadException(format("Processing of %s request failed. %s",
                             MULTIPART_FORM_DATA, e.getMessage()), e);
                 }
+
                 final FileItemHeaders fih = item.getHeaders();
                 fileItem.setHeaders(fih);
             }
             successful = true;
             return items;
+
         } catch (FileUploadIOException e) {
             throw (FileUploadException) e.getCause();
         } catch (IOException e) {
@@ -122,7 +125,7 @@ public class FileUpload {
      * Processes an <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>
      * compliant <code>multipart/form-data</code> stream.
      *
-     * @param ctx The context for the request to be parsed.
+     * @param request The context for the request to be parsed.
      * @return An iterator to instances of <code>FileItemStream</code>
      * parsed from the request, in the order that they were
      * transmitted.
@@ -132,10 +135,10 @@ public class FileUpload {
      *                             error while communicating with the client or a problem while
      *                             storing the uploaded content.
      */
-    public FileItemIterator getItemIterator(HttpRequest ctx)
+    public FileItemIterator getItemIterator(HttpRequest request)
             throws FileUploadException, IOException {
         try {
-            return new FileItemIteratorImpl(ctx);
+            return new FileItemIteratorImpl(request);
         } catch (FileUploadIOException e) {
             // unwrap encapsulated SizeException
             throw (FileUploadException) e.getCause();
@@ -153,17 +156,14 @@ public class FileUpload {
      * @param contentType Content-Type的值
      * @return 以byte[]返回的boundary
      */
-    protected byte[] getBoundary(String contentType) {
+    private byte[] getBoundary(String contentType) {
         ParameterParser parser = new ParameterParser();
         parser.setLowerCaseNames(true);
 
         Map<String, String> params = parser.parse(contentType, new char[]{';', ','});
         String boundaryStr = params.get("boundary");
 
-        if (boundaryStr == null) {
-            return null;
-        }
-        return boundaryStr.getBytes();
+        return boundaryStr == null ? null : boundaryStr.getBytes();
     }
 
 
@@ -173,7 +173,7 @@ public class FileUpload {
      * @param headers HTTP 请求头
      * @return 没有指定文件名则返回空串“”
      */
-    protected String getFileName(FileItemHeaders headers) {
+    private String getFileName(FileItemHeaders headers) {
         return getFileName(headers.getHeader(CONTENT_DISPOSITION));
     }
 
@@ -181,25 +181,29 @@ public class FileUpload {
     /**
      * 从HTTP 请求头`Content-disposition` 中获取 文件名
      *
-     * @param pContentDisposition `Content-disposition` 的值
+     * @param contentDisposition `Content-disposition` 的值
      * @return 没有指定文件名则返回空串“”
      */
-    private String getFileName(String pContentDisposition) {
-        String fileName = null;
-        if (pContentDisposition != null) {
-            String cdl = pContentDisposition.toLowerCase(Locale.ENGLISH);
-            if (cdl.startsWith(FORM_DATA) || cdl.startsWith(ATTACHMENT)) {
-                ParameterParser parser = new ParameterParser();
-                parser.setLowerCaseNames(true);
+    private String getFileName(String contentDisposition) {
 
-                Map<String, String> params = parser.parse(pContentDisposition, ';');
-                if (params.containsKey("filename")) {
-                    fileName = params.get("filename");
-                    if (fileName != null) {
-                        fileName = fileName.trim();
-                    } else {
-                        fileName = "";
-                    }
+        if (contentDisposition == null) {
+            return null;
+        }
+
+        String fileName = null;
+        String cdl = contentDisposition.toLowerCase(Locale.ENGLISH);
+
+        if (cdl.startsWith(FORM_DATA) || cdl.startsWith(ATTACHMENT)) {
+            ParameterParser parser = new ParameterParser();
+            parser.setLowerCaseNames(true);
+
+            Map<String, String> params = parser.parse(contentDisposition, ';');
+            if (params.containsKey("filename")) {
+                fileName = params.get("filename");
+                if (fileName != null) {
+                    fileName = fileName.trim();
+                } else {
+                    fileName = "";
                 }
             }
         }

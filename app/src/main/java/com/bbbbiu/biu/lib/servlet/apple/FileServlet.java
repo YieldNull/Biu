@@ -24,19 +24,9 @@ import java.io.InputStream;
 public class FileServlet extends ProgressBaseServlet {
     private static final String TAG = FileServlet.class.getSimpleName();
 
-    private static FileServlet sFileServlet;
-
 
     public static void register(Context context) {
-        HttpDaemon.registerServlet(String.format("%s/.+", HttpConstants.Apple.URL_DOWNLOAD), getSingleton(context));
-    }
-
-    public static FileServlet getSingleton(Context context) {
-        if (sFileServlet == null) {
-            sFileServlet = new FileServlet(context);
-        }
-
-        return sFileServlet;
+        HttpDaemon.registerServlet(String.format("^%s/((?!/).)+$", HttpConstants.Apple.URL_DOWNLOAD), new FileServlet(context));
     }
 
     private FileServlet(Context context) {

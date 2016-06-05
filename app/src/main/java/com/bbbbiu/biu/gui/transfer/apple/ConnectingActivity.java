@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
 import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
+import com.bbbbiu.biu.lib.servlet.apple.IconServlet;
 import com.bbbbiu.biu.lib.servlet.apple.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.apple.ReceivingServlet;
 import com.bbbbiu.biu.lib.util.WifiApManager;
@@ -101,6 +102,7 @@ public class ConnectingActivity extends AppCompatActivity {
             ReceivingServlet.register(this);
         } else {
             DownloadServlet.register(this);
+            IconServlet.register(this);
             FileServlet.register(this);
         }
     }
@@ -122,6 +124,7 @@ public class ConnectingActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
     /**
      * 生成二维码
      *

@@ -11,14 +11,8 @@ import com.bbbbiu.biu.lib.util.HttpConstants;
 public class ReceivingServlet extends ReceivingBaseServlet {
     private static final String TAG = ReceivingServlet.class.getSimpleName();
 
-    private static ReceivingServlet sReceiveServlet;
-
     public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Android.URL_UPLOAD, getSingleton(context));
-    }
-
-    public static ReceivingServlet getSingleton(Context context) {
-        return sReceiveServlet != null ? sReceiveServlet : (sReceiveServlet = new ReceivingServlet(context));
+        HttpDaemon.registerServlet(HttpConstants.Android.URL_UPLOAD, new ReceivingServlet(context));
     }
 
     private ReceivingServlet(Context context) {

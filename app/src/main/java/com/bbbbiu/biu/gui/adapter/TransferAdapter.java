@@ -181,6 +181,10 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
 
+    public boolean finished() {
+        return mWaitingQueue.size() == 0 && mWorkingItem == null;
+    }
+
     @Override
     public int getItemCount() {
         return mDataSet.size();

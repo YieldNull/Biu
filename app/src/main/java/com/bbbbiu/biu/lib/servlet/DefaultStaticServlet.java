@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.httpd.util;
+package com.bbbbiu.biu.lib.servlet;
 
 import android.content.Context;
 import android.webkit.MimeTypeMap;
@@ -13,7 +13,13 @@ import com.bbbbiu.biu.lib.util.HtmlReader;
  * 默认的静态资源 Servlet。处理的Uri为 “/static/*"
  */
 public class DefaultStaticServlet extends HttpServlet {
-    public DefaultStaticServlet(Context context) {
+
+    public static void register(Context context) {
+        HttpServlet servlet = new DefaultStaticServlet(context);
+        HttpDaemon.registerServlet("^/static/((?!/).)+/((?!/).)+$", servlet);
+    }
+
+    private DefaultStaticServlet(Context context) {
         super(context);
     }
 
@@ -25,10 +31,10 @@ public class DefaultStaticServlet extends HttpServlet {
                 .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri));
 
 
-        String html = HtmlReader.readAll(context, uri);
+        String html = HtmlReader.readAll(context, uri.replaceFirst("/", ""));
 
         if (html != null) {
-            return HttpResponse.newResponse(HttpResponse.Status.OK, html);
+            return HttpResponse.newResponse(mime, html);
         } else {
             return HttpResponse.newResponse(HttpResponse.Status.NOT_FOUND,
                     HttpResponse.Status.NOT_FOUND.getDescription());
@@ -38,10 +44,5 @@ public class DefaultStaticServlet extends HttpServlet {
     @Override
     public HttpResponse doPost(HttpRequest request) {
         return null;
-    }
-
-    public static void register(Context context) {
-        HttpServlet servlet = new DefaultStaticServlet(context);
-        HttpDaemon.registerServlet(HttpDaemon.STATIC_FILE_REG, servlet);
     }
 }

@@ -12,15 +12,12 @@ import com.bbbbiu.biu.lib.util.HttpConstants;
 public class ReceivingServlet extends ReceivingBaseServlet {
     private static final String TAG = ReceivingServlet.class.getSimpleName();
 
-    private static ReceivingServlet sReceiveServlet;
 
     public static void register(Context context) {
-        HttpDaemon.registerServlet(HttpConstants.Apple.URL_UPLOAD, getSingleton(context));
-        HttpDaemon.registerServlet("/", getSingleton(context));
-    }
+        ReceivingServlet receivingServlet = new ReceivingServlet(context);
 
-    public static ReceivingServlet getSingleton(Context context) {
-        return sReceiveServlet != null ? sReceiveServlet : (sReceiveServlet = new ReceivingServlet(context));
+        HttpDaemon.registerServlet(HttpConstants.Apple.URL_UPLOAD, receivingServlet);
+        HttpDaemon.registerServlet("/", receivingServlet);
     }
 
     private ReceivingServlet(Context context) {
@@ -36,6 +33,6 @@ public class ReceivingServlet extends ReceivingBaseServlet {
     @Override
     public HttpResponse doPost(HttpRequest request) {
         super.doPost(request);
-        return HttpResponse.newRedirectResponse("/");
+        return HttpResponse.newResponse("200 OK");
     }
 }
