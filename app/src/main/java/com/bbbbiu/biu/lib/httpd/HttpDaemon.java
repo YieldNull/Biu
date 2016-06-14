@@ -142,11 +142,11 @@ public class HttpDaemon {
         public IOException bindException;
 
 
-        public boolean hasBinned = false;
+        public boolean hasBound = false;
 
 
         public boolean wasBinned() {
-            return hasBinned;
+            return hasBound;
         }
 
         public IOException getBindException() {
@@ -162,7 +162,7 @@ public class HttpDaemon {
         public void run() {
             try {
                 mServerSocket.bind(new InetSocketAddress(sPort)); //监听端口
-                hasBinned = true;
+                hasBound = true;
             } catch (IOException e) {
                 this.bindException = e;
                 return;
