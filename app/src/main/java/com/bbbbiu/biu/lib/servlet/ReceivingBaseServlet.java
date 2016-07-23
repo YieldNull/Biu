@@ -4,15 +4,15 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.transfer.RevRecord;
-import com.bbbbiu.biu.lib.httpd.HttpRequest;
-import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.upload.FileItem;
-import com.bbbbiu.biu.lib.httpd.upload.FileItemFactory;
-import com.bbbbiu.biu.lib.httpd.upload.FileUpload;
-import com.bbbbiu.biu.lib.httpd.upload.exceptions.FileUploadException;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.yieldnull.httpd.HttpRequest;
+import com.yieldnull.httpd.HttpResponse;
+import com.yieldnull.httpd.upload.FileItem;
+import com.yieldnull.httpd.upload.FileItemFactory;
+import com.yieldnull.httpd.upload.FileUpload;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -40,7 +40,7 @@ public class ReceivingBaseServlet extends ProgressBaseServlet {
 
         try {
             items = fileUpload.parseRequest(request);
-        } catch (FileUploadException e) {
+        } catch (IOException e) {
             Log.w(TAG, e.toString());
 
             sendFailureBroadcast();

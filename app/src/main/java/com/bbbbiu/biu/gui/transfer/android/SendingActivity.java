@@ -17,7 +17,6 @@ import android.util.Log;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.util.WifiApManager;
-import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.service.UploadService;
@@ -25,6 +24,7 @@ import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.google.gson.Gson;
+import com.yieldnull.httpd.util.Streams;
 
 import java.io.File;
 import java.io.IOException;

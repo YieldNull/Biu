@@ -6,16 +6,19 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.httpd.HttpRequest;
-import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.HttpServlet;
-import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.service.ProgressListenerImpl;
+import com.yieldnull.httpd.HttpRequest;
+import com.yieldnull.httpd.HttpResponse;
+import com.yieldnull.httpd.HttpServlet;
+import com.yieldnull.httpd.ProgressListener;
 
 /**
  * Created by YieldNull at 5/13/16
  */
 public class ProgressBaseServlet extends HttpServlet {
     private static final String TAG = ProgressBaseServlet.class.getSimpleName();
+
+    protected Context context;
 
     private ProgressListener mProgressListener = new ProgressListener() {
         private int mCurrentProgress;
@@ -39,7 +42,7 @@ public class ProgressBaseServlet extends HttpServlet {
     }
 
     public ProgressBaseServlet(Context context) {
-        super(context);
+        this.context = context;
     }
 
     @Override
@@ -54,12 +57,12 @@ public class ProgressBaseServlet extends HttpServlet {
 
     protected void sendProgressBroadcast(int progress) {
         Bundle bundle = new Bundle();
-        bundle.putInt(ProgressListener.RESULT_EXTRA_PROGRESS, progress);
-        bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, null);
+        bundle.putInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS, progress);
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
 
 
         Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListener.RESULT_PROGRESS);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_PROGRESS);
         intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
 
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
@@ -67,10 +70,10 @@ public class ProgressBaseServlet extends HttpServlet {
 
     protected void sendFailureBroadcast() {
         Bundle bundle = new Bundle();
-        bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, null);
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
 
         Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListener.RESULT_FAILED);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_FAILED);
         intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
 
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
@@ -79,10 +82,10 @@ public class ProgressBaseServlet extends HttpServlet {
 
     protected void sendSuccessBroadcast() {
         Bundle bundle = new Bundle();
-        bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, null);
+        bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, null);
 
         Intent intent = new Intent(TransferBaseActivity.ACTION_UPDATE_PROGRESS);
-        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListener.RESULT_SUCCEEDED);
+        intent.putExtra(TransferBaseActivity.EXTRA_RESULT_CODE, ProgressListenerImpl.RESULT_SUCCEEDED);
         intent.putExtra(TransferBaseActivity.EXTRA_RESULT_BUNDLE, bundle);
 
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);

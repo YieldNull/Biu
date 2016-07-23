@@ -4,15 +4,15 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.lib.httpd.HttpDaemon;
-import com.bbbbiu.biu.lib.httpd.HttpRequest;
-import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.HttpServlet;
 import com.bbbbiu.biu.lib.util.HtmlReader;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
+import com.yieldnull.httpd.HttpDaemon;
+import com.yieldnull.httpd.HttpRequest;
+import com.yieldnull.httpd.HttpResponse;
+import com.yieldnull.httpd.HttpServlet;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,8 +31,10 @@ public class DownloadServlet extends HttpServlet {
         HttpDaemon.registerServlet("/", downloadServlet);
     }
 
+    private Context context;
+
     private DownloadServlet(Context context) {
-        super(context);
+        this.context = context;
     }
 
     @Override

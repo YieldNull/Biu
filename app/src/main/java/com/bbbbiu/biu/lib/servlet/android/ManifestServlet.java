@@ -5,13 +5,13 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
-import com.bbbbiu.biu.lib.httpd.HttpDaemon;
-import com.bbbbiu.biu.lib.httpd.HttpRequest;
-import com.bbbbiu.biu.lib.httpd.HttpResponse;
-import com.bbbbiu.biu.lib.httpd.HttpServlet;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.yieldnull.httpd.HttpDaemon;
+import com.yieldnull.httpd.HttpRequest;
+import com.yieldnull.httpd.HttpResponse;
+import com.yieldnull.httpd.HttpServlet;
 
 import java.util.ArrayList;
 
@@ -25,8 +25,10 @@ public class ManifestServlet extends HttpServlet {
         HttpDaemon.registerServlet(HttpConstants.Android.URL_MANIFEST, new ManifestServlet(context));
     }
 
+    private Context context;
+
     private ManifestServlet(Context context) {
-        super(context);
+        this.context = context;
     }
 
     @Override

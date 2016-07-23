@@ -12,10 +12,10 @@ import android.util.Log;
 
 import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.ProgressListener;
-import com.bbbbiu.biu.lib.util.ProgressNotifier;
-import com.bbbbiu.biu.lib.httpd.util.Streams;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.yieldnull.httpd.ProgressListener;
+import com.yieldnull.httpd.ProgressNotifier;
+import com.yieldnull.httpd.util.Streams;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -107,15 +107,15 @@ public class DownloadService extends Service {
                     boolean succeeded = downloadFile(downloadUrl, fileName, fileSize, progressListener);
 
                     Bundle bundle = new Bundle();
-                    bundle.putString(ProgressListener.RESULT_EXTRA_FILE_URI, downloadUrl);
+                    bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, downloadUrl);
 
                     if (succeeded) {
                         Log.i(TAG, "Finish downloading");
-                        resultReceiver.send(ProgressListener.RESULT_SUCCEEDED, bundle);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, bundle);
                     } else {
                         Log.i(TAG, "Downloading failed");
 
-                        resultReceiver.send(ProgressListener.RESULT_FAILED, bundle);
+                        resultReceiver.send(ProgressListenerImpl.RESULT_FAILED, bundle);
                     }
                 }
             });

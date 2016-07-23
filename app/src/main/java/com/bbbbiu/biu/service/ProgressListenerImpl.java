@@ -3,7 +3,8 @@ package com.bbbbiu.biu.service;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 
-import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.yieldnull.httpd.ProgressListener;
+
 
 /**
  * 将工作进度通过resultReceiver传到相应的Activity 从而更新界面
@@ -15,6 +16,26 @@ import com.bbbbiu.biu.lib.util.ProgressListener;
 public class ProgressListenerImpl implements ProgressListener {
 
 
+    /**
+     * Intent extra. 文件uri
+     */
+    public static final String RESULT_EXTRA_FILE_URI = "com.bbbbiu.biu.service.ProgressListenerImpl.result.FILE_URI";
+    /**
+     * Intent extra. {@link #RESULT_EXTRA_FILE_URI} 对应文件的工作进度，0-100
+     */
+    public static final String RESULT_EXTRA_PROGRESS = "com.bbbbiu.biu.service.ProgressListenerImpl.result.PROGRESS";
+    /**
+     * ResultCode. 工作失败
+     */
+    public static final int RESULT_FAILED = 1;
+    /**
+     * ResultCode. 工作成功
+     */
+    public static final int RESULT_SUCCEEDED = 2;
+    /**
+     * ResultCode. 工作进度
+     */
+    public static final int RESULT_PROGRESS = 3;
     /**
      * 纪录当前文件
      */

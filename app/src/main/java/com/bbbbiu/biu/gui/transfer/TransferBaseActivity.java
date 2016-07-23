@@ -1,6 +1,5 @@
 package com.bbbbiu.biu.gui.transfer;
 
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,17 +21,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.TransferAdapter;
-import com.bbbbiu.biu.lib.util.ProgressListener;
+import com.bbbbiu.biu.service.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.wang.avi.AVLoadingIndicatorView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -147,29 +144,29 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * 更新当前进度
      *
      * @param resultCode 失败、成功、或者是新进度
-     *                   {@link ProgressListener#RESULT_FAILED}，
-     *                   {@link ProgressListener#RESULT_SUCCEEDED}，
-     *                   {@link ProgressListener#RESULT_PROGRESS}
+     *                   {@link ProgressListenerImpl#RESULT_FAILED}，
+     *                   {@link ProgressListenerImpl#RESULT_SUCCEEDED}，
+     *                   {@link ProgressListenerImpl#RESULT_PROGRESS}
      * @param resultData a{@link Bundle},包含以下 EXTRA：
-     *                   {@link ProgressListener#RESULT_EXTRA_FILE_URI}，
-     *                   {@link ProgressListener#RESULT_EXTRA_PROGRESS}，
+     *                   {@link ProgressListenerImpl#RESULT_EXTRA_FILE_URI}，
+     *                   {@link ProgressListenerImpl#RESULT_EXTRA_PROGRESS}，
      */
     private void updateProgress(int resultCode, Bundle resultData) {
-        String fileUri = resultData.getString(ProgressListener.RESULT_EXTRA_FILE_URI);
+        String fileUri = resultData.getString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI);
 
         switch (resultCode) {
-            case ProgressListener.RESULT_FAILED:
+            case ProgressListenerImpl.RESULT_FAILED:
                 mTransferAdapter.setTaskFailed(fileUri);
                 break;
-            case ProgressListener.RESULT_SUCCEEDED:
+            case ProgressListenerImpl.RESULT_SUCCEEDED:
                 mTransferAdapter.setTaskFinished(fileUri);
                 mPreviousTime = System.currentTimeMillis();
                 mPreviousProgress = 0;
                 mCurrentTaskSize = 0;
 
                 break;
-            case ProgressListener.RESULT_PROGRESS:
-                int progress = resultData.getInt(ProgressListener.RESULT_EXTRA_PROGRESS);
+            case ProgressListenerImpl.RESULT_PROGRESS:
+                int progress = resultData.getInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS);
                 mTransferAdapter.updateProgress(mRecyclerView, fileUri, progress);
 
                 if (mCurrentTaskSize == 0) {
