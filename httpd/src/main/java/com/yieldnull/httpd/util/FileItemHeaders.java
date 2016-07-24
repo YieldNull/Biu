@@ -16,7 +16,7 @@ public class FileItemHeaders implements Serializable {
     public String getHeader(String name) {
         String nameLower = name.toLowerCase(Locale.ENGLISH);
         List<String> headerValueList = headerNameToValueListMap.get(nameLower);
-        if (null == headerValueList) {
+        if (headerValueList == null) {
             return null;
         }
         return headerValueList.get(0);
@@ -25,10 +25,12 @@ public class FileItemHeaders implements Serializable {
     public synchronized void addHeader(String name, String value) {
         String nameLower = name.toLowerCase(Locale.ENGLISH);
         List<String> headerValueList = headerNameToValueListMap.get(nameLower);
-        if (null == headerValueList) {
+
+        if (headerValueList == null) {
             headerValueList = new ArrayList<>();
             headerNameToValueListMap.put(nameLower, headerValueList);
         }
+
         headerValueList.add(value);
     }
 }

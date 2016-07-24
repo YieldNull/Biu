@@ -33,28 +33,29 @@ class FileItemIterator {
      */
     private boolean eof;
 
-    public FileItemIterator(HttpRequest request, ProgressListener listener) throws IOException {
-        String contentType = request.getContentType();
 
+    public FileItemIterator(HttpRequest request, ProgressListener listener) throws IOException {
+
+        String contentType = request.getContentType();
         if ((contentType == null)
                 || (!contentType.toLowerCase(Locale.ENGLISH).startsWith(FileUpload.MULTIPART))) {
             throw new IOException("Invalid Content-Type");
         }
-
-        InputStream inputStream = request.getInputStream();
-        long requestSize = request.contentLength();
 
         boundary = getBoundary(contentType);
         if (boundary == null) {
             throw new IOException("No boundary found");
         }
 
-        notifier = new ProgressNotifier(listener, requestSize);
+        InputStream inputStream = request.getInputStream();
+
+        notifier = new ProgressNotifier(listener, request.contentLength());
         multipart = new MultipartStream(inputStream, boundary, notifier);
         multipart.setHeaderEncoding(request.getCharacterEncoding());
 
         findNextItem();
     }
+
 
     public FileItemStream next() throws IOException {
         if (eof || (!itemValid && !hasNext())) {
@@ -64,33 +65,44 @@ class FileItemIterator {
         return currentItem;
     }
 
+
     public boolean hasNext() throws IOException {
         return !eof && (itemValid || findNextItem());
     }
 
 
+    /**
+     * 寻找下一个Entity
+     *
+     * @return 是否找到
+     * @throws IOException
+     */
     private boolean findNextItem() throws IOException {
         if (eof) {
             return false;
         }
+
         if (currentItem != null) {
             currentItem.close();
             currentItem = null;
         }
+
         while (true) {
-            boolean nextPart;
-            nextPart = multipart.skipPreamble();
+            boolean nextPart = multipart.skipPreamble();
+
             if (!nextPart) {
                 if (currentFieldName == null) {
                     // Outer multipart terminated -> No more data
                     eof = true;
                     return false;
+                } else {
+                    // Inner multipart terminated -> Return to parsing the outer
+                    multipart.setBoundary(boundary);
+                    currentFieldName = null;
+                    continue;
                 }
-                // Inner multipart terminated -> Return to parsing the outer
-                multipart.setBoundary(boundary);
-                currentFieldName = null;
-                continue;
             }
+
             FileItemHeaders headers = getParsedHeaders(multipart.readHeaders());
             if (currentFieldName == null) {
                 // We're parsing the outer multipart
@@ -101,21 +113,24 @@ class FileItemIterator {
                             && subContentType.toLowerCase(Locale.ENGLISH)
                             .startsWith(FileUpload.MULTIPART_MIXED)) {
                         currentFieldName = fieldName;
+
                         // Multiple files associated with this field name
                         byte[] subBoundary = getBoundary(subContentType);
                         multipart.setBoundary(subBoundary);
                         continue;
+                    } else {
+                        String fileName = getFileName(headers);
+                        currentItem = new FileItemStream(fileName,
+                                fieldName, headers.getHeader(FileUpload.CONTENT_TYPE),
+                                fileName == null, multipart);
+                        currentItem.setHeaders(headers);
+                        notifier.noteItem();
+                        itemValid = true;
+                        return true;
                     }
-                    String fileName = getFileName(headers);
-                    currentItem = new FileItemStream(fileName,
-                            fieldName, headers.getHeader(FileUpload.CONTENT_TYPE),
-                            fileName == null, multipart);
-                    currentItem.setHeaders(headers);
-                    notifier.noteItem();
-                    itemValid = true;
-                    return true;
                 }
             } else {
+                // We're parsing the inner multipart
                 String fileName = getFileName(headers);
                 if (fileName != null) {
                     currentItem = new FileItemStream(fileName,
@@ -128,9 +143,12 @@ class FileItemIterator {
                     return true;
                 }
             }
+
             multipart.discardBodyData();
         }
+
     }
+
 
     /**
      * 从 HTTP 请求头`Content-Type`中获取各个文件的分隔符`boundary`。 形如：
@@ -185,11 +203,12 @@ class FileItemIterator {
         return fileName;
     }
 
+
     /**
-     * 从请求体中获取`content-disposition`中的字段名（input 的name属性）
+     * 从Entity Header中获取`content-disposition`中的字段名（input的name属性）
      *
-     * @param headers A <code>Map</code> containing the HTTP request headers.
-     * @return The field name for the current <code>encapsulation</code>.
+     * @param headers Entity header
+     * @return field name of current entity
      */
     private String getFieldName(FileItemHeaders headers) {
         String contentDisposition = headers.getHeader(FileUpload.CONTENT_DISPOSITION);
@@ -210,30 +229,35 @@ class FileItemIterator {
         return fieldName;
     }
 
+
     /**
-     * <p> Parses the <code>header-part</code> and returns as key/value
-     * pairs.
-     * <p/>
-     * <p> If there are multiple headers of the same names, the name
-     * will map to a comma-separated list containing the values.
+     * 将Entity Header 解析成键值对，若Header名相同，则将不同的value值用逗号隔开
      *
-     * @param headerPart The <code>header-part</code> of the current
-     *                   <code>encapsulation</code>.
-     * @return A <code>Map</code> containing the parsed HTTP request headers.
+     * @param headerPart Entity Header
+     * @return 解析后所得键值对
      */
     private FileItemHeaders getParsedHeaders(String headerPart) {
         final int len = headerPart.length();
+
         FileItemHeaders headers = new FileItemHeaders();
         int start = 0;
+
         while (true) {
-            int end = parseEndOfLine(headerPart, start);
-            if (start == end) {
+            int end = findLineEnd(headerPart, start);
+            if (start == end) { // 表示有两个换行符相连，Entity Header 结束，后面是Entity Body.
                 break;
             }
-            StringBuilder header = new StringBuilder(headerPart.substring(start, end));
+
+            // Header 中可能有换行符，例如（不限于两行）
+            // Content-Type: multipart/form-data;
+            //              boundary="----=_Part_293427_735306028.1445485521749"
+
+            StringBuilder builder = new StringBuilder(headerPart.substring(start, end));
             start = end + 2;
             while (start < len) {
                 int nonWs = start;
+
+                // 略过行首空白字符
                 while (nonWs < len) {
                     char c = headerPart.charAt(nonWs);
                     if (c != ' ' && c != '\t') {
@@ -244,27 +268,27 @@ class FileItemIterator {
                 if (nonWs == start) {
                     break;
                 }
-                // Continuation line found
-                end = parseEndOfLine(headerPart, nonWs);
-                header.append(" ").append(headerPart.substring(nonWs, end));
+
+                // 将下一行的内容加进去
+                end = findLineEnd(headerPart, nonWs);
+                builder.append(" ").append(headerPart.substring(nonWs, end));
                 start = end + 2;
             }
-            parseHeaderLine(headers, header.toString());
+            parseHeaderLine(headers, builder.toString());
         }
         return headers;
     }
 
+
     /**
-     * Skips bytes until the end of the current line.
+     * 获取下一个换行符的位置
      *
-     * @param headerPart The headers, which are being parsed.
-     * @param end        Index of the last byte, which has yet been
-     *                   processed.
-     * @return Index of the \r\n sequence, which indicates
-     * end of line.
+     * @param headerPart Entity Header
+     * @param start      从何处开始
+     * @return "\r\n"的位置，以"\r"算
      */
-    private int parseEndOfLine(String headerPart, int end) {
-        int index = end;
+    private int findLineEnd(String headerPart, int start) {
+        int index = start;
         while (true) {
             int offset = headerPart.indexOf('\r', index);
             if (offset == -1 || offset + 1 >= headerPart.length()) {
@@ -278,21 +302,22 @@ class FileItemIterator {
         }
     }
 
+
     /**
-     * Reads the next header line.
+     * 解析读取到的一条header
      *
-     * @param headers String with all headers.
-     * @param header  Map where to store the current header.
+     * @param headers   所有已解析的header
+     * @param headerStr 待解析的header
      */
-    private void parseHeaderLine(FileItemHeaders headers, String header) {
-        final int colonOffset = header.indexOf(':');
+    private void parseHeaderLine(FileItemHeaders headers, String headerStr) {
+        final int colonOffset = headerStr.indexOf(':');
         if (colonOffset == -1) {
-            // This header line is malformed, skip it.
+            // 不合法
             return;
         }
-        String headerName = header.substring(0, colonOffset).trim();
+        String headerName = headerStr.substring(0, colonOffset).trim();
         String headerValue =
-                header.substring(header.indexOf(':') + 1).trim();
+                headerStr.substring(headerStr.indexOf(':') + 1).trim();
         headers.addHeader(headerName, headerValue);
     }
 

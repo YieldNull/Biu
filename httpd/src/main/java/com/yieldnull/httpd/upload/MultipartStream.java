@@ -18,7 +18,7 @@ import static java.lang.String.format;
 
 /**
  * 解析MultipartStream
- * <p>
+ * <p/>
  * 这尼玛绝壁是C程序员写的，我勒个去。
  */
 public class MultipartStream {
@@ -166,7 +166,7 @@ public class MultipartStream {
     /**
      * <p> Reads <code>body-data</code> from the current
      * <code>encapsulation</code> and discards it.
-     * <p>
+     * <p/>
      * <p>Use this method to skip encapsulations you don't need or don't
      * understand.
      *
@@ -183,7 +183,7 @@ public class MultipartStream {
      * <p>Reads <code>body-data</code> from the current
      * <code>encapsulation</code> and writes its contents into the
      * output <code>Stream</code>.
-     * <p>
+     * <p/>
      * <p>Arbitrary large amounts of data can be processed by this
      * method using a constant size buffer. (see {@link
      * ProgressNotifier) constructor}).
@@ -207,7 +207,7 @@ public class MultipartStream {
      *
      * @return <code>true</code> if there are more encapsulations in
      * this stream; <code>false</code> otherwise.
-     * <p>
+     * <p/>
      * \\@throws FileUploadIOException if the bytes read from the stream exceeded the size limits
      * @throws MalformedStreamException if the stream ends unexpectedly or
      *                                  fails to follow required syntax.
@@ -250,13 +250,13 @@ public class MultipartStream {
 
     /**
      * <p>Changes the boundary token used for partitioning the stream.
-     * <p>
+     * <p/>
      * <p>This method allows single pass processing of nested multipart
      * streams.
-     * <p>
+     * <p/>
      * <p>The boundary token of the nested stream is <code>required</code>
      * to be of the same length as the boundary token in parent stream.
-     * <p>
+     * <p/>
      * <p>Restoring the parent stream boundary token after processing of a
      * nested stream is left to the application.
      *
@@ -279,16 +279,16 @@ public class MultipartStream {
     /**
      * <p>Reads the <code>header-part</code> of the current
      * <code>encapsulation</code>.
-     * <p>
+     * <p/>
      * <p>Headers are returned verbatim to the input stream, including the
      * trailing <code>CRLF</code> marker. Parsing is left to the
      * application.
-     * <p>
+     * <p/>
      * <p><strong>TODO</strong> allow limiting maximum header size to
      * protect against abuse.
      *
      * @return The <code>header-part</code> of the current encapsulation.
-     * <p>
+     * <p/>
      * \\\@throws MalformedStreamException if the stream ends unexpectedly.
      */
     public String readHeaders() throws FileUploadIOException, MalformedStreamException {
@@ -319,7 +319,7 @@ public class MultipartStream {
             baos.write(b);
         }
 
-        String headers = null;
+        String headers;
         if (headerEncoding != null) {
             try {
                 headers = baos.toString(headerEncoding);
@@ -436,8 +436,6 @@ public class MultipartStream {
      */
     public class ItemInputStream extends InputStream implements Closeable {
 
-        private long total; // 已读byte数
-
         /**
          * The number of bytes, which must be hold, because
          * they might be a part of the boundary.
@@ -445,9 +443,9 @@ public class MultipartStream {
         private int pad;
 
         /**
-         * 当前在buffer中的位置 The current offset in the buffer.
+         * 当前Entity delimiter 在buffer中的位置，不存在与buffer中则为-1
          */
-        private int posInBuffer;
+        private int end;
 
         /**
          * Whether the stream is already closed.
@@ -477,8 +475,8 @@ public class MultipartStream {
          * Called for finding the separator.
          */
         private void findDelimiter() {
-            posInBuffer = MultipartStream.this.findDelimiter();
-            if (posInBuffer == -1) {
+            end = MultipartStream.this.findDelimiter();
+            if (end == -1) {
                 if (tail - head > keepRegion) {
                     pad = keepRegion;
                 } else {
@@ -498,7 +496,7 @@ public class MultipartStream {
                 return -1;
 
             }
-            ++total;
+
             int b = buffer[head++];
             if (b >= 0) {
                 return b;
@@ -506,16 +504,7 @@ public class MultipartStream {
             return b + BYTE_POSITIVE_OFFSET;
         }
 
-        /**
-         * Reads bytes into the given buffer.
-         *
-         * @param buffer   The destination buffer, where to write to.
-         * @param off Offset of the first byte in the buffer.
-         * @param len Maximum number of bytes to read.
-         * @return Number of bytes, which have been actually read,
-         * or -1 for EOF.
-         * @throws IOException An I/O error occurred.
-         */
+        @SuppressWarnings("NullableProblems")
         @Override
         public int read(byte[] buffer, int off, int len) throws IOException {
             if (len == 0) {
@@ -531,57 +520,10 @@ public class MultipartStream {
             res = Math.min(res, len);
             System.arraycopy(MultipartStream.this.buffer, head, buffer, off, res);
             head += res;
-            total += res;
             return res;
         }
 
-        /**
-         * Closes the input stream.
-         *
-         * @throws IOException An I/O error occurred.
-         */
-        @Override
-        public void close() throws IOException {
-            close(false);
-        }
 
-        /**
-         * Closes the input stream.
-         *
-         * @param pCloseUnderlying Whether to close the underlying stream
-         *                         (hard close)
-         * @throws IOException An I/O error occurred.
-         */
-        public void close(boolean pCloseUnderlying) throws IOException {
-            if (closed) {
-                return;
-            }
-            if (pCloseUnderlying) {
-                closed = true;
-                input.close();
-            } else {
-                for (; ; ) {
-                    int av = available();
-                    if (av == 0) {
-                        av = makeAvailable();
-                        if (av == 0) {
-                            break;
-                        }
-                    }
-                    skip(av);
-                }
-            }
-            closed = true;
-        }
-
-        /**
-         * Skips the given number of bytes.
-         *
-         * @param bytes Number of bytes to skip.
-         * @return The number of bytes, which have actually been
-         * skipped.
-         * @throws IOException An I/O error occurred.
-         */
         @Override
         public long skip(long bytes) throws IOException {
             int av = available();
@@ -598,10 +540,52 @@ public class MultipartStream {
 
         @Override
         public int available() throws IOException {
-            if (posInBuffer == -1) {
+            if (end == -1) {
                 return tail - head - pad;
             }
-            return posInBuffer - head;
+            return end - head;
+        }
+
+
+        /**
+         * Closes the input stream.
+         *
+         * @throws IOException An I/O error occurred.
+         */
+        @Override
+        public void close() throws IOException {
+            close(false);
+        }
+
+
+        /**
+         * Closes the input stream.
+         *
+         * @param pCloseUnderlying Whether to close the underlying stream
+         *                         (hard close)
+         * @throws IOException An I/O error occurred.
+         */
+        @SuppressWarnings("ResultOfMethodCallIgnored")
+        public void close(boolean pCloseUnderlying) throws IOException {
+            if (closed) {
+                return;
+            }
+            if (pCloseUnderlying) {
+                closed = true;
+                input.close();
+            } else {
+                while (true) {
+                    int av = available();
+                    if (av == 0) {
+                        av = makeAvailable();
+                        if (av == 0) {
+                            break;
+                        }
+                    }
+                    skip(av);
+                }
+            }
+            closed = true;
         }
 
 
@@ -612,12 +596,11 @@ public class MultipartStream {
          * @throws IOException An I/O error occurred.
          */
         private int makeAvailable() throws IOException {
-            if (posInBuffer != -1) {
+            if (end != -1) {
                 return 0;
             }
 
             // Move the data to the beginning of the buffer.
-            total += tail - head - pad;
             System.arraycopy(buffer, tail - pad, buffer, 0, pad);
 
             // Refill buffer with new data.
@@ -641,7 +624,7 @@ public class MultipartStream {
                 findDelimiter();
                 int av = available();
 
-                if (av > 0 || posInBuffer != -1) {
+                if (av > 0 || end != -1) {
                     return av;
                 }
             }

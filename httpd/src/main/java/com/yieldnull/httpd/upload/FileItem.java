@@ -112,7 +112,7 @@ public class FileItem {
     }
 
     public OutputStream getOutputStream() throws IOException {
-        return Files.newOutputStream(getFile().toPath(), StandardOpenOption.READ);
+        return Files.newOutputStream(getFile().toPath(), StandardOpenOption.CREATE);
     }
 
 

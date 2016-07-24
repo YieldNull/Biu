@@ -6,9 +6,7 @@ import com.yieldnull.httpd.util.Streams;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Default implementation of {@link FileItemStream}.
- */
+
 class FileItemStream {
 
     private final String contentType;   // 文件 Content-Type

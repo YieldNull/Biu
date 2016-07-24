@@ -122,6 +122,7 @@ public class HttpRequest {
         return size;
     }
 
+    // TODO
     public String getCharacterEncoding() {
         return "UTF-8";
     }
