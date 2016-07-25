@@ -24,7 +24,7 @@ public class ProgressBaseServlet extends HttpServlet {
         private int mCurrentProgress;
 
         @Override
-        public void update(long pBytesRead, long pContentLength, int pItems) {
+        public void update(long pBytesRead, long pContentLength) {
 
             int progress = (int) (pBytesRead * 100.0 / pContentLength);
 
