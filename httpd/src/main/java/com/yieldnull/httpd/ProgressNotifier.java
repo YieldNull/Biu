@@ -8,8 +8,6 @@ public class ProgressNotifier {
 
     private long bytesRead;
 
-    private int items;
-
     public ProgressNotifier(ProgressListener pListener, long pContentLength) {
         listener = pListener;
         contentLength = pContentLength;
@@ -20,14 +18,9 @@ public class ProgressNotifier {
         notifyListener();
     }
 
-    public void noteItem() {
-        ++items;
-        notifyListener();
-    }
-
     private void notifyListener() {
         if (listener != null) {
-            listener.update(bytesRead, contentLength, items);
+            listener.update(bytesRead, contentLength);
         }
     }
 

@@ -1,7 +1,7 @@
 package com.yieldnull.httpd.upload;
 
 
-import com.yieldnull.httpd.util.mime.MimeUtility;
+import com.yieldnull.httpd.upload.mime.MimeUtility;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import java.util.Map;
  * <code>param1 = value; param2 = "anything goes; really"; param3</code>
  * </p>
  */
-public class ParameterParser {
+public class HeaderParser {
 
     /**
      * String to be parsed.

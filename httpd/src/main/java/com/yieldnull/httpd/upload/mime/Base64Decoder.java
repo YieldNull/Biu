@@ -1,4 +1,4 @@
-package com.yieldnull.httpd.util.mime;
+package com.yieldnull.httpd.upload.mime;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,7 +29,7 @@ final class Base64Decoder {
     private static final int INPUT_BYTES_PER_CHUNK = 4;
 
     /**
-     * Set up the encoding table.
+     * Set up the getEncoding table.
      */
     private static final byte[] ENCODING_TABLE = {
         (byte) 'A', (byte) 'B', (byte) 'C', (byte) 'D', (byte) 'E', (byte) 'F', (byte) 'G',
@@ -78,11 +78,11 @@ final class Base64Decoder {
     }
 
     /**
-     * Decode the base 64 encoded byte data writing it to the given output stream,
+     * Decode the base 64 encoded byte data writing it to the given output getStream,
      * whitespace characters will be ignored.
      *
      * @param data the buffer containing the Base64-encoded data
-     * @param out the output stream to hold the decoded bytes
+     * @param out the output getStream to hold the decoded bytes
      *
      * @return the number of bytes produced.
      * @throws IOException thrown when the padding is incorrect or the input is truncated.

@@ -14,7 +14,7 @@ import android.util.Log;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
-import com.yieldnull.httpd.util.Streams;
+import com.yieldnull.httpd.Streams;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +84,7 @@ public class UploadService extends Service {
      * @param context        context
      * @param uploadUrl      上传URL
      * @param filePath       文件路径
-     * @param formData       http form data
+     * @param formData       http getForm data
      * @param resultReceiver {@link ResultReceiver}
      */
     public static void startUpload(Context context, String uploadUrl, String filePath,
@@ -186,7 +186,7 @@ public class UploadService extends Service {
      *
      * @param uploadUrl        uploadUrl
      * @param filePath         文件路径
-     * @param formData         http form data
+     * @param formData         http getForm data
      * @param progressListener {@link ProgressListener} 监听发送进度
      * @return 是否发送成功
      */

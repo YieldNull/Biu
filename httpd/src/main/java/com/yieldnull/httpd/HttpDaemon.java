@@ -1,20 +1,20 @@
 package com.yieldnull.httpd;
 
-
-import com.yieldnull.httpd.util.Streams;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,27 +27,50 @@ import java.util.logging.Logger;
 public class HttpDaemon {
     private static final Logger LOGGER = Logger.getLogger(Streams.class.getName());
 
-    private static final int SOCKET_READ_TIMEOUT = 500;
-
-    private volatile ServerSocket mServerSocket;
-
-    private Thread mListenThread;
-    private RequestManager mRequestManager;
 
     /**
      * 关联URL与其对应的{@link HttpServlet}
      */
-    private static HashMap<String, HttpServlet> servletMap = new HashMap<>();
+    private static HashMap<String, HttpServlet> sServletMap = new HashMap<>();
+
+    /**
+     * 注册 Servlet
+     *
+     * @param urlPattern servlet处理的URL（正则表达式）
+     * @param servlet    servlet实例
+     */
+    public static void registerServlet(String urlPattern, HttpServlet servlet) {
+        sServletMap.put(urlPattern, servlet);
+    }
 
 
     private static HttpDaemon sHttpDaemon;
 
+
+    private static final int SOCKET_READ_TIMEOUT = 200;
+    private static final int DEFAULT_PORT = 5050;
+
+    private int mPort;
+    private Thread mListenThread;
+    private ServerSocket mServerSocket;
+    private RequestManager mRequestManager;
+
+
+    File repository;
+
     /**
      * 指定监听端口
      */
-    private HttpDaemon() {
+    public HttpDaemon(int port) {
+
+        mPort = port;
         mRequestManager = new RequestManager();
     }
+
+    public HttpDaemon() {
+        this(DEFAULT_PORT);
+    }
+
 
     public static int sPort = 5050;
 
@@ -62,15 +85,6 @@ public class HttpDaemon {
         return sHttpDaemon;
     }
 
-    /**
-     * 注册 Servlet
-     *
-     * @param urlPattern servlet处理的URL（正则表达式）
-     * @param servlet    servlet实例
-     */
-    public static void registerServlet(String urlPattern, HttpServlet servlet) {
-        servletMap.put(urlPattern, servlet);
-    }
 
     /**
      * 启动服务器
@@ -81,14 +95,13 @@ public class HttpDaemon {
         mServerSocket = new ServerSocket();
         mServerSocket.setReuseAddress(true);
 
-        RequestListener requestListener = new RequestListener(SOCKET_READ_TIMEOUT);
+        RequestListener requestListener = new RequestListener();
         mListenThread = new Thread(requestListener);
-        mListenThread.setDaemon(true);
         mListenThread.setName("Httpd Main Listener");
         mListenThread.start();
 
         // 等待另一个线程中的 ServerSocket 绑定端口成功
-        while ((!requestListener.wasBinned()) && requestListener.getBindException() == null) {
+        while ((!requestListener.wasBound()) && requestListener.getBindException() == null) {
             try {
                 Thread.sleep(10L);
             } catch (Throwable ignored) {
@@ -97,7 +110,7 @@ public class HttpDaemon {
 
         // 端口已被占用
         if (requestListener.getBindException() != null) {
-            LOGGER.log(Level.WARNING, "Port in use");
+            System.out.println("Port in use");
             throw requestListener.bindException;
         }
     }
@@ -113,21 +126,22 @@ public class HttpDaemon {
                 mListenThread.join();
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Could not stop all connections ", e);
+            System.out.println("Could not stop all connections ");
+            e.printStackTrace();
         }
     }
 
     /**
      * 是否Alive
      */
-    public final boolean isAlive() {
+    public boolean isAlive() {
         return isStarted() && !this.mServerSocket.isClosed() && this.mListenThread.isAlive();
     }
 
     /**
      * 是否启动了
      */
-    public final boolean isStarted() {
+    public boolean isStarted() {
         return this.mServerSocket != null && this.mListenThread != null;
     }
 
@@ -135,50 +149,42 @@ public class HttpDaemon {
      * 服务器主程序，监听请求
      */
     private class RequestListener implements Runnable {
-
-        private final int timeout;
-
-
-        public IOException bindException;
+        private boolean bound;
 
 
-        public boolean hasBound = false;
+        IOException bindException;
 
-
-        public boolean wasBinned() {
-            return hasBound;
+        boolean wasBound() {
+            return bound;
         }
 
-        public IOException getBindException() {
+        IOException getBindException() {
             return bindException;
         }
 
 
-        public RequestListener(int timeout) {
-            this.timeout = timeout;
-        }
-
         @Override
         public void run() {
             try {
-                mServerSocket.bind(new InetSocketAddress(sPort)); //监听端口
-                hasBound = true;
+                mServerSocket.bind(new InetSocketAddress(mPort)); //监听端口
+                bound = true;
             } catch (IOException e) {
                 this.bindException = e;
+                e.printStackTrace();
                 return;
             }
             do {
                 try {
                     final Socket finalAccept = mServerSocket.accept(); //等待请求
-                    if (timeout > 0) {
-                        finalAccept.setSoTimeout(timeout);
-                    }
-                    final InputStream inputStream = finalAccept.getInputStream(); //获取HTTP Request输入流
+                    finalAccept.setSoTimeout(SOCKET_READ_TIMEOUT);
 
-                    mRequestManager.handleRequest(inputStream, finalAccept); // 开线程，处理请求
+                    //获取HTTP Request输入流
+                    final InputStream inputStream = finalAccept.getInputStream();
 
-                } catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Communication with the client broken");
+                    // 开线程，处理请求
+                    mRequestManager.handleRequest(inputStream, finalAccept);
+
+                } catch (IOException ignored) {
                 }
             } while (!mServerSocket.isClosed()); //不断等待请求
         }
@@ -189,18 +195,17 @@ public class HttpDaemon {
      * 分配，管理请求
      */
     private class RequestManager {
-        private final String TAG = RequestManager.class.getSimpleName();
         private long requestCount;
 
-        private final List<RequestHandler> running = Collections.synchronizedList(new ArrayList<RequestHandler>());
+        private final List<RequestHandler> handlerList = Collections.synchronizedList(new ArrayList<RequestHandler>());
 
-        public void handleRequest(InputStream inputStream, Socket acceptSocket) {
+        void handleRequest(InputStream inputStream, Socket acceptSocket) {
             RequestHandler requestHandler = new RequestHandler(inputStream, acceptSocket);
-            running.add(requestHandler);
+            handlerList.add(requestHandler);
             requestCount++;
 
-            LOGGER.log(Level.INFO, String.format("Request #%s come from %s",
-                    requestCount, acceptSocket.getInetAddress().getHostAddress()));
+//            System.out.println(String.format("Request #%s come from %s",
+//                    requestCount, acceptSocket.getInetAddress().getHostAddress()));
 
             Thread thread = new Thread(requestHandler);
             thread.setDaemon(true);
@@ -209,13 +214,13 @@ public class HttpDaemon {
         }
 
 
-        public void close(RequestHandler requestHandler) {
-            running.remove(requestHandler);
+        void close(RequestHandler requestHandler) {
+            handlerList.remove(requestHandler);
         }
 
-        public void closeAll() {
+        void closeAll() {
             // copy of the list for concurrency
-            for (RequestHandler requestHandler : new ArrayList<>(running)) {
+            for (RequestHandler requestHandler : new ArrayList<>(handlerList)) {
                 requestHandler.close();
             }
         }
@@ -226,19 +231,18 @@ public class HttpDaemon {
      * 处理请求
      */
     private class RequestHandler implements Runnable {
-        private final String TAG = RequestHandler.class.getSimpleName();
 
         private InputStream inputStream;
         private OutputStream outputStream;
         private Socket acceptSocket;
 
-        public RequestHandler(InputStream inputStream, Socket acceptSocket) {
+        RequestHandler(InputStream inputStream, Socket acceptSocket) {
             this.inputStream = inputStream;
             this.acceptSocket = acceptSocket;
             outputStream = null;
         }
 
-        public void close() {
+        void close() {
             if (outputStream != null) {
                 Streams.safeClose(outputStream);
             }
@@ -264,7 +268,7 @@ public class HttpDaemon {
                 }
 
 
-                String acceptEncoding = request.getHeaders().get("accept-encoding");
+                String acceptEncoding = request.headers().get("accept-encoding");
 
                 response = handleRequest(request);
 
@@ -275,16 +279,21 @@ public class HttpDaemon {
 
                 response.send(outputStream);
 
-                LOGGER.log(Level.INFO,
-                        String.format("%s %s %s %s",
-                                request.getMethod().toString(), request.getUri(),
-                                response.getStatus().getDescription(),
-                                request.getHeaders().get("user-agent")
+                System.out.println(
+                        String.format(Locale.ENGLISH, "%s -- [%s] \"%s %s %s\" %d \"%s\"",
+                                request.clientIp(),
+                                new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.ENGLISH)
+                                        .format(Calendar.getInstance().getTime()),
+                                request.method().toString(),
+                                request.protocol(),
+                                request.uri(),
+                                response.getStatus().getStatus(),
+                                request.userAgent()
                         )
                 );
 
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, e.toString());
+                e.printStackTrace();
             } finally {
                 Streams.safeClose(inputStream);
                 Streams.safeClose(outputStream);
@@ -297,19 +306,18 @@ public class HttpDaemon {
          * 根据URL，分发请求
          */
         private HttpResponse handleRequest(HttpRequest request) {
-            String uri = request.getUri();
+            String uri = request.uri();
+            HttpRequest.Method method = request.method();
 
-            if (uri == null) {
+            if (uri == null || method == null) {
                 return HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST,
                         HttpResponse.Status.BAD_REQUEST.getDescription());
             }
 
-            HttpRequest.Method method = request.getMethod();
-
             HttpServlet servlet = null;
 
             // 从已注册的Servlet中找出与url匹配的
-            for (Map.Entry<String, HttpServlet> entry : servletMap.entrySet()) {
+            for (Map.Entry<String, HttpServlet> entry : sServletMap.entrySet()) {
                 if (uri.matches(entry.getKey())) {
                     servlet = entry.getValue();
                     break;
@@ -330,6 +338,7 @@ public class HttpDaemon {
                         HttpResponse.Status.NOT_FOUND.getDescription());
             }
 
+            // 没有对应方法的Handler
             if (response == null) {
                 return HttpResponse.newResponse(HttpResponse.Status.METHOD_NOT_ALLOWED,
                         HttpResponse.Status.METHOD_NOT_ALLOWED.getDescription());

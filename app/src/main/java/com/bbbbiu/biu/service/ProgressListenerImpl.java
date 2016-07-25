@@ -59,7 +59,7 @@ public class ProgressListenerImpl implements ProgressListener {
 
 
     @Override
-    public void update(long pBytesRead, long pContentLength, int pItems) {
+    public void update(long pBytesRead, long pContentLength) {
         int progress = (int) (pBytesRead * 100.0 / pContentLength);
 
         // 更新进度(0-100)

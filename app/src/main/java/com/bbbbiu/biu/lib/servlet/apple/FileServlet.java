@@ -36,7 +36,7 @@ public class FileServlet extends ProgressBaseServlet {
 
     @Override
     public HttpResponse doGet(HttpRequest request) {
-        String hashCode = request.getUri().replace(HttpConstants.Apple.URL_DOWNLOAD + "/", "");
+        String hashCode = request.uri().replace(HttpConstants.Apple.URL_DOWNLOAD + "/", "");
         File file = null;
 
         for (String path : PreferenceUtil.getFilesToSend(context)) {

@@ -7,12 +7,8 @@ import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;
-import com.yieldnull.httpd.upload.FileItem;
-import com.yieldnull.httpd.upload.FileItemFactory;
-import com.yieldnull.httpd.upload.FileUpload;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -29,38 +25,29 @@ public class ReceivingBaseServlet extends ProgressBaseServlet {
     public HttpResponse doPost(HttpRequest request) {
         File downloadDir = StorageUtil.getDownloadDir(context);
 
-        //TODO 判断可用空间大小
-        FileItemFactory factory = new FileItemFactory(0, downloadDir);
+        request.parseMultipartBody(downloadDir, getProgressListener());
 
-        FileUpload fileUpload = new FileUpload(factory);
-
-        fileUpload.setProgressListener(getProgressListener());
-
-        List<FileItem> items;
-
-        try {
-            items = fileUpload.parseRequest(request);
-        } catch (IOException e) {
-            Log.w(TAG, e.toString());
-
+        List<File> files = request.files();
+        if (files.size() == 0) {
             sendFailureBroadcast();
 
-            return HttpResponse.newResponse(HttpResponse.Status.INTERNAL_ERROR,
-                    HttpResponse.Status.INTERNAL_ERROR.getDescription());
+            return HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST,
+                    HttpResponse.Status.BAD_REQUEST.getDescription());
+        } else {
+
+            for (File file : files) {
+                Log.i(TAG, "Uploading file " + file.getName() + " to " + downloadDir.getAbsolutePath());
+
+
+                new RevRecord(
+                        System.currentTimeMillis(),
+                        file.getName(),
+                        file.length()).save();
+            }
+
+            sendSuccessBroadcast();
+
+            return HttpResponse.newResponse("200 OK");
         }
-
-        for (FileItem item : items) {
-            Log.i(TAG, "Uploading file " + item.getName() + " to " + downloadDir.getAbsolutePath());
-
-
-            new RevRecord(
-                    System.currentTimeMillis(),
-                    item.getName(),
-                    item.getSize()).save();
-        }
-
-        sendSuccessBroadcast();
-
-        return HttpResponse.newResponse("200 OK");
     }
 }

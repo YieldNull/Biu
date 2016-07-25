@@ -40,7 +40,7 @@ public class ManifestServlet extends HttpServlet {
     public HttpResponse doPost(HttpRequest request) {
         Gson gson = new Gson();
 
-        String json = request.getText();
+        String json = request.text();
         ArrayList<FileItem> manifest = gson.fromJson(json, new TypeToken<ArrayList<FileItem>>() {
         }.getType());
 

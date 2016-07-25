@@ -27,7 +27,7 @@ public class DefaultStaticServlet extends HttpServlet {
 
     @Override
     public HttpResponse doGet(HttpRequest request) {
-        String uri = request.getUri();
+        String uri = request.uri();
 
         String mime = MimeTypeMap.getSingleton()
                 .getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri));

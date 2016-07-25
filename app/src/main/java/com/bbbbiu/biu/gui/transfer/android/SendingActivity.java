@@ -24,7 +24,7 @@ import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.google.gson.Gson;
-import com.yieldnull.httpd.util.Streams;
+import com.yieldnull.httpd.Streams;
 
 import java.io.File;
 import java.io.IOException;

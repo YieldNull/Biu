@@ -34,7 +34,7 @@ public class IconServlet extends HttpServlet {
 
     @Override
     public HttpResponse doGet(HttpRequest request) {
-        String uri = request.getUri();
+        String uri = request.uri();
 
         Drawable drawable = StorageUtil.getFileIcon(context, new File(uri));
 

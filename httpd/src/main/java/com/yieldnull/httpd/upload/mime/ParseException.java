@@ -1,4 +1,4 @@
-package com.yieldnull.httpd.util.mime;
+package com.yieldnull.httpd.upload.mime;
 
 /**
  * @since 1.3

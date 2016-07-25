@@ -1,66 +1,55 @@
 package com.yieldnull.httpd;
 
-
-import com.yieldnull.httpd.util.Streams;
+import com.yieldnull.httpd.upload.MultipartParser;
+import com.yieldnull.httpd.upload.MultipartEntity;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * HTTP 请求，解析Http Header之后，交给Servlet处理
+ * 解析Http请求
  */
 public class HttpRequest {
     private static final Logger LOGGER = Logger.getLogger(Streams.class.getName());
 
 
-    public static final int BUFSIZE = 8192; // 8KB
-
-
-    private final BufferedInputStream mInputStream;
-
-    private String mUri;
-    private Method mMethod;
-
-    private Map<String, String> mParams = new HashMap<>();
-    private Map<String, String> mHeaders = new HashMap<>();
-
-
-    private String mClientIp; // 客户端ip
-    private String protocolVersion;
-    private boolean mKeepAlive;
-
+    /**
+     * Http request methods
+     */
     public enum Method {
-        GET,
-        PUT,
-        POST,
-        DELETE,
-        HEAD,
         OPTIONS,
+        GET,
+        HEAD,
+        POST,
+        PUT,
+        DELETE,
         TRACE,
-        CONNECT,
-        PATCH,
-        PROPFIND,
-        PROPPATCH,
-        MKCOL,
-        MOVE,
-        COPY,
-        LOCK,
-        UNLOCK, Method;
+        CONNECT;
 
+        /**
+         * 把String mapping 到 Method
+         *
+         * @param method 方法
+         * @return 不存在该方法则返回 Null
+         */
         public static HttpRequest.Method lookup(String method) {
             if (method == null)
                 return null;
@@ -74,46 +63,178 @@ public class HttpRequest {
     }
 
 
+    /**
+     * 处理请求报文，解析请求头。
+     *
+     * @param inputStream 报文输入流
+     * @param inetAddress 请求来源
+     * @return HttpRequest
+     */
+    public static HttpRequest parseRequest(InputStream inputStream, InetAddress inetAddress) {
+        HttpRequest request = new HttpRequest(inputStream, inetAddress);
+
+        try {
+            request.parseRequest();
+            //System.out.println(Thread.currentThread().getName() + "Finish parsing request header");
+            return request;
+        } catch (IOException e) {
+            //System.out.println(Thread.currentThread().getName() + "Exception when parsing request");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     * 请求头缓冲区，最大不超过 BUFSIZE
+     */
+    private static final int BUFSIZE = 8192; // 8KB
+
+
+    /**
+     * Http 请求报文输入流
+     */
+    private final BufferedInputStream stream;
+
+
+    /**
+     * URI
+     */
+    private String uri;
+
+
+    /**
+     * Request method
+     */
+    private Method method;
+
+
+    /**
+     * 请求头，Key-Value pair
+     */
+    private Map<String, String> mHeaders = new HashMap<>();
+
+
+    /**
+     * 客户端ip
+     */
+    private String clientIp;
+
+
+    /**
+     * 协议版本
+     */
+    private String protocolVersion;
+
+
+    /**
+     * URL 中的Key-Value pair
+     */
+    private Map<String, String> args = new HashMap<>();
+
+
+    /**
+     * 表单各项
+     */
+    private Map<String, String> form = new HashMap<>();
+
+
+    /**
+     * 文件列表
+     */
+    private List<File> files = new ArrayList<>();
+
+
+    /**
+     * 请求体的纯文本形式
+     */
+    private String text;
+
+
+    /**
+     * 构造函数
+     *
+     * @param inputStream Http 请求报文输入流
+     * @param inetAddress 请求来源
+     */
     private HttpRequest(InputStream inputStream, InetAddress inetAddress) {
 
-        this.mInputStream = new BufferedInputStream(inputStream, HttpRequest.BUFSIZE);
+        this.stream = new BufferedInputStream(inputStream, BUFSIZE);
 
-        this.mClientIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ?
+        this.clientIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ?
                 "127.0.0.1" : inetAddress.getHostAddress();
 
         this.mHeaders = new HashMap<>();
     }
 
-    public final InputStream getInputStream() {
-        return this.mInputStream;
-    }
 
-    public final Map<String, String> getHeaders() {
-        return this.mHeaders;
-    }
-
-
-    public final Method getMethod() {
-        return this.mMethod;
+    /**
+     * 获取请求来源IP
+     *
+     * @return 请求来源IP
+     */
+    public String clientIp() {
+        return clientIp;
     }
 
 
-    public final String getUri() {
-        return this.mUri;
+    /**
+     * 协议版本
+     *
+     * @return 协议版本
+     */
+    public String protocol() {
+        return protocolVersion;
     }
 
-    public String getClientIp() {
-        return mClientIp;
+
+    /**
+     * 获取请求方法
+     *
+     * @return 请求方法
+     */
+    public Method method() {
+        return method;
     }
 
-    public boolean isKeepAlive() {
-        return mKeepAlive;
+    /**
+     * 获取请求的URI
+     *
+     * @return URI
+     */
+    public String uri() {
+        return uri;
     }
 
+    /**
+     * 获取请求头的各个Key-Value pair。 Key全部小写
+     *
+     * @return Key-Value pair
+     */
+    public Map<String, String> headers() {
+        return mHeaders;
+    }
+
+
+    /**
+     * 获取contentType
+     *
+     * @return contentType
+     */
+    public String contentType() {
+        return headers().get("content-type");
+    }
+
+
+    /**
+     * 获取请求体的长度
+     *
+     * @return 长度
+     */
     public long contentLength() {
         long size;
         try {
-            String cl1 = getHeaders().get("content-length");
+            String cl1 = headers().get("content-length");
             size = Long.parseLong(cl1);
         } catch (NumberFormatException var4) {
             size = -1L;
@@ -122,70 +243,150 @@ public class HttpRequest {
         return size;
     }
 
-    // TODO
-    public String getCharacterEncoding() {
-        return "UTF-8";
+
+    /**
+     * 获取 发起请求的User-Agent
+     *
+     * @return User-Agent, 默认为空串“”
+     */
+    public String userAgent() {
+        String ua = mHeaders.get("user-agent");
+        return ua == null ? "" : ua;
     }
 
-    public String getContentType() {
-        return getHeaders().get("content-type");
+
+    /**
+     * 获取 Http 请求体的输入流（请求头已解析，剩下Body部分）
+     *
+     * @return 输入流
+     */
+    public InputStream stream() {
+        return stream;
     }
 
-    public int getContentLength() {
-        return (int) contentLength();
+
+    /**
+     * 获取URL中的 Query params.
+     *
+     * @return Key-Value pair
+     */
+    public Map<String, String> args() {
+        return args;
     }
 
-    public String getText() {
-        if (mInputStream == null) {
-            return null;
+
+    /**
+     * 获取表单中的Key-Value
+     *
+     * @return Key-Value pair,不包括文件
+     */
+    public Map<String, String> form() {
+        return form;
+    }
+
+
+    /**
+     * 文件列表
+     *
+     * @return 文件列表，请先调用{@link #parseMultipartBody(File, ProgressListener)}
+     */
+    public List<File> files() {
+        return files;
+    }
+
+
+    /**
+     * 以文本形式读取请求体
+     *
+     * @return 请求体的内容
+     */
+    public String text() {
+        return text;
+    }
+
+
+    /**
+     * 解析请求
+     * <p/>
+     * 先解析请求头，如果请求体是文本形式或者JSON，则把请求体也读取完
+     *
+     * @throws IOException
+     */
+    private void parseRequest() throws IOException {
+        parseRequestHeader();
+
+        String contentType = contentType();
+
+        if (contentType != null && (contentType.startsWith(ContentType.TEXT)
+                || contentType.startsWith(ContentType.JSON))) {
+            parseRawBody();
         }
+    }
 
-        InputStreamReader reader;
-        try {
-            reader = new InputStreamReader(mInputStream, getCharacterEncoding());
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.log(Level.WARNING, e.toString());
-            reader = new InputStreamReader(mInputStream);
-        }
 
-        StringBuilder stringBuilder = new StringBuilder();
-        int c;
+    /**
+     * 解析Multipart请求体
+     *
+     * @param repository 存放文件
+     * @param listener   监听进度
+     */
+    public void parseMultipartBody(File repository, ProgressListener listener) {
+        if (method().equals(Method.POST) && contentType() != null
+                && contentType().startsWith(ContentType.MULTIPART)) {
 
-        try {
+            boolean successful = false;
+
             try {
-                while ((c = reader.read()) >= 0) {
-                    stringBuilder.append((char) c);
+                MultipartParser iterator = new MultipartParser(this);
+
+                while (iterator.hasNext()) {
+                    final MultipartEntity item = iterator.next();
+
+                    if (item.isFile()) {
+                        File file = new File(repository, item.fileName());
+                        files.add(file);
+
+                        OutputStream fileOutStream = new FileOutputStream(file);
+
+                        Streams.copy(item.stream(), fileOutStream, true,
+                                new ProgressNotifier(listener, item.contentLength()));
+                    } else {
+                        form.put(item.fieldName(), item.fieldValue());
+                    }
+
                 }
-            } catch (SocketTimeoutException e) { // 浏览器使用Keep-Alive，发完之后不关闭连接。。。
-                LOGGER.log(Level.WARNING, e.toString());
+
+                successful = true;
+            } catch (IOException ignored) {
+
+            } finally {
+                if (!successful) {
+                    for (File file : files) {
+                        //noinspection ResultOfMethodCallIgnored
+                        file.delete();
+                    }
+
+                    files.clear();
+                }
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, e.toString());
         }
-
-        return stringBuilder.toString();
     }
 
-    public static HttpRequest parseRequest(InputStream inputStream, InetAddress inetAddress) {
-        HttpRequest request = new HttpRequest(inputStream, inetAddress);
 
-        try {
-            request.parseRequestHeader();
-            return request;
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, Thread.currentThread().getName() + "Exception when parsing request", e);
-        }
-        return null;
-    }
-
+    /**
+     * 解析请求头
+     *
+     * @throws IOException
+     */
     private void parseRequestHeader() throws IOException {
-        byte[] headerBuf = new byte[HttpRequest.BUFSIZE]; //请求头缓冲区，最大不超过 HttpRequest.BUFSIZE
+
+        byte[] headerBuf = new byte[BUFSIZE]; //请求头缓冲区，最大不超过 BUFSIZE
         int headerEndIndex = 0;
         int readCount = 0;
 
-        mInputStream.mark(HttpRequest.BUFSIZE);
+        stream.mark(BUFSIZE);
 
-        int read = mInputStream.read(headerBuf, 0, HttpRequest.BUFSIZE);
+        int read = stream.read(headerBuf, 0, BUFSIZE);
 
         // 表示一次可能读不完，分多次读，读到两个CRLF 或者读满buf就结束循环
         while (read != -1) {
@@ -196,30 +397,47 @@ public class HttpRequest {
                 break;
             }
 
-            // 最多读 HttpRequest.BUFSIZE - this.mReadCount 个字节
+            // 最多读 BUFSIZE - this.mReadCount 个字节
             // 存入 buf 时，从 mReadCount 开始
 
-            read = mInputStream.read(headerBuf, readCount, HttpRequest.BUFSIZE - readCount);
+            read = stream.read(headerBuf, readCount, BUFSIZE - readCount);
         }
 
         if (headerEndIndex < readCount) {
-            mInputStream.reset(); // 回到未读取状态
-            mInputStream.skip(headerEndIndex); // 跳过请求头，为后面的Body处理做准备
+            stream.reset(); // 回到未读取状态
+            //noinspection ResultOfMethodCallIgnored
+            stream.skip(headerEndIndex); // 跳过请求头，为后面的Body处理做准备
+
         } // endIndex可能比已经读到Bytes数大（当头大于Buf size的时候）就不需要移动到EndIndex,直接往下读就行了
 
         // 提取Header中的信息
         BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(headerBuf, 0, readCount)));
         decodeHeader(reader);
-
-        String connection = mHeaders.get("connection");
-        mKeepAlive = "HTTP/1.1".equals(protocolVersion) && (connection == null || !connection.matches("(?i).*close.*"));
     }
 
 
     /**
-     * 解析请求头
+     * 以文本形式解析请求体
+     */
+    private void parseRawBody() {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[512];
+        int length;
+        try {
+            while ((length = stream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+        } catch (IOException ignored) {
+        }
+
+        text = result.toString();
+    }
+
+
+    /**
+     * 解析请求头(to 小写）
      *
-     * @param reader reader
+     * @param reader BufferedReader
      * @throws IOException
      */
     private void decodeHeader(BufferedReader reader) throws IOException {
@@ -233,23 +451,23 @@ public class HttpRequest {
         String[] tokens = line.split("\\s+");
 
         if (tokens.length != 3) {
-            LOGGER.log(Level.WARNING, Thread.currentThread().getName() + "Invalid HTTP Request Header");
+            //System.out.println(Thread.currentThread().getName() + "Invalid HTTP Request Header");
             throw new IOException(HttpResponse.Status.BAD_REQUEST.getDescription());
         }
 
-        mMethod = Method.lookup(tokens[0]);
+        method = Method.lookup(tokens[0]);
         String uri = tokens[1];
         protocolVersion = tokens[2];
 
         // 提取URL中的参数
-        int qmi = uri.indexOf('?');
-        if (qmi >= 0) {
-            decodeParams(uri.substring(qmi + 1));
-            mUri = decodeUrl(uri.substring(0, qmi));
-        } else {
-            mUri = decodeUrl(uri);
-        }
+        int queryIndex = uri.indexOf('?');
 
+        if (queryIndex >= 0) {
+            decodeParams(uri.substring(queryIndex + 1));
+            this.uri = decodeUrl(uri.substring(0, queryIndex));
+        } else {
+            this.uri = decodeUrl(uri);
+        }
 
         // 提取请求头
         line = reader.readLine();
@@ -260,8 +478,8 @@ public class HttpRequest {
             }
             line = reader.readLine();
         }
-
     }
+
 
     /**
      * 提取URL中的参数
@@ -278,22 +496,26 @@ public class HttpRequest {
             String e = st.nextToken();
             int sep = e.indexOf('=');
             if (sep >= 0) {
-                mParams.put(decodeUrl(e.substring(0, sep)).trim(), decodeUrl(e.substring(sep + 1)));
+                args.put(decodeUrl(e.substring(0, sep)).trim(), decodeUrl(e.substring(sep + 1)));
             } else {
-                mParams.put(decodeUrl(e).trim(), "");
+                args.put(decodeUrl(e).trim(), "");
             }
         }
     }
 
+
     /**
      * 将URL中转义过的字符解码
+     *
+     * @param str 原URL
+     * @return 解码后的URL
      */
     private String decodeUrl(String str) {
         String decoded = null;
         try {
             decoded = URLDecoder.decode(str, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
-            LOGGER.log(Level.WARNING, Thread.currentThread().getName() + "Encoding not supported, ignored ", ignored);
+            //System.out.println(Thread.currentThread().getName() + "Encoding not supported, ignored ");
         }
         return decoded == null ? "/" : decoded;
     }

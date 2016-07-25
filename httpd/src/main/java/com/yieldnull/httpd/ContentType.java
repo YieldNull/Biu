@@ -5,6 +5,14 @@ import java.util.regex.Pattern;
 
 public class ContentType {
 
+    public static final String CONTENT_TYPE = "Content-type";
+    public static final String CONTENT_DISPOSITION = "Content-disposition";
+    public static final String CONTENT_LENGTH = "Content-length";
+    public static final String FORM_DATA = "form-data";
+    public static final String ATTACHMENT = "attachment";
+    public static final String MULTIPART = "multipart/";
+    public static final String MULTIPART_FORM_DATA = "multipart/form-data";
+    public static final String MULTIPART_MIXED = "multipart/mixed";
     private static final String TAG = ContentType.class.getSimpleName();
 
     public static final String MIME_PLAINTEXT = "text/plain; charset=utf-8";
@@ -13,6 +21,8 @@ public class ContentType {
     public static final String MIME_JAVASCRIPT = "text/javascript; charset=UTF-8";
     public static final String MIME_STREAM = "application/octet-stream";
     public static final String MIME_PNG = "image/png";
+    public static final String TEXT = "text/";
+    public static final String JSON="application/json";
 
     private static final String ASCII_ENCODING = "US-ASCII";
     private static final String MULTIPART_FORM_DATA_HEADER = "multipart/form-data";

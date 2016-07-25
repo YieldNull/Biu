@@ -15,7 +15,7 @@ import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
-import com.yieldnull.httpd.util.Streams;
+import com.yieldnull.httpd.Streams;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -186,7 +186,7 @@ public class DownloadService extends Service {
                 fileOutStream = new FileOutputStream(destFile);
                 ProgressNotifier notifier = new ProgressNotifier(progressListener, fileSize);
 
-                // copy stream
+                // copy getStream
                 Streams.copy(response.body().byteStream(), fileOutStream, true, notifier);
 
                 Log.i(TAG, "Finish downloading file " + downloadUrl);

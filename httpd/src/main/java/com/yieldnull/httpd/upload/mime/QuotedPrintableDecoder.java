@@ -1,4 +1,4 @@
-package com.yieldnull.httpd.util.mime;
+package com.yieldnull.httpd.upload.mime;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,10 +22,10 @@ final class QuotedPrintableDecoder {
     }
 
     /**
-     * Decode the encoded byte data writing it to the given output stream.
+     * Decode the encoded byte data writing it to the given output getStream.
      *
      * @param data   The array of byte data to decode.
-     * @param out    The output stream used to return the decoded data.
+     * @param out    The output getStream used to return the decoded data.
      *
      * @return the number of bytes produced.
      * @exception IOException
@@ -57,7 +57,7 @@ final class QuotedPrintableDecoder {
                     if (b2 != '\n') {
                         throw new IOException("Invalid quoted printable encoding; CR must be followed by LF");
                     }
-                    // this was a soft linebreak inserted by the encoding.  We just toss this away
+                    // this was a soft linebreak inserted by the getEncoding.  We just toss this away
                     // on decode.
                 } else {
                     // this is a hex pair we need to convert back to a single byte.

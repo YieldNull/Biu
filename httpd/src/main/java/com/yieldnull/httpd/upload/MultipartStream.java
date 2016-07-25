@@ -1,10 +1,6 @@
 package com.yieldnull.httpd.upload;
 
-import com.yieldnull.httpd.ProgressNotifier;
-import com.yieldnull.httpd.upload.exceptions.FileUploadIOException;
-import com.yieldnull.httpd.upload.exceptions.IllegalBoundaryException;
-import com.yieldnull.httpd.upload.exceptions.MalformedStreamException;
-import com.yieldnull.httpd.util.Streams;
+import com.yieldnull.httpd.Streams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -17,9 +13,7 @@ import static java.lang.String.format;
 
 
 /**
- * 解析MultipartStream
- * <p/>
- * 这尼玛绝壁是C程序员写的，我勒个去。
+ * 读取Http Request Body
  */
 public class MultipartStream {
 
@@ -28,26 +22,46 @@ public class MultipartStream {
     public static final byte LF = 0x0A;     // \r
     public static final byte DASH = 0x2D;   // -
 
+
     /**
-     * The maximum length of <code>header-part</code> that will be
-     * processed (10 kilobytes = 10240 bytes.).
+     * Multipart Header 的最大长度
      */
     public static final int HEADER_PART_SIZE_MAX = 10240;
 
+
+    /**
+     * 默认缓冲区大小
+     */
     public static final int DEFAULT_BUFSIZE = 4096;
 
 
+    /**
+     * MultipartEntity Header 与 Body 的分隔符
+     */
     public static final byte[] HEADER_SEPARATOR = {CR, LF, CR, LF};
 
+
+    /**
+     * boundary之后，另一段Entity之前
+     */
     public static final byte[] FIELD_SEPARATOR = {CR, LF};
 
-    // 加在boundary之后，表示Entity结束
+
+    /**
+     * 加在boundary之后，表示MultiPart结束
+     */
     public static final byte[] STREAM_TERMINATOR = {DASH, DASH};
 
-    // 加在boundary之前，表示MultiPart开始，包含上一行的换行符
+
+    /**
+     * 加在boundary之前，表示Entity开始，包含上一行的换行符
+     */
     public static final byte[] BOUNDARY_PREFIX = {CR, LF, DASH, DASH};
 
 
+    /**
+     * 数据流
+     */
     private final InputStream input;
 
 
@@ -62,6 +76,7 @@ public class MultipartStream {
      */
     private int delimiterLength;
 
+
     /**
      * The amount of data, in bytes, that must be kept in the buffer in order
      * to detect delimiters reliably.
@@ -69,6 +84,9 @@ public class MultipartStream {
     private int keepRegion; // == boundaryLength
 
 
+    /**
+     * 缓冲区
+     */
     private final int bufSize;
     private final byte[] buffer;
 
@@ -86,42 +104,32 @@ public class MultipartStream {
      */
     private int tail;
 
+
+    /**
+     * Entity Header编码
+     */
     private String headerEncoding;
 
-    private final ProgressNotifier notifier;
-
 
     /**
-     * Retrieves the character encoding used when reading the headers of an
-     * individual part. When not specified, or <code>null</code>, the platform
-     * default encoding is used.
-     *
-     * @return The encoding used to read part headers.
-     */
-    public String getHeaderEncoding() {
-        return headerEncoding;
-    }
-
-    /**
-     * Specifies the character encoding to be used when reading the headers of
+     * Specifies the character getEncoding to be used when reading the getHeaders of
      * individual parts. When not specified, or <code>null</code>, the platform
-     * default encoding is used.
+     * default getEncoding is used.
      *
-     * @param encoding The encoding used to read part headers.
+     * @param encoding The getEncoding used to read part getHeaders.
      */
     public void setHeaderEncoding(String encoding) {
         headerEncoding = encoding;
     }
 
 
-    public MultipartStream(InputStream pInputStream, byte[] pBoundary, ProgressNotifier pNotifier) {
+    public MultipartStream(InputStream pInputStream, byte[] pBoundary) {
         head = 0;
         tail = 0;
 
         input = pInputStream;
         bufSize = DEFAULT_BUFSIZE;
         buffer = new byte[bufSize];
-        notifier = pNotifier;
 
         delimiterLength = BOUNDARY_PREFIX.length + pBoundary.length;
         delimiter = new byte[delimiterLength];
@@ -137,9 +145,8 @@ public class MultipartStream {
      * 寻找第一个Entity.
      *
      * @return 是否找到
-     * @throws IOException if an i/o error occurs.
      */
-    public boolean skipPreamble() throws IOException {
+    public boolean skipPreamble() {
 
         // 没有Preamble的话，delimiter前面没有换行符
         System.arraycopy(delimiter, 2, delimiter, 0, delimiter.length - 2);
@@ -149,10 +156,10 @@ public class MultipartStream {
             // Discard all data up to the delimiter.
             discardBodyData();
 
-            // Read boundary - if succeeded, the stream contains an
+            // Read boundary - if succeeded, the getStream contains an
             // encapsulation.
             return readBoundary();
-        } catch (MalformedStreamException e) {
+        } catch (IOException e) {
             return false;
         } finally {
             // Restore delimiter.
@@ -163,16 +170,12 @@ public class MultipartStream {
         }
     }
 
+
     /**
-     * <p> Reads <code>body-data</code> from the current
-     * <code>encapsulation</code> and discards it.
-     * <p/>
-     * <p>Use this method to skip encapsulations you don't need or don't
-     * understand.
+     * Discard all data up to the delimiter
      *
      * @return The amount of data discarded.
-     * @throws MalformedStreamException if the stream ends unexpectedly.
-     * @throws IOException              if an i/o error occurs.
+     * @throws IOException if an i/o error occurs.
      */
     public int discardBodyData() throws IOException {
         return readBodyData(null);
@@ -180,40 +183,26 @@ public class MultipartStream {
 
 
     /**
-     * <p>Reads <code>body-data</code> from the current
-     * <code>encapsulation</code> and writes its contents into the
-     * output <code>Stream</code>.
-     * <p/>
-     * <p>Arbitrary large amounts of data can be processed by this
-     * method using a constant size buffer. (see {@link
-     * ProgressNotifier) constructor}).
+     * 将Entity Body 写入到输出流
      *
-     * @param output The <code>Stream</code> to write data into. May
-     *               be null, in which case this method is equivalent
-     *               to {@link #discardBodyData()}.
-     * @return the amount of data written.
-     * @throws MalformedStreamException if the stream ends unexpectedly.
-     * @throws IOException              if an i/o error occurs.
+     * @param output 可以为空，表示舍弃之，相当于{@link #discardBodyData()}
+     * @return 读取总量
+     * @throws IOException
      */
     public int readBodyData(OutputStream output) throws IOException {
-        final InputStream inputStream = newInputStream();
+        final InputStream inputStream = newEntityStream();
         return (int) Streams.copy(inputStream, output, false, null);
     }
 
 
     /**
-     * Skips a <code>boundary</code> token, and checks whether more
-     * <code>encapsulations</code> are contained in the stream.
+     * 读取boundary，并检查之后是否还有Entity
      *
-     * @return <code>true</code> if there are more encapsulations in
-     * this stream; <code>false</code> otherwise.
-     * <p/>
-     * \\@throws FileUploadIOException if the bytes read from the stream exceeded the size limits
-     * @throws MalformedStreamException if the stream ends unexpectedly or
-     *                                  fails to follow required syntax.
+     * @return 是否还有
+     * @throws IOException
      */
-    public boolean readBoundary()
-            throws FileUploadIOException, MalformedStreamException {
+    public boolean readBoundary() throws IOException {
+
         byte[] marker = new byte[2];
         boolean nextChunk;
 
@@ -236,86 +225,61 @@ public class MultipartStream {
             } else if (arrayEquals(marker, FIELD_SEPARATOR, 2)) {
                 nextChunk = true;
             } else {
-                throw new MalformedStreamException(
-                        "Unexpected characters follow a boundary");
+                throw new IOException("Unexpected characters follow a boundary");
             }
-        } catch (FileUploadIOException e) {
-            // wraps a SizeException, re-throw as it will be unwrapped later
-            throw e;
         } catch (IOException e) {
-            throw new MalformedStreamException("Stream ended unexpectedly");
+            throw new IOException("Stream ended unexpectedly");
         }
         return nextChunk;
     }
 
+
     /**
-     * <p>Changes the boundary token used for partitioning the stream.
+     * 设置boundary
      * <p/>
-     * <p>This method allows single pass processing of nested multipart
-     * streams.
-     * <p/>
-     * <p>The boundary token of the nested stream is <code>required</code>
-     * to be of the same length as the boundary token in parent stream.
-     * <p/>
-     * <p>Restoring the parent stream boundary token after processing of a
-     * nested stream is left to the application.
+     * 由于multipart可以嵌套，因此有更换boundary的需求。
+     * 内外两层的boundary长度需要一致，且处理完内层之后要将boundary恢复为外层
      *
-     * @param boundary The boundary to be used for parsing of the nested
-     *                 stream.
-     * @throws IllegalBoundaryException if the <code>boundary</code>
-     *                                  has a different length than the one
-     *                                  being currently parsed.
+     * @param boundary 内层boundary
      */
-    public void setBoundary(byte[] boundary)
-            throws IllegalBoundaryException {
+    public void setBoundary(byte[] boundary) throws IOException {
         if (boundary.length != delimiterLength - BOUNDARY_PREFIX.length) {
-            throw new IllegalBoundaryException(
-                    "The length of a boundary token can not be changed");
+            throw new IOException("The length of a boundary token can not be changed");
         }
         System.arraycopy(boundary, 0, this.delimiter, BOUNDARY_PREFIX.length,
                 boundary.length);
     }
 
+
     /**
-     * <p>Reads the <code>header-part</code> of the current
-     * <code>encapsulation</code>.
-     * <p/>
-     * <p>Headers are returned verbatim to the input stream, including the
-     * trailing <code>CRLF</code> marker. Parsing is left to the
-     * application.
-     * <p/>
-     * <p><strong>TODO</strong> allow limiting maximum header size to
-     * protect against abuse.
+     * 读取MultipartEntity的header
      *
-     * @return The <code>header-part</code> of the current encapsulation.
-     * <p/>
-     * \\\@throws MalformedStreamException if the stream ends unexpectedly.
+     * @return 读取到的header部分
+     * @throws IOException
      */
-    public String readHeaders() throws FileUploadIOException, MalformedStreamException {
+    public String readHeaders() throws IOException {
         int i = 0;
         byte b;
+
         // to support multi-byte characters
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
         int size = 0;
         while (i < HEADER_SEPARATOR.length) {
-            try {
-                b = readByte();
-            } catch (FileUploadIOException e) {
-                // wraps a SizeException, re-throw as it will be unwrapped later
-                throw e;
-            } catch (IOException e) {
-                throw new MalformedStreamException("Stream ended unexpectedly");
-            }
+            b = readByte();
+
             if (++size > HEADER_PART_SIZE_MAX) {
-                throw new MalformedStreamException(
+                throw new IOException(
                         format("Header section has more than %s bytes (maybe it is not properly terminated)",
-                                Integer.valueOf(HEADER_PART_SIZE_MAX)));
+                                HEADER_PART_SIZE_MAX));
             }
+
             if (b == HEADER_SEPARATOR[i]) {
                 i++;
             } else {
                 i = 0;
             }
+
             baos.write(b);
         }
 
@@ -324,7 +288,7 @@ public class MultipartStream {
             try {
                 headers = baos.toString(headerEncoding);
             } catch (UnsupportedEncodingException e) {
-                // Fall back to platform default if specified encoding is not
+                // Fall back to platform default if specified getEncoding is not
                 // supported.
                 headers = baos.toString();
             }
@@ -337,11 +301,10 @@ public class MultipartStream {
 
 
     /**
-     * Reads a byte from the <code>buffer</code>, and refills it as
-     * necessary.
+     * 从buffer读取一个字节，必要时从输入源将缓冲区填满
      *
-     * @return The next byte from the input stream.
-     * @throws IOException if there is no more data available.
+     * @return 下一个字节
+     * @throws IOException EOF
      */
     public byte readByte() throws IOException {
         // Buffer depleted ?
@@ -353,15 +316,17 @@ public class MultipartStream {
                 // No more data available.
                 throw new IOException("No more data is available");
             }
-            if (notifier != null) {
-                notifier.noteBytesRead(tail);
-            }
         }
         return buffer[head++];
     }
 
 
-    ItemInputStream newInputStream() {
+    /**
+     * 获取 Entity body 数据流
+     *
+     * @return 输入流
+     */
+    ItemInputStream newEntityStream() {
         return new ItemInputStream();
     }
 
@@ -382,6 +347,7 @@ public class MultipartStream {
         }
         return true;
     }
+
 
     /**
      * 在buf的有效区域[head,tail]内，寻找到delimiter的第一个字符在buf中的位置
@@ -415,6 +381,7 @@ public class MultipartStream {
         return -1;
     }
 
+
     /**
      * 在buffer中从position处开始查找指定字节
      *
@@ -431,8 +398,9 @@ public class MultipartStream {
         return -1;
     }
 
+
     /**
-     * 这丫最牛逼
+     * 读取整个Multipart，将各个Entity连起来读
      */
     public class ItemInputStream extends InputStream implements Closeable {
 
@@ -442,13 +410,15 @@ public class MultipartStream {
          */
         private int pad;
 
+
         /**
-         * 当前Entity delimiter 在buffer中的位置，不存在与buffer中则为-1
+         * 当前Entity delimiter 在buffer中的位置，不存在于buffer中则为-1
          */
         private int end;
 
+
         /**
-         * Whether the stream is already closed.
+         * Whether the getStream is already closed.
          */
         private boolean closed;
 
@@ -466,13 +436,9 @@ public class MultipartStream {
             findDelimiter();
         }
 
-        public boolean isClosed() {
-            return closed;
-        }
-
 
         /**
-         * Called for finding the separator.
+         * 寻找下一个 delimiter
          */
         private void findDelimiter() {
             end = MultipartStream.this.findDelimiter();
@@ -503,6 +469,7 @@ public class MultipartStream {
             }
             return b + BYTE_POSITIVE_OFFSET;
         }
+
 
         @SuppressWarnings("NullableProblems")
         @Override
@@ -548,7 +515,7 @@ public class MultipartStream {
 
 
         /**
-         * Closes the input stream.
+         * Closes the input getStream.
          *
          * @throws IOException An I/O error occurred.
          */
@@ -559,9 +526,9 @@ public class MultipartStream {
 
 
         /**
-         * Closes the input stream.
+         * Closes the input getStream.
          *
-         * @param pCloseUnderlying Whether to close the underlying stream
+         * @param pCloseUnderlying Whether to close the underlying getStream
          *                         (hard close)
          * @throws IOException An I/O error occurred.
          */
@@ -613,11 +580,7 @@ public class MultipartStream {
                     // The last pad amount is left in the buffer.
                     // Boundary can't be in there so signal an error
                     // condition.
-                    final String msg = "Stream ended unexpectedly";
-                    throw new MalformedStreamException(msg);
-                }
-                if (notifier != null) {
-                    notifier.noteBytesRead(bytesRead);
+                    throw new IOException("Stream ended unexpectedly");
                 }
                 tail += bytesRead;
 

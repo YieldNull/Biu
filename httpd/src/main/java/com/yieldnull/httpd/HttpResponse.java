@@ -1,6 +1,5 @@
 package com.yieldnull.httpd;
 
-import com.yieldnull.httpd.util.Streams;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -10,21 +9,15 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
 
 public class HttpResponse {
-
-    private static final Logger LOGGER = Logger.getLogger(Streams.class.getName());
 
     /**
      * 返回状态码
@@ -49,53 +42,71 @@ public class HttpResponse {
         public String getDescription() {
             return "" + this.status + " " + this.description;
         }
+
+        public int getStatus() {
+            return this.status;
+        }
     }
+
+
+    /**
+     * 返回体达到一定大小之后就使用GZip
+     */
+    private static final long GZIP_THRESHOLD = 64;
+
 
     /**
      * 回车换行：Carriage Return & Line Feed
      */
     private static final String CRLF = "\r\n";
 
+
     /**
      * 空格
      */
     private static final String SPACE = " ";
 
+
     /**
      * 返回状态码
      */
-    private Status status;
+    private Status mStatus;
 
 
     /**
      * 返回数据对应的MIME TYPE
      */
-    private String mimeType;
+    private String mMimeType;
+
 
     /**
      * 将要发送的数据
      */
-    private InputStream dataStream;
+    private InputStream mDataStream;
+
 
     /**
      * 数据长度
      */
-    private long contentLength;
+    private long mContentLength;
+
 
     /**
      * 是否用Gzip发送
      */
-    private boolean encodeAsGzip;
+    private boolean mEncodeAsGzip;
+
 
     /**
      * 监听发送进度
      */
     private ProgressNotifier progressNotifier;
 
+
     /**
      * HTTP Headers
      */
-    private HashMap<String, String> headerMap = new HashMap<>();
+    private HashMap<String, String> mHeaders = new HashMap<>();
 
 
     /**
@@ -104,8 +115,9 @@ public class HttpResponse {
      * @return MIME TYPE
      */
     public String getMimeType() {
-        return this.mimeType;
+        return this.mMimeType;
     }
+
 
     /**
      * 获取返回状态码
@@ -113,8 +125,9 @@ public class HttpResponse {
      * @return {@link Status}
      */
     public Status getStatus() {
-        return status;
+        return mStatus;
     }
+
 
     /**
      * 设置是否使用GZIP 发送数据
@@ -122,7 +135,20 @@ public class HttpResponse {
      * @param encodeAsGzip 是否使用GZIP
      */
     public void setGzipEncoding(boolean encodeAsGzip) {
-        this.encodeAsGzip = encodeAsGzip;
+        if (mContentLength > GZIP_THRESHOLD) {
+            this.mEncodeAsGzip = encodeAsGzip;
+        }
+    }
+
+
+    /**
+     * 设置HTTP Header。会覆盖原有值
+     *
+     * @param header header
+     * @param value  value
+     */
+    public void addHeader(String header, String value) {
+        mHeaders.put(header, value);
     }
 
 
@@ -135,28 +161,9 @@ public class HttpResponse {
         this.progressNotifier = progressNotifier;
     }
 
-    /**
-     * 设置HTTP Header。会覆盖原有值
-     *
-     * @param header header
-     * @param value  value
-     */
-    public void addHeader(String header, String value) {
-        headerMap.put(header, value);
-    }
 
     /**
      * 私有构造函数，会有工厂方法创建对象.
-     * <p/>
-     * {@link HttpResponse#newResponse(String)}
-     * <p/>
-     * {@link HttpResponse#newResponse(Status, String)}
-     * <p/>
-     * {@link HttpResponse#newResponse(InputStream, long)}
-     * <p/>
-     * {@link HttpResponse#newResponse(Status, String, InputStream, long)}
-     * <p/>
-     * {@link HttpResponse#newRedirectResponse(String)}
      *
      * @param status     返回状态码,默认为200
      * @param mimeType   返回MIME类型
@@ -164,32 +171,36 @@ public class HttpResponse {
      * @param totalBytes 返回报文大小 “Content-Length"
      */
     private HttpResponse(Status status, String mimeType, InputStream dataStream, long totalBytes) {
-        this.status = status == null ? Status.OK : status;
-        this.mimeType = mimeType;
+        this.mStatus = status == null ? Status.OK : status;
+        this.mMimeType = mimeType;
 
         if (dataStream == null) {
-            this.dataStream = new ByteArrayInputStream(new byte[0]);
-            contentLength = 0L;
+            this.mDataStream = new ByteArrayInputStream(new byte[0]);
+            mContentLength = 0L;
         } else {
-            this.dataStream = dataStream;
-            this.contentLength = totalBytes;
+            this.mDataStream = dataStream;
+            this.mContentLength = totalBytes;
         }
+
+//
+//        System.out.println(String.format("%s Finish generating response. Status:%s",
+//                Thread.currentThread().getName(), status.getDescription()));
     }
 
 
     /**
-     * 返回HTML源码,状态码为200
+     * 返回HTML源码(UTF-8),状态码为200
      *
      * @param html 源码
      * @return {@link HttpResponse}
      */
     public static HttpResponse newResponse(String html) {
-        return newResponse(HttpResponse.Status.OK, html);
+        return newResponse(Status.OK, html);
     }
 
 
     /**
-     * 返回指定状态码的HTML源码
+     * 返回指定状态码的HTML源码(UTF-8)
      *
      * @param status 状态码 {@link Status}
      * @param html   源码
@@ -203,19 +214,18 @@ public class HttpResponse {
         } else {
             byte[] bytes;
             try {
-                CharsetEncoder newEncoder = Charset.forName(contentType.getEncoding()).newEncoder();
-                if (!newEncoder.canEncode(html)) {
-                    contentType = contentType.tryUTF8();
-                }
                 bytes = html.getBytes(contentType.getEncoding());
             } catch (UnsupportedEncodingException e) {
-                LOGGER.log(Level.SEVERE, Thread.currentThread().getName() + "Encoding problem, Responding nothing", e);
+                System.out.println(Thread.currentThread().getName() + "Encoding problem, Responding nothing");
+                e.printStackTrace();
+
                 bytes = new byte[0];
             }
-            return newResponse(status, contentType.getContentTypeHeader(),
+            return newResponse(status, ContentType.MIME_HTML,
                     new ByteArrayInputStream(bytes), bytes.length);
         }
     }
+
 
     /**
      * 以 {@link ContentType#MIME_STREAM} 形式返回，状态码200
@@ -228,10 +238,11 @@ public class HttpResponse {
         return newResponse(Status.OK, ContentType.MIME_STREAM, data, totalBytes);
     }
 
+
     /**
-     * 从从输入流读取数据
+     * 指定MIME TYPE，并将指定输入流的数据发送到输出流，状态码200
      *
-     * @param mimeType   mimeType
+     * @param mimeType   mMimeType
      * @param data       输入流
      * @param totalBytes length
      * @return {@link HttpResponse}
@@ -242,7 +253,7 @@ public class HttpResponse {
 
 
     /**
-     * 返回指定MIME TYPE 的文本内容
+     * 返回指定MIME TYPE 的文本内容(UTF-8)，状态码200
      *
      * @param mime    类型
      * @param content 源码
@@ -253,8 +264,9 @@ public class HttpResponse {
         return newResponse(Status.OK, mime, new ByteArrayInputStream(bytes), bytes.length);
     }
 
+
     /**
-     * 从从输入流读取数据,并指定状态码,mime type
+     * 指定MIME TYPE，并将指定输入流的数据发送到输出流，指定状态码
      *
      * @param status     状态码，{@link Status}
      * @param mimeType   MIME ，{@link ContentType}
@@ -265,6 +277,7 @@ public class HttpResponse {
     public static HttpResponse newResponse(Status status, String mimeType, InputStream data, long totalBytes) {
         return new HttpResponse(status, mimeType, data, totalBytes);
     }
+
 
     /**
      * 重定向
@@ -278,6 +291,7 @@ public class HttpResponse {
         return response;
     }
 
+
     /**
      * 将要发送给客户端的数据写入输出流。
      * <p/>
@@ -290,37 +304,37 @@ public class HttpResponse {
                 new BufferedWriter(
                         new OutputStreamWriter(
                                 outputStream,
-                                new ContentType(mimeType).getEncoding())),
+                                new ContentType(mMimeType).getEncoding())),
                 false);
 
 
         // 协议、状态码、状态描述
-        writer.append("HTTP/1.1 ").append(status.getDescription()).append(SPACE + CRLF);
+        writer.append("HTTP/1.1 ").append(mStatus.getDescription()).append(SPACE + CRLF);
 
 
         // MIME Content-Type
-        if (mimeType != null) {
-            printHeader(writer, "Content-Type", mimeType);
+        if (mMimeType != null) {
+            printHeader(writer, "Content-Type", mMimeType);
         }
 
         // Date
-        SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
-        gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-        printHeader(writer, "Date", gmtFrmt.format(new Date()));
+        SimpleDateFormat format = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        printHeader(writer, "Date", format.format(new Date()));
 
         // Connection,Keep-Alive?
         printHeader(writer, "Connection", "close");
 
         // content-length
-        printHeader(writer, "Content-Length", String.valueOf(contentLength));
+        printHeader(writer, "Content-Length", String.valueOf(mContentLength));
 
         // Use Gzip?
-        if (encodeAsGzip) {
+        if (mEncodeAsGzip) {
             printHeader(writer, "Content-Encoding", "gzip");
         }
 
-        // other headers
-        for (Map.Entry<String, String> header : headerMap.entrySet()) {
+        // other getHeaders
+        for (Map.Entry<String, String> header : mHeaders.entrySet()) {
             printHeader(writer, header.getKey(), header.getValue());
         }
 
@@ -330,6 +344,7 @@ public class HttpResponse {
         sendBodyIfGzip(outputStream);
         outputStream.flush();
     }
+
 
     /**
      * 按照Header的格式将key-value对转换字符串
@@ -350,7 +365,7 @@ public class HttpResponse {
      * @throws IOException
      */
     private void sendBodyIfGzip(OutputStream outputStream) throws IOException {
-        if (encodeAsGzip) {
+        if (mEncodeAsGzip) {
             GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
             sendBody(gzipOutputStream);
             gzipOutputStream.finish();
@@ -359,6 +374,7 @@ public class HttpResponse {
         }
     }
 
+
     /**
      * 将data中的数据全部读出，写入输出流
      *
@@ -366,11 +382,11 @@ public class HttpResponse {
      * @throws IOException
      */
     private void sendBody(OutputStream outputStream) throws IOException {
-        int BUFFER_SIZE = 16 * 1024;
+        int BUFFER_SIZE = 8 * 1024;
         byte[] buff = new byte[BUFFER_SIZE];
 
         while (true) {
-            int read = dataStream.read(buff, 0, BUFFER_SIZE);
+            int read = mDataStream.read(buff, 0, BUFFER_SIZE);
             if (read <= 0) {
                 break;
             }
@@ -380,5 +396,8 @@ public class HttpResponse {
                 progressNotifier.noteBytesRead(read);
             }
         }
+
+        outputStream.flush();
     }
+
 }

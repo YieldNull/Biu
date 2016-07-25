@@ -1,17 +1,17 @@
-package com.yieldnull.httpd.util;
+package com.yieldnull.httpd.upload;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class FileItemHeaders implements Serializable {
+/**
+ * Entity Header
+ */
+public class MultipartHeader {
 
-    private static final long serialVersionUID = -4455695752627032559L;
-
-    private final Map<String, List<String>> headerNameToValueListMap = new LinkedHashMap<String, List<String>>();
+    private final Map<String, List<String>> headerNameToValueListMap = new LinkedHashMap<>();
 
     public String getHeader(String name) {
         String nameLower = name.toLowerCase(Locale.ENGLISH);

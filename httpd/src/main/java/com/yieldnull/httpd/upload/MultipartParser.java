@@ -1,10 +1,8 @@
 package com.yieldnull.httpd.upload;
 
 
+import com.yieldnull.httpd.ContentType;
 import com.yieldnull.httpd.HttpRequest;
-import com.yieldnull.httpd.ProgressListener;
-import com.yieldnull.httpd.ProgressNotifier;
-import com.yieldnull.httpd.util.FileItemHeaders;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,52 +10,75 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-class FileItemIterator {
-
-    private final MultipartStream multipart;
-    private final ProgressNotifier notifier;
-
-    private final byte[] boundary;
-
-    private FileItemStream currentItem;
-
-    private String currentFieldName;
+public class MultipartParser {
 
     /**
-     * Whether the current item may still be read.
+     * MultipartStream
+     */
+    private final MultipartStream multipart;
+
+
+    /**
+     * 当前 boundary
+     */
+    private final byte[] boundary;
+
+
+    /**
+     * 当前Item
+     */
+    private MultipartEntity currentItem;
+
+
+    /**
+     * 当前fieldName
+     */
+    private String currentFieldName;
+
+
+    /**
+     * 当前Item是否合法
      */
     private boolean itemValid;
 
+
     /**
-     * Whether we have seen the end of the file.
+     * 是否读到文件末尾
      */
     private boolean eof;
 
 
-    public FileItemIterator(HttpRequest request, ProgressListener listener) throws IOException {
+    /**
+     * 处理Multipart表单
+     *
+     * @param request Http请求
+     * @throws IOException
+     */
+    public MultipartParser(HttpRequest request) throws IOException {
 
-        String contentType = request.getContentType();
-        if ((contentType == null)
-                || (!contentType.toLowerCase(Locale.ENGLISH).startsWith(FileUpload.MULTIPART))) {
-            throw new IOException("Invalid Content-Type");
-        }
+        String contentType = request.contentType();
 
         boundary = getBoundary(contentType);
         if (boundary == null) {
             throw new IOException("No boundary found");
         }
 
-        InputStream inputStream = request.getInputStream();
+        InputStream inputStream = request.stream();
 
-        notifier = new ProgressNotifier(listener, request.contentLength());
-        multipart = new MultipartStream(inputStream, boundary, notifier);
-        multipart.setHeaderEncoding(request.getCharacterEncoding());
+        multipart = new MultipartStream(inputStream, boundary);
+        multipart.setHeaderEncoding(getCharset(contentType));
 
-        findNextItem();
+        findNext();
     }
 
 
-    public FileItemStream next() throws IOException {
+    /**
+     * 下一个 {@link MultipartEntity}
+     *
+     * @return {@link MultipartEntity}
+     * @throws IOException
+     */
+    public MultipartEntity next() throws IOException {
         if (eof || (!itemValid && !hasNext())) {
             throw new NoSuchElementException();
         }
@@ -66,18 +87,27 @@ class FileItemIterator {
     }
 
 
+    /**
+     * 是否有下一个
+     *
+     * @return 是否有
+     * @throws IOException
+     */
     public boolean hasNext() throws IOException {
-        return !eof && (itemValid || findNextItem());
+        return !eof && (itemValid || findNext());
     }
 
 
     /**
-     * 寻找下一个Entity
+     * 寻找下一个Multipart Item。
+     * <p/>
+     * 一个Multipart Entity表示一个完整的实体，即一个表单字段，一个文件等。
+     * 不以form field 为单位，因为一个field可以内嵌多个Item
      *
      * @return 是否找到
      * @throws IOException
      */
-    private boolean findNextItem() throws IOException {
+    private boolean findNext() throws IOException {
         if (eof) {
             return false;
         }
@@ -88,7 +118,8 @@ class FileItemIterator {
         }
 
         while (true) {
-            boolean nextPart = multipart.skipPreamble();
+            boolean nextPart;
+            nextPart = multipart.skipPreamble();
 
             if (!nextPart) {
                 if (currentFieldName == null) {
@@ -103,15 +134,15 @@ class FileItemIterator {
                 }
             }
 
-            FileItemHeaders headers = getParsedHeaders(multipart.readHeaders());
+            MultipartHeader headers = getParsedHeaders(multipart.readHeaders());
             if (currentFieldName == null) {
                 // We're parsing the outer multipart
                 String fieldName = getFieldName(headers);
                 if (fieldName != null) {
-                    String subContentType = headers.getHeader(FileUpload.CONTENT_TYPE);
+                    String subContentType = headers.getHeader(ContentType.CONTENT_TYPE);
                     if (subContentType != null
                             && subContentType.toLowerCase(Locale.ENGLISH)
-                            .startsWith(FileUpload.MULTIPART_MIXED)) {
+                            .startsWith(ContentType.MULTIPART_MIXED)) {
                         currentFieldName = fieldName;
 
                         // Multiple files associated with this field name
@@ -119,12 +150,14 @@ class FileItemIterator {
                         multipart.setBoundary(subBoundary);
                         continue;
                     } else {
-                        String fileName = getFileName(headers);
-                        currentItem = new FileItemStream(fileName,
-                                fieldName, headers.getHeader(FileUpload.CONTENT_TYPE),
-                                fileName == null, multipart);
+                        // 最常见情况
+                        currentItem = new MultipartEntity(
+                                fieldName,
+                                headers.getHeader(ContentType.CONTENT_TYPE),
+                                getFileName(headers),
+                                multipart.newEntityStream());
+
                         currentItem.setHeaders(headers);
-                        notifier.noteItem();
                         itemValid = true;
                         return true;
                     }
@@ -132,13 +165,15 @@ class FileItemIterator {
             } else {
                 // We're parsing the inner multipart
                 String fileName = getFileName(headers);
+
                 if (fileName != null) {
-                    currentItem = new FileItemStream(fileName,
+                    currentItem = new MultipartEntity(
                             currentFieldName,
-                            headers.getHeader(FileUpload.CONTENT_TYPE),
-                            false, multipart);
+                            headers.getHeader(ContentType.CONTENT_TYPE),
+                            fileName,
+                            multipart.newEntityStream());
+
                     currentItem.setHeaders(headers);
-                    notifier.noteItem();
                     itemValid = true;
                     return true;
                 }
@@ -151,9 +186,9 @@ class FileItemIterator {
 
 
     /**
-     * 从 HTTP 请求头`Content-Type`中获取各个文件的分隔符`boundary`。 形如：
+     * 从 `Content-Type`中获取分隔符`boundary`。 形如：
      * <p/>
-     * Content-Type:multipart/form-data; boundary=----WebKitFormBoundarylg8DZpyWws8BAd5W
+     * Content-Type:multipart/getForm-data; boundary=----WebKitFormBoundarylg8DZpyWws8BAd5W
      * <p/>
      * 上传的各个文件在请求体中以`------WebKitFormBoundarylg8DZpyWws8BAd5W`开头
      *
@@ -161,7 +196,7 @@ class FileItemIterator {
      * @return 以byte[]返回的boundary
      */
     private byte[] getBoundary(String contentType) {
-        ParameterParser parser = new ParameterParser();
+        HeaderParser parser = new HeaderParser();
         parser.setLowerCaseNames(true);
 
         Map<String, String> params = parser.parse(contentType, new char[]{';', ','});
@@ -172,13 +207,31 @@ class FileItemIterator {
 
 
     /**
+     * 从content type 获取编码
+     *
+     * @param contentType content-type
+     * @return 编码
+     */
+    private String getCharset(String contentType) {
+        HeaderParser parser = new HeaderParser();
+        parser.setLowerCaseNames(true);
+
+        Map<String, String> params = parser.parse(contentType, new char[]{';', ','});
+
+        String charset = params.get("charset");
+
+        return charset == null ? "utf-8" : charset;
+    }
+
+
+    /**
      * 从Entity Header `Content-disposition`中获取文件名
      *
      * @param headers HTTP 请求头
      * @return 没有指定文件名则返回空串“”
      */
-    private String getFileName(FileItemHeaders headers) {
-        String contentDisposition = headers.getHeader(FileUpload.CONTENT_DISPOSITION);
+    private String getFileName(MultipartHeader headers) {
+        String contentDisposition = headers.getHeader(ContentType.CONTENT_DISPOSITION);
         if (contentDisposition == null) {
             return null;
         }
@@ -186,8 +239,8 @@ class FileItemIterator {
         String fileName = null;
         String cdl = contentDisposition.toLowerCase(Locale.ENGLISH);
 
-        if (cdl.startsWith(FileUpload.FORM_DATA) || cdl.startsWith(FileUpload.ATTACHMENT)) {
-            ParameterParser parser = new ParameterParser();
+        if (cdl.startsWith(ContentType.FORM_DATA) || cdl.startsWith(ContentType.ATTACHMENT)) {
+            HeaderParser parser = new HeaderParser();
             parser.setLowerCaseNames(true);
 
             Map<String, String> params = parser.parse(contentDisposition, ';');
@@ -210,14 +263,14 @@ class FileItemIterator {
      * @param headers Entity header
      * @return field name of current entity
      */
-    private String getFieldName(FileItemHeaders headers) {
-        String contentDisposition = headers.getHeader(FileUpload.CONTENT_DISPOSITION);
+    private String getFieldName(MultipartHeader headers) {
+        String contentDisposition = headers.getHeader(ContentType.CONTENT_DISPOSITION);
 
         String fieldName = null;
         if (contentDisposition != null
-                && contentDisposition.toLowerCase(Locale.ENGLISH).startsWith(FileUpload.FORM_DATA)) {
+                && contentDisposition.toLowerCase(Locale.ENGLISH).startsWith(ContentType.FORM_DATA)) {
 
-            ParameterParser parser = new ParameterParser();
+            HeaderParser parser = new HeaderParser();
             parser.setLowerCaseNames(true);
 
             Map<String, String> params = parser.parse(contentDisposition, ';');
@@ -236,10 +289,10 @@ class FileItemIterator {
      * @param headerPart Entity Header
      * @return 解析后所得键值对
      */
-    private FileItemHeaders getParsedHeaders(String headerPart) {
+    private MultipartHeader getParsedHeaders(String headerPart) {
         final int len = headerPart.length();
 
-        FileItemHeaders headers = new FileItemHeaders();
+        MultipartHeader headers = new MultipartHeader();
         int start = 0;
 
         while (true) {
@@ -249,7 +302,7 @@ class FileItemIterator {
             }
 
             // Header 中可能有换行符，例如（不限于两行）
-            // Content-Type: multipart/form-data;
+            // Content-Type: multipart/getForm-data;
             //              boundary="----=_Part_293427_735306028.1445485521749"
 
             StringBuilder builder = new StringBuilder(headerPart.substring(start, end));
@@ -309,12 +362,13 @@ class FileItemIterator {
      * @param headers   所有已解析的header
      * @param headerStr 待解析的header
      */
-    private void parseHeaderLine(FileItemHeaders headers, String headerStr) {
+    private void parseHeaderLine(MultipartHeader headers, String headerStr) {
         final int colonOffset = headerStr.indexOf(':');
         if (colonOffset == -1) {
             // 不合法
             return;
         }
+
         String headerName = headerStr.substring(0, colonOffset).trim();
         String headerValue =
                 headerStr.substring(headerStr.indexOf(':') + 1).trim();
