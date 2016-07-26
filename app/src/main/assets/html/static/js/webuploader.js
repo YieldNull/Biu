@@ -4083,7 +4083,7 @@
     
                 // 开始发送。
                 tr.appendBlob( opts.fileVal, block.blob, file.name );
-                //tr.append( data );
+                //tr.append( data ); // 爹把那些额外的不需要的字段删了，哈哈哈哈哈哈哈
                 tr.setRequestHeader( headers );
                 tr.send();
             },
