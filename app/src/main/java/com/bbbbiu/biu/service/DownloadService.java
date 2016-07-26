@@ -74,7 +74,7 @@ public class DownloadService extends Service {
      * @param context context
      */
     public static void stopService(Context context) {
-        Log.i(TAG,"Stopping Service");
+        Log.i(TAG, "Stopping Service");
 
         Intent intent = new Intent(context, UploadService.class);
 
@@ -102,7 +102,7 @@ public class DownloadService extends Service {
                 public void run() {
                     Log.i(TAG, "Start downloading file " + downloadUrl);
 
-                    ProgressListenerImpl progressListener = new ProgressListenerImpl(downloadUrl, resultReceiver);
+                    ProgressListenerImpl progressListener = new ProgressListenerImpl(resultReceiver);
 
                     boolean succeeded = downloadFile(downloadUrl, fileName, fileSize, progressListener);
 
@@ -184,7 +184,7 @@ public class DownloadService extends Service {
             FileOutputStream fileOutStream;
             try {
                 fileOutStream = new FileOutputStream(destFile);
-                ProgressNotifier notifier = new ProgressNotifier(progressListener, fileSize);
+                ProgressNotifier notifier = new ProgressNotifier(downloadUrl, progressListener, fileSize);
 
                 // copy getStream
                 Streams.copy(response.body().byteStream(), fileOutStream, true, notifier);

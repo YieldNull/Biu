@@ -3,7 +3,7 @@ package com.yieldnull.httpd;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ContentType {
+final class ContentType {
 
     public static final String CONTENT_TYPE = "Content-type";
     public static final String CONTENT_DISPOSITION = "Content-disposition";
@@ -22,7 +22,7 @@ public class ContentType {
     public static final String MIME_STREAM = "application/octet-stream";
     public static final String MIME_PNG = "image/png";
     public static final String TEXT = "text/";
-    public static final String JSON="application/json";
+    public static final String JSON = "application/json";
 
     private static final String ASCII_ENCODING = "US-ASCII";
     private static final String MULTIPART_FORM_DATA_HEADER = "multipart/form-data";

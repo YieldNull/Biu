@@ -139,7 +139,7 @@ public class UploadService extends Service {
                 public void run() {
                     Log.i(TAG, "Start sending file " + fileUri);
 
-                    ProgressListenerImpl progressListener = new ProgressListenerImpl(fileUri, resultReceiver);
+                    ProgressListenerImpl progressListener = new ProgressListenerImpl(resultReceiver);
 
                     boolean succeeded = uploadFile(uploadUrl, fileUri, formData, progressListener);
 
@@ -185,19 +185,19 @@ public class UploadService extends Service {
      * 传文件
      *
      * @param uploadUrl        uploadUrl
-     * @param filePath         文件路径
+     * @param fileUri          文件路径
      * @param formData         http getForm data
      * @param progressListener {@link ProgressListener} 监听发送进度
      * @return 是否发送成功
      */
-    private boolean uploadFile(String uploadUrl, String filePath,
+    private boolean uploadFile(String uploadUrl, String fileUri,
                                @Nullable HashMap<String, String> formData,
                                ProgressListener progressListener) {
 
-        File file = new File(filePath);
+        File file = new File(fileUri);
         Request request = HttpManager.newFileUploadRequest(this,
                 uploadUrl, file, formData,
-                new ProgressNotifier(progressListener, file.length()));
+                new ProgressNotifier(fileUri, progressListener, file.length()));
 
 
         Response response;
@@ -209,7 +209,7 @@ public class UploadService extends Service {
             body = response.body();
 
         } catch (IOException e) {
-            Log.i(TAG, "Upload file failed. " + filePath + "  HTTP error " + e.toString(), e);
+            Log.i(TAG, "Upload file failed. " + fileUri + "  HTTP error " + e.toString(), e);
             return false;
         } finally {
             Streams.safeClose(body);
@@ -220,7 +220,7 @@ public class UploadService extends Service {
             return false;
         }
 
-        Log.i(TAG, "Upload file succeeded " + filePath);
+        Log.i(TAG, "Upload file succeeded " + fileUri);
 
         return true;
     }

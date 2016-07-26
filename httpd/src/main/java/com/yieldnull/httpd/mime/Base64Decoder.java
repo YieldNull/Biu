@@ -1,4 +1,4 @@
-package com.yieldnull.httpd.upload.mime;
+package com.yieldnull.httpd.mime;
 
 import java.io.IOException;
 import java.io.OutputStream;

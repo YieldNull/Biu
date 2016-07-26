@@ -16,6 +16,8 @@ import com.yieldnull.httpd.HttpServlet;
 import java.util.ArrayList;
 
 /**
+ * 接收IOS端要传来的文件清单
+ * <p/>
  * Created by YieldNull at 5/9/16
  */
 public class ManifestServlet extends HttpServlet {

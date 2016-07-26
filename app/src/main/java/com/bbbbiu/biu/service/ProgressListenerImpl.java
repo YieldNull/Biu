@@ -36,10 +36,6 @@ public class ProgressListenerImpl implements ProgressListener {
      * ResultCode. 工作进度
      */
     public static final int RESULT_PROGRESS = 3;
-    /**
-     * 纪录当前文件
-     */
-    private String mFileUri;
 
     /**
      * 纪录当前工作进度
@@ -52,14 +48,13 @@ public class ProgressListenerImpl implements ProgressListener {
     private ResultReceiver mResultReceiver;
 
 
-    public ProgressListenerImpl(String fileUri, ResultReceiver resultReceiver) {
+    public ProgressListenerImpl(ResultReceiver resultReceiver) {
         mResultReceiver = resultReceiver;
-        mFileUri = fileUri;
     }
 
 
     @Override
-    public void update(long pBytesRead, long pContentLength) {
+    public void update(String fileUri, long pBytesRead, long pContentLength) {
         int progress = (int) (pBytesRead * 100.0 / pContentLength);
 
         // 更新进度(0-100)
@@ -68,7 +63,7 @@ public class ProgressListenerImpl implements ProgressListener {
 
             Bundle bundle = new Bundle();
             bundle.putInt(RESULT_EXTRA_PROGRESS, progress);
-            bundle.putString(RESULT_EXTRA_FILE_URI, mFileUri);
+            bundle.putString(RESULT_EXTRA_FILE_URI, fileUri);
 
             mResultReceiver.send(RESULT_PROGRESS, bundle);
         }

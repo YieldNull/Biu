@@ -1,8 +1,5 @@
 package com.yieldnull.httpd;
 
-import com.yieldnull.httpd.upload.MultipartParser;
-import com.yieldnull.httpd.upload.MultipartEntity;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -348,8 +345,14 @@ public class HttpRequest {
 
                         OutputStream fileOutStream = new FileOutputStream(file);
 
+                        // 获取表单中的fileUri，没有则用文件名代替
+                        String fileUri = form.get("fileUri");
+                        fileUri = fileUri == null ? item.fileName() : fileUri;
+
                         Streams.copy(item.stream(), fileOutStream, true,
-                                new ProgressNotifier(listener, item.contentLength()));
+                                new ProgressNotifier(fileUri, listener, item.contentLength()));
+
+
                     } else {
                         form.put(item.fieldName(), item.fieldValue());
                     }

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -25,7 +26,7 @@ import java.util.logging.Logger;
  * RequestHandler 处理请求，并返回
  */
 public class HttpDaemon {
-    private static final Logger LOGGER = Logger.getLogger(Streams.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(HttpDaemon.class.getName());
 
 
     /**
@@ -55,14 +56,10 @@ public class HttpDaemon {
     private ServerSocket mServerSocket;
     private RequestManager mRequestManager;
 
-
-    File repository;
-
     /**
      * 指定监听端口
      */
     public HttpDaemon(int port) {
-
         mPort = port;
         mRequestManager = new RequestManager();
     }
@@ -84,7 +81,6 @@ public class HttpDaemon {
         }
         return sHttpDaemon;
     }
-
 
     /**
      * 启动服务器
@@ -277,9 +273,10 @@ public class HttpDaemon {
                 boolean useGzip = response.getMimeType() != null && response.getMimeType().toLowerCase().contains("text/");
                 response.setGzipEncoding(useGzip && acceptEncoding != null && acceptEncoding.contains("gzip"));
 
+                // 以下才会抛异常
                 response.send(outputStream);
 
-                System.out.println(
+                LOGGER.log(Level.INFO,
                         String.format(Locale.ENGLISH, "%s -- [%s] \"%s %s %s\" %d \"%s\"",
                                 request.clientIp(),
                                 new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.ENGLISH)
@@ -295,6 +292,7 @@ public class HttpDaemon {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
+
                 Streams.safeClose(inputStream);
                 Streams.safeClose(outputStream);
                 Streams.safeClose(acceptSocket);

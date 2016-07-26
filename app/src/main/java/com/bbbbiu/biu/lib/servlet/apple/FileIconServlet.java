@@ -6,7 +6,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.bbbbiu.biu.util.StorageUtil;
-import com.yieldnull.httpd.ContentType;
 import com.yieldnull.httpd.HttpDaemon;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;
@@ -17,18 +16,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 /**
+ * 根据文件后缀名获取图标
+ * <p/>
  * Created by YieldNull at 6/5/16
  */
-public class IconServlet extends HttpServlet {
-    private static final String TAG = IconServlet.class.getSimpleName();
+public class FileIconServlet extends HttpServlet {
 
+    /**
+     * “/icon/filename”，根据filename的后缀名获取图标
+     *
+     * @param context context
+     */
     public static void register(Context context) {
-        HttpDaemon.registerServlet("^/icon/((?!/).)+$", new IconServlet(context));
+        HttpDaemon.registerServlet("^/icon/((?!/).)+$", new FileIconServlet(context));
     }
 
     private Context context;
 
-    private IconServlet(Context context) {
+    private FileIconServlet(Context context) {
         this.context = context;
     }
 
@@ -45,7 +50,7 @@ public class IconServlet extends HttpServlet {
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] imageInByte = stream.toByteArray();
 
-        return HttpResponse.newResponse(ContentType.MIME_PNG,
+        return HttpResponse.newResponse("image/png",
                 new ByteArrayInputStream(imageInByte), imageInByte.length);
     }
 

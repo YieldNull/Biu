@@ -8,9 +8,12 @@ public class ProgressNotifier {
 
     private long bytesRead;
 
-    public ProgressNotifier(ProgressListener pListener, long pContentLength) {
+    private String fileUri;
+
+    public ProgressNotifier(String pFileUri, ProgressListener pListener, long pContentLength) {
         listener = pListener;
         contentLength = pContentLength;
+        fileUri = pFileUri;
     }
 
     public void noteBytesRead(int pBytes) {
@@ -20,7 +23,7 @@ public class ProgressNotifier {
 
     private void notifyListener() {
         if (listener != null) {
-            listener.update(bytesRead, contentLength);
+            listener.update(fileUri, bytesRead, contentLength);
         }
     }
 

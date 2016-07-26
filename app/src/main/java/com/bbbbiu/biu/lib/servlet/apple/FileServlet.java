@@ -19,6 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 /**
+ * IOS端从安卓端以附件形式下载文件
+ * <p/>
  * Created by YieldNull at 5/13/16
  */
 public class FileServlet extends ProgressBaseServlet {
@@ -64,7 +66,7 @@ public class FileServlet extends ProgressBaseServlet {
 
         HttpResponse response = HttpResponse.newResponse(inputStream, file.length());
 
-        response.setProgressNotifier(new ProgressNotifier(getProgressListener(), file.length()));
+        response.setProgressNotifier(new ProgressNotifier(file.getAbsolutePath(), getProgressListener(), file.length()));
 
         // APK 名称
         String name = StorageUtil.getFileNameToSend(context, file);

@@ -11,6 +11,7 @@ import java.util.HashMap;
  */
 public class HttpConstants {
     public static final String FILE_FORM_NAME = "files";
+    public static final String FILE_URI = "fileUri";
 
     public static class Computer {
         public static final String HOST = "http://www.bbbbiu.com";//"http://192.168.1.102";//

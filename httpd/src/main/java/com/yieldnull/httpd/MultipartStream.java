@@ -1,6 +1,4 @@
-package com.yieldnull.httpd.upload;
-
-import com.yieldnull.httpd.Streams;
+package com.yieldnull.httpd;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -15,7 +13,7 @@ import static java.lang.String.format;
 /**
  * 读取Http Request Body
  */
-public class MultipartStream {
+class MultipartStream {
 
     // ASCII character value.
     public static final byte CR = 0x0D;     // \n

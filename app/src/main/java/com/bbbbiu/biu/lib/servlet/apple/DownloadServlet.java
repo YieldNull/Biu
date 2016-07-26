@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 显示可供IOS端下载的文件清单
+ * <p/>
  * Created by YieldNull at 5/12/16
  */
 public class DownloadServlet extends HttpServlet {

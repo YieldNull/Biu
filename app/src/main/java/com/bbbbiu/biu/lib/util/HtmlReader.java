@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * 读取HTML模板文件
+ */
 public class HtmlReader {
     private static final String TAG = HtmlReader.class.getSimpleName();
     private static final String CRLF = "\r\n";

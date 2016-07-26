@@ -19,9 +19,9 @@ import android.widget.ImageView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
 import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
-import com.bbbbiu.biu.lib.servlet.apple.IconServlet;
+import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
 import com.bbbbiu.biu.lib.servlet.apple.ManifestServlet;
-import com.bbbbiu.biu.lib.servlet.apple.ReceivingServlet;
+import com.bbbbiu.biu.lib.servlet.apple.UploadServlet;
 import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.service.HttpdService;
 import com.google.zxing.BarcodeFormat;
@@ -99,10 +99,10 @@ public class ConnectingActivity extends AppCompatActivity {
 
         if (action.equals(ACTION_RECEIVING)) {
             ManifestServlet.register(this);
-            ReceivingServlet.register(this);
+            UploadServlet.register(this);
         } else {
             DownloadServlet.register(this);
-            IconServlet.register(this);
+            FileIconServlet.register(this);
             FileServlet.register(this);
         }
     }

@@ -1,8 +1,5 @@
-package com.yieldnull.httpd.upload;
+package com.yieldnull.httpd;
 
-
-import com.yieldnull.httpd.ContentType;
-import com.yieldnull.httpd.HttpRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +7,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class MultipartParser {
+class MultipartParser {
 
     /**
      * MultipartStream
@@ -134,7 +131,7 @@ public class MultipartParser {
                 }
             }
 
-            MultipartHeader headers = getParsedHeaders(multipart.readHeaders());
+            com.yieldnull.httpd.MultipartHeader headers = getParsedHeaders(multipart.readHeaders());
             if (currentFieldName == null) {
                 // We're parsing the outer multipart
                 String fieldName = getFieldName(headers);
@@ -196,7 +193,7 @@ public class MultipartParser {
      * @return 以byte[]返回的boundary
      */
     private byte[] getBoundary(String contentType) {
-        HeaderParser parser = new HeaderParser();
+        MultipartHeader.Parser parser = new MultipartHeader.Parser();
         parser.setLowerCaseNames(true);
 
         Map<String, String> params = parser.parse(contentType, new char[]{';', ','});
@@ -213,7 +210,7 @@ public class MultipartParser {
      * @return 编码
      */
     private String getCharset(String contentType) {
-        HeaderParser parser = new HeaderParser();
+        MultipartHeader.Parser parser = new MultipartHeader.Parser();
         parser.setLowerCaseNames(true);
 
         Map<String, String> params = parser.parse(contentType, new char[]{';', ','});
@@ -230,7 +227,7 @@ public class MultipartParser {
      * @param headers HTTP 请求头
      * @return 没有指定文件名则返回空串“”
      */
-    private String getFileName(MultipartHeader headers) {
+    private String getFileName(com.yieldnull.httpd.MultipartHeader headers) {
         String contentDisposition = headers.getHeader(ContentType.CONTENT_DISPOSITION);
         if (contentDisposition == null) {
             return null;
@@ -240,7 +237,7 @@ public class MultipartParser {
         String cdl = contentDisposition.toLowerCase(Locale.ENGLISH);
 
         if (cdl.startsWith(ContentType.FORM_DATA) || cdl.startsWith(ContentType.ATTACHMENT)) {
-            HeaderParser parser = new HeaderParser();
+            MultipartHeader.Parser parser = new MultipartHeader.Parser();
             parser.setLowerCaseNames(true);
 
             Map<String, String> params = parser.parse(contentDisposition, ';');
@@ -263,14 +260,14 @@ public class MultipartParser {
      * @param headers Entity header
      * @return field name of current entity
      */
-    private String getFieldName(MultipartHeader headers) {
+    private String getFieldName(com.yieldnull.httpd.MultipartHeader headers) {
         String contentDisposition = headers.getHeader(ContentType.CONTENT_DISPOSITION);
 
         String fieldName = null;
         if (contentDisposition != null
                 && contentDisposition.toLowerCase(Locale.ENGLISH).startsWith(ContentType.FORM_DATA)) {
 
-            HeaderParser parser = new HeaderParser();
+            MultipartHeader.Parser parser = new MultipartHeader.Parser();
             parser.setLowerCaseNames(true);
 
             Map<String, String> params = parser.parse(contentDisposition, ';');
@@ -289,10 +286,10 @@ public class MultipartParser {
      * @param headerPart Entity Header
      * @return 解析后所得键值对
      */
-    private MultipartHeader getParsedHeaders(String headerPart) {
+    private com.yieldnull.httpd.MultipartHeader getParsedHeaders(String headerPart) {
         final int len = headerPart.length();
 
-        MultipartHeader headers = new MultipartHeader();
+        com.yieldnull.httpd.MultipartHeader headers = new com.yieldnull.httpd.MultipartHeader();
         int start = 0;
 
         while (true) {
@@ -362,7 +359,7 @@ public class MultipartParser {
      * @param headers   所有已解析的header
      * @param headerStr 待解析的header
      */
-    private void parseHeaderLine(MultipartHeader headers, String headerStr) {
+    private void parseHeaderLine(com.yieldnull.httpd.MultipartHeader headers, String headerStr) {
         final int colonOffset = headerStr.indexOf(':');
         if (colonOffset == -1) {
             // 不合法
