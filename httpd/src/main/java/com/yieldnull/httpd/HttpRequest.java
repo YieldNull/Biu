@@ -349,8 +349,10 @@ public class HttpRequest {
                         String fileUri = form.get("fileUri");
                         fileUri = fileUri == null ? item.fileName() : fileUri;
 
+                        long length = item.contentLength();
+                        length = length == -1 ? contentLength() : length;
                         Streams.copy(item.stream(), fileOutStream, true,
-                                new ProgressNotifier(fileUri, listener, item.contentLength()));
+                                new ProgressNotifier(fileUri, listener, length));
 
 
                     } else {

@@ -4064,13 +4064,14 @@
                 });
     
                 // 配置默认的上传字段。
-                data = $.extend( data, {
-                    id: file.id,
-                    name: file.name,
-                    type: file.type,
-                    lastModifiedDate: file.lastModifiedDate,
-                    size: file.size
-                });
+                // 爹把那些额外的不需要的字段删了，哈哈哈哈哈哈哈
+//                data = $.extend( data, {
+//                    id: file.id,
+//                    name: file.name,
+//                    type: file.type,
+//                    lastModifiedDate: file.lastModifiedDate,
+//                    size: file.size
+//                });
     
                 block.chunks > 1 && $.extend( data, {
                     chunks: block.chunks,
@@ -4083,7 +4084,7 @@
     
                 // 开始发送。
                 tr.appendBlob( opts.fileVal, block.blob, file.name );
-                //tr.append( data ); // 爹把那些额外的不需要的字段删了，哈哈哈哈哈哈哈
+                tr.append( data );
                 tr.setRequestHeader( headers );
                 tr.send();
             },
