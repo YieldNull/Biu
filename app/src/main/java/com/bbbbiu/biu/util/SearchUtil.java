@@ -212,15 +212,13 @@ public class SearchUtil {
                 String title = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.TITLE));
                 String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DURATION));
 
-                if (!(new File(path).exists())) {
-                    continue;
+
+                if (new File(path).exists() && title != null) {
+                    MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
+                    fileItems.add(item);
+
+                    item.save();
                 }
-
-                MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
-                fileItems.add(item);
-
-                item.save();
-
             }
             cursor.close();
 
@@ -271,15 +269,13 @@ public class SearchUtil {
                 String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
                 String duration = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
 
-                if (!(new File(path).exists())) {
-                    continue;
+
+                if (new File(path).exists() && title != null) {
+                    MediaItem item = new MediaItem(path, MediaItem.TYPE_MUSIC, title, artist, duration);
+                    fileItems.add(item);
+
+                    item.save();
                 }
-
-                MediaItem item = new MediaItem(path, MediaItem.TYPE_MUSIC, title, artist, duration);
-                fileItems.add(item);
-
-                item.save();
-
             }
             cursor.close();
 
@@ -426,6 +422,9 @@ public class SearchUtil {
                 artist = null;
             } else {
                 title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+                if (title == null) {
+                    continue;
+                }
                 artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
             }
 

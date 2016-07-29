@@ -60,7 +60,7 @@ public class MediaItem extends ModelItem {
     public MediaItem(String path, int type, String title, @Nullable String artist, String duration) {
         this.path = path;
         this.type = type;
-        this.title = title;
+        this.title = title.trim();
         this.artist = artist;
         this.duration = duration;
     }
