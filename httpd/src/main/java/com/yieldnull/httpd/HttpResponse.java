@@ -19,6 +19,8 @@ import java.util.zip.GZIPOutputStream;
 
 public class HttpResponse {
 
+    private static final Log LOGGER = Log.of(HttpResponse.class);
+
     /**
      * 返回状态码
      */
@@ -181,10 +183,7 @@ public class HttpResponse {
             this.mDataStream = dataStream;
             this.mContentLength = totalBytes;
         }
-
-//
-//        System.out.println(String.format("%s Finish generating response. Status:%s",
-//                Thread.currentThread().getName(), status.getDescription()));
+        LOGGER.i("Finish generating response.");
     }
 
 
@@ -216,8 +215,7 @@ public class HttpResponse {
             try {
                 bytes = html.getBytes(contentType.getEncoding());
             } catch (UnsupportedEncodingException e) {
-                System.out.println(Thread.currentThread().getName() + "Encoding problem, Responding nothing");
-                e.printStackTrace();
+                LOGGER.w("Encoding problem, Responding nothing", e);
 
                 bytes = new byte[0];
             }

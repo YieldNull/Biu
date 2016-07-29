@@ -1,6 +1,5 @@
 package com.yieldnull.httpd;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,8 +14,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * HTTP服务器。
@@ -26,13 +23,14 @@ import java.util.logging.Logger;
  * RequestHandler 处理请求，并返回
  */
 public class HttpDaemon {
-    private static final Logger LOGGER = Logger.getLogger(HttpDaemon.class.getName());
+    private static final Log LOGGER = Log.of(HttpDaemon.class);
 
 
     /**
      * 关联URL与其对应的{@link HttpServlet}
      */
     private static HashMap<String, HttpServlet> sServletMap = new HashMap<>();
+
 
     /**
      * 注册 Servlet
@@ -45,30 +43,15 @@ public class HttpDaemon {
     }
 
 
+    /**
+     * 单例
+     */
     private static HttpDaemon sHttpDaemon;
 
 
-    private static final int SOCKET_READ_TIMEOUT = 200;
-    private static final int DEFAULT_PORT = 5050;
-
-    private int mPort;
-    private Thread mListenThread;
-    private ServerSocket mServerSocket;
-    private RequestManager mRequestManager;
-
     /**
-     * 指定监听端口
+     * 端口号
      */
-    public HttpDaemon(int port) {
-        mPort = port;
-        mRequestManager = new RequestManager();
-    }
-
-    public HttpDaemon() {
-        this(DEFAULT_PORT);
-    }
-
-
     public static int sPort = 5050;
 
     public static int getPort() {
@@ -81,6 +64,50 @@ public class HttpDaemon {
         }
         return sHttpDaemon;
     }
+
+
+    /**
+     * Socket 读取超时时间
+     */
+    private static final int SOCKET_READ_TIMEOUT = 200;
+
+
+    /**
+     * 默认端口号
+     */
+    private static final int DEFAULT_PORT = 5050;
+
+
+    /**
+     * 监听请求的线程
+     */
+    private Thread mListenThread;
+
+
+    /**
+     * ServerSocket
+     */
+    private ServerSocket mServerSocket;
+
+
+    /**
+     * 管理请求
+     */
+    private RequestManager mRequestManager;
+
+
+    /**
+     * 指定监听端口
+     */
+    public HttpDaemon(int port) {
+        sPort = port;
+        mRequestManager = new RequestManager();
+    }
+
+    public HttpDaemon() {
+        this(DEFAULT_PORT);
+    }
+
 
     /**
      * 启动服务器
@@ -104,9 +131,12 @@ public class HttpDaemon {
             }
         }
 
+        LOGGER.i("Httpd started, listening port " + sPort);
+
         // 端口已被占用
         if (requestListener.getBindException() != null) {
-            System.out.println("Port in use");
+            LOGGER.e("Port " + sPort + " in use");
+
             throw requestListener.bindException;
         }
     }
@@ -121,9 +151,11 @@ public class HttpDaemon {
             if (mListenThread != null) {
                 mListenThread.join();
             }
+
+            LOGGER.i("Httpd stopped");
+
         } catch (Exception e) {
-            System.out.println("Could not stop all connections ");
-            e.printStackTrace();
+            LOGGER.w("Could not stop all connections", e);
         }
     }
 
@@ -162,11 +194,11 @@ public class HttpDaemon {
         @Override
         public void run() {
             try {
-                mServerSocket.bind(new InetSocketAddress(mPort)); //监听端口
+                mServerSocket.bind(new InetSocketAddress(sPort)); //监听端口
                 bound = true;
             } catch (IOException e) {
                 this.bindException = e;
-                e.printStackTrace();
+                LOGGER.w(e.getMessage(), e);
                 return;
             }
             do {
@@ -180,7 +212,8 @@ public class HttpDaemon {
                     // 开线程，处理请求
                     mRequestManager.handleRequest(inputStream, finalAccept);
 
-                } catch (IOException ignored) {
+                } catch (IOException e) {
+                    LOGGER.w(e.getMessage());
                 }
             } while (!mServerSocket.isClosed()); //不断等待请求
         }
@@ -200,12 +233,12 @@ public class HttpDaemon {
             handlerList.add(requestHandler);
             requestCount++;
 
-//            System.out.println(String.format("Request #%s come from %s",
-//                    requestCount, acceptSocket.getInetAddress().getHostAddress()));
+            LOGGER.i(String.format("Request #%s comes from %s",
+                    requestCount, acceptSocket.getInetAddress().getHostAddress()));
 
             Thread thread = new Thread(requestHandler);
             thread.setDaemon(true);
-            thread.setName("[RequestHandler #" + this.requestCount + "] ");
+            thread.setName("Handler #" + this.requestCount);
             thread.start();
         }
 
@@ -260,6 +293,9 @@ public class HttpDaemon {
                     response = HttpResponse.newResponse(HttpResponse.Status.BAD_REQUEST,
                             HttpResponse.Status.BAD_REQUEST.getDescription());
                     response.send(outputStream);
+
+                    LOGGER.w("Error in parsing request");
+
                     return;
                 }
 
@@ -276,7 +312,7 @@ public class HttpDaemon {
                 // 以下才会抛异常
                 response.send(outputStream);
 
-                LOGGER.log(Level.INFO,
+                LOGGER.i(
                         String.format(Locale.ENGLISH, "%s -- [%s] \"%s %s %s\" %d \"%s\"",
                                 request.clientIp(),
                                 new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.ENGLISH)
@@ -290,9 +326,8 @@ public class HttpDaemon {
                 );
 
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.w(e.getMessage(), e);
             } finally {
-
                 Streams.safeClose(inputStream);
                 Streams.safeClose(outputStream);
                 Streams.safeClose(acceptSocket);
@@ -325,6 +360,8 @@ public class HttpDaemon {
             // 分发请求
             HttpResponse response;
             if (servlet != null) {
+                LOGGER.i("Handing request via " + servlet.getClass().getSimpleName());
+
                 if (method == HttpRequest.Method.GET) {
                     response = servlet.doGet(request);
                 } else {
@@ -332,6 +369,8 @@ public class HttpDaemon {
                 }
             } else {
                 // 没有匹配的Servlet
+                LOGGER.i("No request handler found. Raising 404");
+
                 response = HttpResponse.newResponse(HttpResponse.Status.NOT_FOUND,
                         HttpResponse.Status.NOT_FOUND.getDescription());
             }

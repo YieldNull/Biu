@@ -15,6 +15,8 @@ import static java.lang.String.format;
  */
 class MultipartStream {
 
+    private static final Log LOGGER = Log.of(MultipartStream.class);
+
     // ASCII character value.
     public static final byte CR = 0x0D;     // \n
     public static final byte LF = 0x0A;     // \r
@@ -158,6 +160,7 @@ class MultipartStream {
             // encapsulation.
             return readBoundary();
         } catch (IOException e) {
+            LOGGER.w(e.getMessage(), e);
             return false;
         } finally {
             // Restore delimiter.

@@ -4,8 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Locale;
 
 class MultipartEntity {
+
+    private static final Log LOGGER = Log.of(MultipartEntity.class);
 
     /**
      * Content Type
@@ -73,9 +76,18 @@ class MultipartEntity {
             fieldValue = reader.readLine();
 
             stream.close();
+            LOGGER.i(String.format("Got multipart entity. fieldName:%s value:%s",
+                    fieldName, fieldValue));
+
         } else {
             fieldValue = null;
+
+            LOGGER.i(String.format(Locale.ENGLISH, "Got multipart entity. " +
+                            "fieldName:%s fileName:%s " +
+                            "contentLength:%d contentType:%s",
+                    fieldName, fileName, contentLength(), contentType));
         }
+
     }
 
 
@@ -145,12 +157,13 @@ class MultipartEntity {
      * @return 获取不到则为-1
      */
     public long contentLength() {
-        long size;
+        long size = -1L;
         try {
-            String cl1 = headers().getHeader("content-length");
-            size = Long.parseLong(cl1);
-        } catch (NumberFormatException var4) {
-            size = -1L;
+            if (headers() != null) {
+                String cl1 = headers().getHeader("content-length");
+                size = Long.parseLong(cl1);
+            }
+        } catch (NumberFormatException ignored) {
         }
 
         return size;

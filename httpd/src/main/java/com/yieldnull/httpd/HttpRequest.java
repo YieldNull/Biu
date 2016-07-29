@@ -19,13 +19,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 /**
  * 解析Http请求
  */
 public class HttpRequest {
-    private static final Logger LOGGER = Logger.getLogger(Streams.class.getName());
+    private static final Log LOGGER = Log.of(HttpRequest.class);
 
 
     /**
@@ -72,11 +71,10 @@ public class HttpRequest {
 
         try {
             request.parseRequest();
-            //System.out.println(Thread.currentThread().getName() + "Finish parsing request header");
+            LOGGER.i("Finish parsing request header");
             return request;
         } catch (IOException e) {
-            //System.out.println(Thread.currentThread().getName() + "Exception when parsing request");
-            e.printStackTrace();
+            LOGGER.w("Exception when parsing request", e);
         }
         return null;
     }
@@ -317,6 +315,8 @@ public class HttpRequest {
         if (contentType != null && (contentType.startsWith(ContentType.TEXT)
                 || contentType.startsWith(ContentType.JSON))) {
             parseRawBody();
+
+            LOGGER.i("Parsing request body as raw text");
         }
     }
 
@@ -330,6 +330,8 @@ public class HttpRequest {
     public void parseMultipartBody(File repository, ProgressListener listener) {
         if (method().equals(Method.POST) && contentType() != null
                 && contentType().startsWith(ContentType.MULTIPART)) {
+
+            LOGGER.i("Parsing request body as multipart");
 
             boolean successful = false;
 
@@ -362,7 +364,8 @@ public class HttpRequest {
                 }
 
                 successful = true;
-            } catch (IOException ignored) {
+            } catch (IOException e) {
+                LOGGER.w("Parse multipart body failed", e);
 
             } finally {
                 if (!successful) {
@@ -416,7 +419,9 @@ public class HttpRequest {
         } // endIndex可能比已经读到Bytes数大（当头大于Buf size的时候）就不需要移动到EndIndex,直接往下读就行了
 
         // 提取Header中的信息
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(headerBuf, 0, readCount)));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(
+                new ByteArrayInputStream(headerBuf, 0, readCount)));
+
         decodeHeader(reader);
     }
 
@@ -456,7 +461,6 @@ public class HttpRequest {
         String[] tokens = line.split("\\s+");
 
         if (tokens.length != 3) {
-            //System.out.println(Thread.currentThread().getName() + "Invalid HTTP Request Header");
             throw new IOException(HttpResponse.Status.BAD_REQUEST.getDescription());
         }
 
@@ -520,7 +524,6 @@ public class HttpRequest {
         try {
             decoded = URLDecoder.decode(str, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
-            //System.out.println(Thread.currentThread().getName() + "Encoding not supported, ignored ");
         }
         return decoded == null ? "/" : decoded;
     }
