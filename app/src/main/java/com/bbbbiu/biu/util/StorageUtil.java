@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.bbbbiu.biu.R;
@@ -419,24 +418,23 @@ public class StorageUtil {
         return null;
     }
 
+    /**
+     * 获取要发送的文件的真实名称
+     * <p/>
+     * APK名用应用名，而不是“base.apk”
+     *
+     * @param context context
+     * @param file    文件
+     * @return 处理后的文件名
+     */
     public static String getFileNameToSend(Context context, File file) {
         // APK 名称
-        String name = StorageUtil.getApkName(context, file.getAbsolutePath());
-        return name == null ? file.getName() : name + ".apk";
-    }
-
-    public static String genVersionedFileName(File repository, String fileName) {
-        int dotIndex = fileName.lastIndexOf(".");
-        int insertIndex = dotIndex >= 0 ? dotIndex : fileName.length();
-
-        int version = 1;
-        StringBuilder builder = new StringBuilder(fileName);
-        builder.insert(insertIndex, String.format("(%s)", String.valueOf(version)));
-
-        while (new File(repository, builder.toString()).exists()) {
-            builder.replace(insertIndex + 1, insertIndex + 2, String.valueOf(++version));
+        if (file.getName().endsWith(".apk")) {
+            String name = StorageUtil.getApkName(context, file.getAbsolutePath());
+            return name == null ? file.getName() : name + ".apk";
         }
 
-        return builder.toString();
+        return file.getName();
     }
+
 }

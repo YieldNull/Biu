@@ -12,6 +12,7 @@ import java.util.HashMap;
 public class HttpConstants {
     public static final String FILE_FORM_NAME = "files";
     public static final String FILE_URI = "fileUri";
+    public static final String SERVER_ADDRESS = "192.168.43.1";
 
     public static class Computer {
         public static final String HOST = "http://www.bbbbiu.com";//"http://10.42.0.1";//

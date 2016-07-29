@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.DhcpInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -16,9 +15,9 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.service.UploadService;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
@@ -29,7 +28,9 @@ import com.yieldnull.httpd.Streams;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Request;
@@ -66,6 +67,7 @@ public class SendingActivity extends TransferBaseActivity {
      */
     private InetAddress mServerAddress;
 
+
     /**
      * 文件清单
      */
@@ -81,7 +83,14 @@ public class SendingActivity extends TransferBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        try {
+            mServerAddress = InetAddress.getByName(HttpConstants.SERVER_ADDRESS);
+        } catch (UnknownHostException ignored) {
+        }
+
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mWifiManager.setWifiEnabled(true);
+
 
         // 接收wifi列表的扫描结果
         mWifiListReceiver = new BroadcastReceiver() {
@@ -113,10 +122,12 @@ public class SendingActivity extends TransferBaseActivity {
     @Override
     protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
-            UploadService.startUpload(this, mUploadUrl, item.uri, null, mProgressResultReceiver);
+            HashMap<String, String> map = new HashMap<>();
+            map.put(HttpConstants.FILE_URI, item.uri);
+
+            UploadService.startUpload(this, mUploadUrl, item.uri, map, mProgressResultReceiver);
         }
     }
-
 
     @Override
     protected void onResume() {
@@ -128,7 +139,9 @@ public class SendingActivity extends TransferBaseActivity {
 
             WifiInfo info = mWifiManager.getConnectionInfo();
 
-            if (info != null && info.getSSID() != null && info.getSSID().equals("\"" + WifiApManager.AP_SSID + "\"")) {
+            if (info != null && info.getSSID() != null
+                    && info.getSSID().equals("\"" + WifiApManager.AP_SSID + "\"")) {
+
                 Log.i(TAG, "Already connected to receiver's wifi");
 
                 mIsConnected = true;
@@ -167,11 +180,19 @@ public class SendingActivity extends TransferBaseActivity {
 
                 WifiConfiguration conf = new WifiConfiguration();
                 conf.SSID = "\"" + result.SSID + "\"";
+
                 conf.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
 
                 int netId = mWifiManager.addNetwork(conf);
                 if (netId < 0) {
-                    Log.i(TAG, "Connect wifi failed. Add network failed: id:" + netId);
+                    Log.i(TAG, "Connect wifi failed: Add network failed: id:" + netId);
+
+                    conf.SSID = result.SSID;
+                    netId = mWifiManager.addNetwork(conf);
+
+                    if (netId < 0) {
+                        break;
+                    }
                 }
 
                 mWifiManager.disconnect();
@@ -183,14 +204,14 @@ public class SendingActivity extends TransferBaseActivity {
 
                     Log.i(TAG, "Connected wifi " + result.SSID);
                 } else {
-                    Log.i(TAG, "Connect wifi failed. Enable network failed");
+                    Log.i(TAG, "Connect wifi failed: Enable network failed");
                 }
 
                 return;
             }
         }
 
-        Log.i(TAG, "Scan wifi. not found");
+        Log.i(TAG, "Wifi list scanned. Not connected.");
         mHandler.postDelayed(mWifiScanTask, 200);// 继续扫描 // TODO 避免无线扫描
     }
 
@@ -200,7 +221,6 @@ public class SendingActivity extends TransferBaseActivity {
     private void onWifiConnected() {
         // 读取要发送的文件列表
         genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
-        mServerAddress = genServerAddress();
 
         HandlerThread handlerThread = new HandlerThread("SendingManifestThread");
         handlerThread.start();
@@ -286,17 +306,4 @@ public class SendingActivity extends TransferBaseActivity {
         }
     }
 
-    /**
-     * 获取接收方的InetAddress（网关地址）
-     *
-     * @return InetAddress
-     */
-    private InetAddress genServerAddress() {
-        DhcpInfo dhcpInfo = mWifiManager.getDhcpInfo();
-        InetAddress inetAddress = NetworkUtil.intToInetAddress(dhcpInfo.serverAddress);
-
-        Log.i(TAG, inetAddress != null ? inetAddress.toString() : null);
-
-        return inetAddress;
-    }
 }
