@@ -339,26 +339,13 @@ public class HttpRequest {
                 MultipartParser iterator = new MultipartParser(this);
 
                 while (iterator.hasNext()) {
-                    final MultipartEntity item = iterator.next();
+                    final MultipartEntity entity = iterator.next();
 
-                    if (item.isFile()) {
-                        File file = new File(repository, item.fileName());
-                        files.add(file);
-
-                        OutputStream fileOutStream = new FileOutputStream(file);
-
-                        // 获取表单中的fileUri，没有则用文件名代替
-                        String fileUri = form.get("fileUri");
-                        fileUri = fileUri == null ? item.fileName() : fileUri;
-
-                        long length = item.contentLength();
-                        length = length == -1 ? contentLength() : length;
-                        Streams.copy(item.stream(), fileOutStream, true,
-                                new ProgressNotifier(fileUri, listener, length));
-
+                    if (entity.isFile()) {
+                        storeFile(repository, entity, listener);
 
                     } else {
-                        form.put(item.fieldName(), item.fieldValue());
+                        form.put(entity.fieldName(), entity.fieldValue());
                     }
 
                 }
@@ -553,4 +540,38 @@ public class HttpRequest {
         }
         return -1;
     }
+
+    /**
+     * 将multipart中的文件存到本地
+     * <p/>
+     * 如果表单中有"fileUri",则使用之，否则用文件名代替之
+     *
+     * @param repository 文件仓库
+     * @param entity     Multipart Entity
+     * @param listener   进度监听
+     * @throws IOException
+     * @see ProgressListener#update(String, long, long)
+     */
+    private void storeFile(File repository, MultipartEntity entity, ProgressListener listener)
+            throws IOException {
+
+        String fileName = Streams.verifyFileName(entity.fileName());
+        fileName = Streams.genVersionedFileName(repository, fileName);
+
+        File file = new File(repository, fileName);
+        files.add(file);
+
+        OutputStream fileOutStream = new FileOutputStream(file);
+
+        // 获取表单中的fileUri，没有则用文件名代替
+        String fileUri = form.get("fileUri");
+        fileUri = fileUri == null ? entity.fileName() : fileUri;
+
+        long length = entity.contentLength();
+        length = length == -1 ? contentLength() : length;
+        Streams.copy(entity.stream(), fileOutStream, true,
+                new ProgressNotifier(fileUri, listener, length));
+
+    }
+
 }

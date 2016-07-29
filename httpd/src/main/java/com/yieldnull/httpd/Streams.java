@@ -2,6 +2,7 @@ package com.yieldnull.httpd;
 
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -89,5 +90,39 @@ public final class Streams {
             socket.close();
         } catch (IOException ignored) {
         }
+    }
+
+    /**
+     * 处理文件名，替换其中的非法字符
+     *
+     * @param fileName 文件名
+     * @return 处理后的文件名
+     */
+    public static String verifyFileName(String fileName) {
+        return fileName.replaceAll("[/\\|:?*<>\"]", "_");
+    }
+
+
+    /**
+     * 若遇到附件文件名相同的情况，在文件名后面加序号
+     * <p/>
+     * 如 filename(1) filename(2)
+     *
+     * @param fileName 要添加序号的文件名
+     * @return 更改后的文件名
+     */
+    public static String genVersionedFileName(File repository, String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        int insertIndex = dotIndex >= 0 ? dotIndex : fileName.length();
+
+        int version = 1;
+        StringBuilder builder = new StringBuilder(fileName);
+        builder.insert(insertIndex, String.format("(%s)", String.valueOf(version)));
+
+        while (new File(repository, builder.toString()).exists()) {
+            builder.replace(insertIndex + 1, insertIndex + 2, String.valueOf(++version));
+        }
+
+        return builder.toString();
     }
 }

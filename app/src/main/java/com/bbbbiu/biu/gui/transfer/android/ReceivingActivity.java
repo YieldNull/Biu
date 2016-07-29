@@ -13,7 +13,7 @@ import android.util.Log;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.util.WifiApManager;
-import com.bbbbiu.biu.lib.servlet.android.ManifestServlet;
+import com.bbbbiu.biu.lib.servlet.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.android.ReceivingServlet;
 import com.bbbbiu.biu.service.HttpdService;
 
@@ -70,7 +70,7 @@ public class ReceivingActivity extends TransferBaseActivity {
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
-        ManifestServlet.register(this);
+        ManifestServlet.register(this, true);
         ReceivingServlet.register(this);
 
 

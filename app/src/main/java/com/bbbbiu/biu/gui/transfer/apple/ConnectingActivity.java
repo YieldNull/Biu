@@ -20,7 +20,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
 import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
 import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
-import com.bbbbiu.biu.lib.servlet.apple.ManifestServlet;
+import com.bbbbiu.biu.lib.servlet.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.apple.UploadServlet;
 import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.service.HttpdService;
@@ -98,7 +98,7 @@ public class ConnectingActivity extends AppCompatActivity {
         String action = getIntent().getAction();
 
         if (action.equals(ACTION_RECEIVING)) {
-            ManifestServlet.register(this);
+            ManifestServlet.register(this, false);
             UploadServlet.register(this);
         } else {
             DownloadServlet.register(this);

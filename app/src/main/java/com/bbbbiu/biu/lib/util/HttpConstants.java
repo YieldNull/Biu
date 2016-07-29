@@ -14,7 +14,7 @@ public class HttpConstants {
     public static final String FILE_URI = "fileUri";
 
     public static class Computer {
-        public static final String HOST = "http://www.bbbbiu.com";//"http://192.168.1.102";//
+        public static final String HOST = "http://www.bbbbiu.com";//"http://10.42.0.1";//
 
         public static final String URL_BIND = HOST + "/bind";
         public static final String URL_UPLOAD = HOST + "/api/upload";
@@ -51,8 +51,9 @@ public class HttpConstants {
     }
 
 
+    public static final String URL_MANIFEST = "/manifest";
+
     public static class Android {
-        public static final String URL_MANIFEST = "/manifest";
         public static final String URL_UPLOAD = "/upload";
 
         public static String getManifestUrl(InetAddress serverAddress) {
@@ -66,7 +67,6 @@ public class HttpConstants {
 
     public static class Apple {
         public static final String URL_UPLOAD = "/upload";
-        public static final String URL_MANIFEST = "/manifest";
         public static final String URL_DOWNLOAD = "/download";
     }
 
