@@ -29,22 +29,6 @@ import java.io.File;
 public class ProgressBaseServlet extends HttpServlet {
     protected Context context;
 
-    private ProgressListener mProgressListener = new ProgressListener() {
-        private int mCurrentProgress;
-
-        @Override
-        public void update(String fileUri, long pBytesRead, long pContentLength) {
-
-            int progress = (int) (pBytesRead * 100.0 / pContentLength);
-
-            // 更新进度(0-100)
-            if (progress > mCurrentProgress) {
-                mCurrentProgress = progress;
-
-                sendProgressBroadcast(fileUri, progress);
-            }
-        }
-    };
 
     /**
      * 获取ProgressListener，用来监听进度
@@ -53,7 +37,22 @@ public class ProgressBaseServlet extends HttpServlet {
      * @see ProgressListener
      */
     public ProgressListener getProgressListener() {
-        return mProgressListener;
+        return new ProgressListener() {
+            private int mCurrentProgress;
+
+            @Override
+            public void update(String fileUri, long pBytesRead, long pContentLength) {
+
+                int progress = (int) (pBytesRead * 100.0 / pContentLength);
+
+                // 更新进度(0-100)
+                if (progress > mCurrentProgress) {
+                    mCurrentProgress = progress;
+
+                    sendProgressBroadcast(fileUri, progress);
+                }
+            }
+        };
     }
 
 
