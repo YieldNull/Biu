@@ -123,6 +123,12 @@ public class HttpRequest {
 
 
     /**
+     * content-length
+     */
+    private long contentLength;
+
+
+    /**
      * URL 中的Key-Value pair
      */
     private Map<String, String> args = new HashMap<>();
@@ -227,15 +233,8 @@ public class HttpRequest {
      * @return 长度
      */
     public long contentLength() {
-        long size;
-        try {
-            String cl1 = headers().get("content-length");
-            size = Long.parseLong(cl1);
-        } catch (NumberFormatException var4) {
-            size = -1L;
-        }
 
-        return size;
+        return contentLength;
     }
 
 
@@ -417,14 +416,19 @@ public class HttpRequest {
      * 以文本形式解析请求体
      */
     private void parseRawBody() {
+        long bytesRead = 0;
+        long conLength = contentLength();
+
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         byte[] buffer = new byte[512];
         int length;
         try {
-            while ((length = stream.read(buffer)) != -1) {
+            while (bytesRead < conLength && ((length = stream.read(buffer)) != -1)) {
+                bytesRead += length;
                 result.write(buffer, 0, length);
             }
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            LOGGER.w(e.getMessage(), e);
         }
 
         text = result.toString();
@@ -473,6 +477,13 @@ public class HttpRequest {
                 mHeaders.put(line.substring(0, p).trim().toLowerCase(Locale.US), line.substring(p + 1).trim());
             }
             line = reader.readLine();
+        }
+
+        try {
+            String cl1 = headers().get("content-length");
+            contentLength = Long.parseLong(cl1);
+        } catch (NumberFormatException e) {
+            throw new IOException("Bad content-length");
         }
     }
 

@@ -112,6 +112,10 @@ public final class Streams {
      * @return 更改后的文件名
      */
     public static String genVersionedFileName(File repository, String fileName) {
+        if (!new File(repository, fileName).exists()) {
+            return fileName;
+        }
+
         int dotIndex = fileName.lastIndexOf(".");
         int insertIndex = dotIndex >= 0 ? dotIndex : fileName.length();
 

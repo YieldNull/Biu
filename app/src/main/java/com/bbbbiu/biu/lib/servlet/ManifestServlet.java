@@ -53,6 +53,7 @@ public class ManifestServlet extends HttpServlet {
 
         for (FileItem item : manifest) {
             String name = Streams.verifyFileName(item.name);
+
             item.name = Streams.genVersionedFileName(StorageUtil.getDownloadDir(context), name);
         }
 

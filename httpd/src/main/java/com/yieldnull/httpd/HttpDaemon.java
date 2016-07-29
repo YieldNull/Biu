@@ -69,7 +69,7 @@ public class HttpDaemon {
     /**
      * Socket 读取超时时间
      */
-    private static final int SOCKET_READ_TIMEOUT = 200;
+    private static final int SOCKET_READ_TIMEOUT = 5000;
 
 
     /**

@@ -6,9 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +16,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Created by YieldNull at 7/25/16
@@ -149,8 +150,10 @@ public class HttpDaemonTest {
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
+                .addHeader("Connection", "close")
                 .build();
 
+        System.setProperty("http.keepAlive", "false");
         Response response = new OkHttpClient().newCall(request).execute();
 
         String json = response.body().string();
