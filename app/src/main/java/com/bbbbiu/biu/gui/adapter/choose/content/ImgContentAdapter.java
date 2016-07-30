@@ -10,10 +10,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
-import com.bbbbiu.biu.db.search.ModelItem;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
 
 import java.util.Comparator;
@@ -62,7 +63,7 @@ public class ImgContentAdapter extends CommonSortedAdapter {
 
     @Override
     protected Map<String, List<ModelItem>> readSortedDataFromDB() {
-        return ModelItem.queryItemToDir(ModelItem.TYPE_IMG);
+        return ModelItem.queryItemToDir(StorageUtil.TYPE_IMG);
     }
 
     @Override

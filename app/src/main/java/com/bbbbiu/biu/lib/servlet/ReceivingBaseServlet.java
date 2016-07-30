@@ -3,9 +3,9 @@ package com.bbbbiu.biu.lib.servlet;
 import android.content.Context;
 import android.util.Log;
 
-import com.bbbbiu.biu.db.transfer.RevRecord;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.util.TransferRecorder;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;
 
@@ -43,14 +43,12 @@ public class ReceivingBaseServlet extends ProgressBaseServlet {
         File file = files.get(0);
         Log.i(TAG, "Uploading file " + file.getName() + " to " + downloadDir.getAbsolutePath());
 
-        new RevRecord(
-                System.currentTimeMillis(),
-                file.getName(),
-                file.length()).save();
-
+        TransferRecorder.recordReceiving(context, file);
         sendSuccessBroadcast(fileUri);
 
         return HttpResponse.newResponse("200 OK");
 
     }
+
+
 }

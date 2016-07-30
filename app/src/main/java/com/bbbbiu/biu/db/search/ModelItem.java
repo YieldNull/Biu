@@ -1,17 +1,14 @@
 package com.bbbbiu.biu.db.search;
 
+import com.bbbbiu.biu.util.StorageUtil;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * 数据库基类，提供公有接口
@@ -19,16 +16,6 @@ import java.util.TreeMap;
  * Created by YieldNull at 4/18/16
  */
 public abstract class ModelItem extends BaseModel {
-    public static final int TYPE_MUSIC = 1;
-    public static final int TYPE_VIDEO = 2;
-    public static final int TYPE_IMG = 3;
-    public static final int TYPE_ARCHIVE = 4;
-    public static final int TYPE_WORD = 5;
-    public static final int TYPE_EXCEL = 6;
-    public static final int TYPE_PPT = 7;
-    public static final int TYPE_PDF = 8;
-    public static final int TYPE_APK = 9; // APK 安装包
-    public static final int TYPE_DOC = 10;
 
     /**
      * 获取对应的路径
@@ -79,7 +66,7 @@ public abstract class ModelItem extends BaseModel {
     public static Map<String, List<ModelItem>> queryItemToDir(int type) {
         List<ModelItem> allRecords = new ArrayList<>();
 
-        if (type == TYPE_MUSIC || type == TYPE_VIDEO) {
+        if (type == StorageUtil.TYPE_MUSIC || type == StorageUtil.TYPE_VIDEO) {
             List<MediaItem> records = SQLite.select()
                     .from(MediaItem.class)
                     .where(MediaItem_Table.type.eq(type))
@@ -149,4 +136,5 @@ public abstract class ModelItem extends BaseModel {
 
         items.removeAll(itemsToDelete);
     }
+
 }

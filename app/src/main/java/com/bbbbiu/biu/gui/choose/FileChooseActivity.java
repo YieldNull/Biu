@@ -11,10 +11,10 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.content.FileContentAdapter;
+import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.option.FileOptionAdapter;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.content.FileContentAdapter;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -171,8 +171,8 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
         }
 
         // 把File以及其所有父文件夹加入文件夹栈中
-        String internalRoot = StorageUtil.getRootDir(this, StorageUtil.TYPE_INTERNAL).getAbsolutePath();
-        String externalRoot = StorageUtil.getRootDir(this, StorageUtil.TYPE_EXTERNAL).getAbsolutePath();
+        String internalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_INTERNAL).getAbsolutePath();
+        String externalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_EXTERNAL).getAbsolutePath();
 
         String root = destDir.getAbsolutePath().contains(internalRoot) ? internalRoot : externalRoot;
 

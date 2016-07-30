@@ -10,16 +10,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.db.search.MediaItem;
+import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.SizeUtil;
-import com.bbbbiu.biu.db.search.MediaItem;
-import com.bbbbiu.biu.db.search.ModelItem;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
-
 
 import java.util.Comparator;
 import java.util.List;
@@ -57,7 +56,7 @@ public class VideoContentAdapter extends CommonSortedAdapter {
 
     @Override
     protected Map<String, List<ModelItem>> readSortedDataFromDB() {
-        return ModelItem.queryItemToDir(ModelItem.TYPE_VIDEO);
+        return ModelItem.queryItemToDir(StorageUtil.TYPE_VIDEO);
     }
 
     @Override

@@ -27,8 +27,8 @@ import java.util.List;
 public class StorageUtil {
     private static final String TAG = StorageUtil.class.getSimpleName();
 
-    public static final int TYPE_INTERNAL = 0;
-    public static final int TYPE_EXTERNAL = 1;
+    public static final int STORAGE_INTERNAL = 0;
+    public static final int STORAGE_EXTERNAL = 1;
 
     public static final String PATH_STORAGE = "/storage";
     public static final String PATH_EMULATED = "/emulated";
@@ -52,6 +52,14 @@ public class StorageUtil {
     public static final List<String> EXTENSION_ARCHIVE = Arrays.asList(
             "rar", "zip", "7z", "tar", "gz", "bz2", "xz", "lz", "lzma"
     );
+
+    public static final int TYPE_MUSIC = 1;
+    public static final int TYPE_VIDEO = 2;
+    public static final int TYPE_IMG = 3;
+    public static final int TYPE_ARCHIVE = 4;
+    public static final int TYPE_APK = 5;
+    public static final int TYPE_DOC = 6;
+
 
     public static final List<String> EXTENSION_WORD = Arrays.asList("doc", "docx", "odt");
     public static final List<String> EXTENSION_EXCEL = Arrays.asList("xls", "xlsx", "ods");
@@ -163,14 +171,14 @@ public class StorageUtil {
      * 如果手机储存有虚拟的存储卡，则返回其根目录，没有则返回File(“/storage”)
      *
      * @param context context
-     * @param type    {@value TYPE_EXTERNAL,TYPE_INTERNAL}
+     * @param type    {@value STORAGE_EXTERNAL , STORAGE_INTERNAL}
      * @return File
      */
     public static File getRootDir(Context context, int type) {
         File root = null;
         int externalDirCount = getExternalDirCount(context);
 
-        if (type == TYPE_INTERNAL) {
+        if (type == STORAGE_INTERNAL) {
             if (getExternalDirCount(context) == 2) {  // 有两个外置，则用第一个表示手机存储
                 root = Environment.getExternalStorageDirectory();
             } else {
@@ -437,4 +445,28 @@ public class StorageUtil {
         return file.getName();
     }
 
+    /**
+     * 获取文件对应的类型
+     *
+     * @param ext 后缀名
+     * @return 类型，不属于常见文件则为-1.
+     * @see #TYPE_DOC
+     */
+    public static int getFileType(String ext) {
+        if (EXTENSION_MUSIC.contains(ext)) {
+            return TYPE_MUSIC;
+        } else if (EXTENSION_VIDEO.contains(ext)) {
+            return TYPE_VIDEO;
+        } else if (EXTENSION_IMG.contains(ext)) {
+            return TYPE_IMG;
+        } else if (EXTENSION_APK.contains(ext)) {
+            return TYPE_APK;
+        } else if (EXTENSION_ARCHIVE.contains(ext)) {
+            return TYPE_ARCHIVE;
+        } else if (EXTENSION_DOC.contains(ext)) {
+            return TYPE_DOC;
+        } else {
+            return -1;
+        }
+    }
 }

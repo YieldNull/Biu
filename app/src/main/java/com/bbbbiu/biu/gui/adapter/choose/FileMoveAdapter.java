@@ -98,12 +98,12 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private void init() {
         if (StorageUtil.hasRealExternal(context)) {
-            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.TYPE_INTERNAL));
-            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.TYPE_EXTERNAL));
+            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL));
+            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.STORAGE_EXTERNAL));
 
             mDataSet.addAll(mDirList);
         } else {
-            setCurrentDir(StorageUtil.getRootDir(context, StorageUtil.TYPE_INTERNAL));
+            setCurrentDir(StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL));
         }
     }
 

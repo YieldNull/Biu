@@ -65,6 +65,29 @@ public class ApkItem extends ModelItem {
         this.type = type;
     }
 
+
+    /**
+     * 通过解析文件生成ApkItem。
+     *
+     * @param context context
+     * @param path    APK 文件路径
+     * @return ApkItem 已安装则返回Null，未安装则缓存其ICON
+     */
+    public static ApkItem newItem(Context context, String path) {
+        String name = StorageUtil.getApkName(context, path);
+        String packageName = StorageUtil.getApkPackageName(context, path);
+
+        ApkItem apkItem = new ApkItem(path, name, packageName, ApkItem.TYPE_APK_STANDALONE);
+
+        if (!apkItem.isInstalled(context)) {
+            apkItem.storeCachedIcon(context);
+            return apkItem;
+        }
+
+        return null;
+    }
+
+
     /**
      * 从数据库中读取指定类型的APK
      *

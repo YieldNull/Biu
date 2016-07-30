@@ -9,13 +9,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.db.search.FileItem;
+import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.db.search.FileItem;
-import com.bbbbiu.biu.db.search.ModelItem;
 
 import java.io.File;
 import java.util.Comparator;
@@ -42,7 +41,7 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
 
     @Override
     protected Map<String, List<ModelItem>> readSortedDataFromDB() {
-        return ModelItem.queryItemToDir(ModelItem.TYPE_DOC);
+        return ModelItem.queryItemToDir(StorageUtil.TYPE_DOC);
     }
 
     @Override

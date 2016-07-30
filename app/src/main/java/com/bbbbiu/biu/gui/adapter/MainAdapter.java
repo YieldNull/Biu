@@ -177,7 +177,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         public void setPercentage(int position) {
             int stringId = getStringId(position);
-            int type = stringId == R.string.cate_storage ? StorageUtil.TYPE_INTERNAL : StorageUtil.TYPE_EXTERNAL;
+            int type = stringId == R.string.cate_storage ? StorageUtil.STORAGE_INTERNAL : StorageUtil.STORAGE_EXTERNAL;
             final File file = StorageUtil.getRootDir(context, type);
 
             setStoragePercentage(file);

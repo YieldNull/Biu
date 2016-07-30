@@ -6,7 +6,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -106,15 +105,10 @@ public class SearchUtil {
         List<ApkItem> apkItemList = new ArrayList<>();
 
         for (String path : scanFileWithExtension(context, StorageUtil.EXTENSION_APK)) {
-            String name = StorageUtil.getApkName(context, path);
-            String packageName = StorageUtil.getApkPackageName(context, path);
+            ApkItem apkItem = ApkItem.newItem(context, path);
 
-            ApkItem apkItem = new ApkItem(path, name, packageName, ApkItem.TYPE_APK_STANDALONE);
-
-            if (!apkItem.isInstalled(context)) {
+            if (apkItem != null) {
                 apkItemList.add(apkItem);
-
-                apkItem.storeCachedIcon(context);
                 apkItem.save();
             }
         }
@@ -159,7 +153,7 @@ public class SearchUtil {
                 continue;
             }
 
-            FileItem item = new FileItem(path, ModelItem.TYPE_IMG);
+            FileItem item = new FileItem(path, StorageUtil.TYPE_IMG);
             fileItems.add(item);
 
             item.save();
@@ -183,7 +177,7 @@ public class SearchUtil {
         if (StorageUtil.hasSecondaryStorage()) {
 
             Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_VIDEO);
-            return getMediaItemFromPath(context, MediaItem.TYPE_VIDEO, pathSet);
+            return getMediaItemFromPath(context, pathSet);
 
         } else {
             List<MediaItem> fileItems = new ArrayList<>();
@@ -214,7 +208,7 @@ public class SearchUtil {
 
 
                 if (new File(path).exists() && title != null) {
-                    MediaItem item = new MediaItem(path, MediaItem.TYPE_VIDEO, title, null, duration);
+                    MediaItem item = new MediaItem(path, StorageUtil.TYPE_VIDEO, title, null, duration);
                     fileItems.add(item);
 
                     item.save();
@@ -236,9 +230,10 @@ public class SearchUtil {
     public static List<MediaItem> scanMusicItem(Context context) {
         Log.i(TAG, "Start scanning music");
 
+        // 有 secondary external storage，则通过后缀名扫描
         if (StorageUtil.hasSecondaryStorage()) {
             Set<String> pathSet = scanFileWithExtension(context, StorageUtil.EXTENSION_MUSIC);
-            return getMediaItemFromPath(context, MediaItem.TYPE_MUSIC, pathSet);
+            return getMediaItemFromPath(context, pathSet);
 
         } else {
             List<MediaItem> fileItems = new ArrayList<>();
@@ -271,7 +266,7 @@ public class SearchUtil {
 
 
                 if (new File(path).exists() && title != null) {
-                    MediaItem item = new MediaItem(path, MediaItem.TYPE_MUSIC, title, artist, duration);
+                    MediaItem item = new MediaItem(path, StorageUtil.TYPE_MUSIC, title, artist, duration);
                     fileItems.add(item);
 
                     item.save();
@@ -298,7 +293,7 @@ public class SearchUtil {
         List<FileItem> fileItems = new ArrayList<>();
 
         for (String path : pathList) {
-            FileItem item = new FileItem(path, ModelItem.TYPE_DOC);
+            FileItem item = new FileItem(path, StorageUtil.TYPE_DOC);
             fileItems.add(item);
 
             item.save();
@@ -322,7 +317,7 @@ public class SearchUtil {
         List<FileItem> fileItems = new ArrayList<>();
 
         for (String path : pathList) {
-            FileItem item = new FileItem(path, ModelItem.TYPE_ARCHIVE);
+            FileItem item = new FileItem(path, StorageUtil.TYPE_ARCHIVE);
             fileItems.add(item);
 
             item.save();
@@ -394,74 +389,20 @@ public class SearchUtil {
      * 从视频、音频文件的路径生成{@link MediaItem}。主要是解析出时长等信息
      *
      * @param context context
-     * @param type    类型
      * @param pathSet 文件绝对路径集合
      */
-    private static List<MediaItem> getMediaItemFromPath(Context context, int type, Set<String> pathSet) {
+    public static List<MediaItem> getMediaItemFromPath(Context context, Set<String> pathSet) {
         List<MediaItem> mediaItemList = new ArrayList<>();
 
-        // 获取Metadata
-        MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
-
         for (String path : pathSet) {
-            File file = new File(path);
+            MediaItem item = MediaItem.newItem(context, path);
 
-            Uri uri = Uri.fromFile(file);
-
-            try {
-                // 为毛会出现这样的错误啊，卧槽
-                mediaMetadataRetriever.setDataSource(context, uri);
-            } catch (RuntimeException e) {
-                continue;
+            if (item != null) {
+                mediaItemList.add(item);
+                item.save();
             }
-
-            String title, artist;
-
-            if (type == ModelItem.TYPE_VIDEO) {
-                title = file.getName();
-                artist = null;
-            } else {
-                title = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-                if (title == null) {
-                    continue;
-                }
-                artist = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
-            }
-
-            String duration;
-            try {
-                duration = formatMediaDuration(Long.valueOf(mediaMetadataRetriever.extractMetadata(
-                        MediaMetadataRetriever.METADATA_KEY_DURATION)));
-            } catch (NumberFormatException e) {
-                continue;
-            }
-
-            MediaItem item = new MediaItem(path, type, title, artist, duration);
-            mediaItemList.add(item);
-
-            item.save();
         }
 
         return mediaItemList;
     }
-
-
-    /**
-     * 格式化视频、音乐的时间
-     *
-     * @param time time as long integer
-     * @return 格式化之后的时间 如 05:20 表示5min 20sec
-     */
-    private static String formatMediaDuration(long time) {
-        String min = time / (1000 * 60) + "";
-        String sec = time % (1000 * 60) + "";
-        if (min.length() < 2)
-            min = "0" + min;
-        if (sec.length() == 4)
-            sec = "0" + sec;
-        else if (sec.length() <= 3)
-            sec = "00" + sec;
-        return min + ":" + sec.trim().substring(0, 2);
-    }
-
 }
