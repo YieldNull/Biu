@@ -11,6 +11,7 @@ import android.os.ResultReceiver;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
@@ -26,7 +27,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * 使用HTTP POST 后台上传、发送文件
+ * 使用HTTP POST 后台上传、发送文件。Android 端发送给 Android、PC 端
  */
 public class UploadService extends Service {
     private static final String TAG = UploadService.class.getSimpleName();
@@ -219,6 +220,9 @@ public class UploadService extends Service {
             Log.i(TAG, "Upload file failed. Response status code " + response.code());
             return false;
         }
+
+
+        TransferRecord.recordSending(file);
 
         Log.i(TAG, "Upload file succeeded " + fileUri);
 

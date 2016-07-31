@@ -3,7 +3,6 @@ package com.bbbbiu.biu.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-
 import com.bbbbiu.biu.gui.transfer.FileItem;
 
 import java.io.File;
@@ -49,7 +48,7 @@ public class PreferenceUtil {
         ArrayList<FileItem> fileItems = new ArrayList<>();
         for (String path : PreferenceUtil.getFilesToSend(context)) {
             File file = new File(path);
-            fileItems.add(new FileItem(file.getAbsolutePath(), StorageUtil.getFileNameToSend(context, file), file.length()));
+            fileItems.add(new FileItem(file.getAbsolutePath(), StorageUtil.getFileNameToDisplay(context, file), file.length()));
         }
         return fileItems;
     }

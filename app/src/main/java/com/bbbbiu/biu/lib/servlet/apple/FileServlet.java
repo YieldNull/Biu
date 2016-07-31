@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
+import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.lib.servlet.ProgressBaseServlet;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
@@ -69,13 +70,14 @@ public class FileServlet extends ProgressBaseServlet {
         response.setProgressNotifier(new ProgressNotifier(file.getAbsolutePath(), getProgressListener(), file.length()));
 
         // APK 名称
-        String name = StorageUtil.getFileNameToSend(context, file);
+        String name = StorageUtil.getFileNameToDisplay(context, file);
 
         response.addHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\";filename*=UTF-8''%s",
                         name,
                         Uri.encode(name)));
 
+        TransferRecord.recordSending(file);
 
         return response;
     }

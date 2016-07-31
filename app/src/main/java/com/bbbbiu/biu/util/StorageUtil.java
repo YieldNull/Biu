@@ -8,6 +8,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -66,6 +68,8 @@ public class StorageUtil {
     public static final List<String> EXTENSION_PPT = Arrays.asList("ppt", "pptx", "odp");
     public static final List<String> EXTENSION_PDF = Collections.singletonList("pdf");
     public static final List<String> EXTENSION_TEXT = Collections.singletonList("txt");
+
+    public static final String CACHED_ICON_DIR = "apk_icon";
 
 
     /**
@@ -427,7 +431,20 @@ public class StorageUtil {
     }
 
     /**
-     * 获取要发送的文件的真实名称
+     * 获取缓存的图标文件的路径
+     *
+     * @param context context
+     * @return 路径
+     */
+    public static String getCachedApkIconPath(Context context, String packageName) {
+        return new File(
+                context.getDir(CACHED_ICON_DIR, Context.MODE_PRIVATE), packageName)
+                .getAbsolutePath();
+    }
+
+
+    /**
+     * 获取用于显示的文件的真实名称
      * <p/>
      * APK名用应用名，而不是“base.apk”
      *
@@ -435,7 +452,7 @@ public class StorageUtil {
      * @param file    文件
      * @return 处理后的文件名
      */
-    public static String getFileNameToSend(Context context, File file) {
+    public static String getFileNameToDisplay(Context context, File file) {
         // APK 名称
         if (file.getName().endsWith(".apk")) {
             String name = StorageUtil.getApkName(context, file.getAbsolutePath());
@@ -468,5 +485,27 @@ public class StorageUtil {
         } else {
             return -1;
         }
+    }
+
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        Bitmap bitmap;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if (bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if (drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 }

@@ -10,8 +10,8 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.util.HttpManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -234,12 +234,12 @@ public class PollingService extends Service {
                 response = HttpManager.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
-                Log.i(TAG, "Get file list failed. HTTP error" + e.toString());
+                Log.w(TAG, "Get file list failed. HTTP error.", e);
                 return null;
             }
 
             if (response.code() != 200) {
-                Log.i(TAG, "Get file list failed. Response status code " + response.code());
+                Log.w(TAG, "Get file list failed. Response status code " + response.code());
                 return null;
             }
 
@@ -251,8 +251,7 @@ public class PollingService extends Service {
                         }.getType());
 
             } catch (JsonSyntaxException e) {
-                Log.i(TAG, "Get file list failed. Response is not a valid json");
-                Log.i(TAG, e.toString());
+                Log.w(TAG, "Get file list failed. Response is not a valid json");
             }
         } finally {
             if (body != null) {

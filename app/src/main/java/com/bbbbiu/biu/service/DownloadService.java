@@ -10,9 +10,9 @@ import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.util.Log;
 
+import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.util.TransferRecorder;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
 import com.yieldnull.httpd.Streams;
@@ -200,7 +200,7 @@ public class DownloadService extends Service {
             }
         }
 
-        TransferRecorder.recordReceiving(this, destFile);
+        TransferRecord.recordReceiving(this, destFile);
 
         return true;
     }

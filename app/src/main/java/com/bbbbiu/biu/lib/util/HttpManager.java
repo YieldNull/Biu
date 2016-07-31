@@ -47,7 +47,7 @@ public class HttpManager {
         }
 
 
-        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, StorageUtil.getFileNameToSend(context, file),
+        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, StorageUtil.getFileNameToDisplay(context, file),
                 new UploadRequestBody(null, file, notifier));
 
         return new Request.Builder()

@@ -3,7 +3,6 @@ package com.bbbbiu.biu.db.search;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
@@ -31,8 +30,6 @@ public class ApkItem extends ModelItem {
     public static final int TYPE_APK_NORMAL = 2;
 
     private static final String TAG = ApkItem.class.getSimpleName();
-
-    public static final String ICON_DIR = "apk_icon";
 
     @PrimaryKey
     @Index
@@ -158,6 +155,7 @@ public class ApkItem extends ModelItem {
         return true;
     }
 
+
     /**
      * 获取图标文件
      *
@@ -165,21 +163,9 @@ public class ApkItem extends ModelItem {
      * @return 图标文件
      */
     public File getCachedIconFile(Context context) {
-        return new File(getCachedIconPath(context));
+        return new File(StorageUtil.getCachedApkIconPath(context, packageName));
     }
 
-
-    /**
-     * 获取图标文件的路径
-     *
-     * @param context context
-     * @return 路径
-     */
-    public String getCachedIconPath(Context context) {
-        return new File(
-                context.getDir(ICON_DIR, Context.MODE_PRIVATE), packageName)
-                .getAbsolutePath();
-    }
 
     /**
      * 将应用的图标存到内部储存上，以加快图标显示速度
@@ -193,11 +179,11 @@ public class ApkItem extends ModelItem {
             return false;
         }
 
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+        Bitmap bitmap = StorageUtil.drawableToBitmap(drawable);
 
         FileOutputStream out = null;
         try {
-            out = new FileOutputStream(getCachedIconPath(context));
+            out = new FileOutputStream(StorageUtil.getCachedApkIconPath(context, packageName));
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
         } catch (Exception e) {
             Log.w(TAG, e.toString());

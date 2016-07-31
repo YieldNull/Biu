@@ -3,25 +3,22 @@ package com.bbbbiu.biu.gui.adapter.choose.content;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
-import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.FileChooser;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 
 import java.io.File;
-import java.util.Set;
 
 /**
  * 选择文件时，显示数据的Adapter基类。定义了一些需要在Activity中使用的接口
  * <p/>
  * Created by YieldNull at 5/17/16
  */
-public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements FileChooser {
     private static final String TAG = BaseContentAdapter.class.getSimpleName();
 
     private OnLoadingDataListener mLoadingDataListener;
@@ -97,41 +94,6 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
      * OnBackPress时，取消当前未完成的PicassoTask
      */
     public abstract void cancelPicassoTask();
-
-    /**
-     * 已选项数量
-     *
-     * @return 数量
-     */
-    public abstract int getChosenCount();
-
-
-    /**
-     * 获取已选文件的路径集
-     *
-     * @return 绝对路径集
-     */
-    public abstract Set<String> getChosenFiles();
-
-
-    /**
-     * 文件是否已被选中
-     *
-     * @param file file
-     * @return 是否选中
-     */
-    public abstract boolean isFileChosen(File file);
-
-
-    /**
-     * 当前数据集全被选
-     */
-    public abstract void setFileAllChosen();
-
-    /**
-     * 清除所有已选项目
-     */
-    public abstract void setFileAllDismissed();
 
 
     /***********************************与Activity进行交互***********************************/
