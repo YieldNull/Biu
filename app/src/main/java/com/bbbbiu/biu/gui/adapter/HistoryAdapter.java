@@ -2,6 +2,7 @@ package com.bbbbiu.biu.gui.adapter;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -134,6 +135,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         mOnChoosing = mChosenFiles.size() != 0;
 
+
         context.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -144,6 +146,13 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
 
+    /**
+     * 点击list条目，默认为待选状态
+     * <p/>
+     * 要是已选择，则取消选择，要是未选择，则选择之
+     *
+     * @param record 对应的传输纪录
+     */
     private void itemClicked(TransferRecord record) {
         if (!mChosenFiles.contains(record)) {
             mChosenFiles.add(record);
@@ -174,7 +183,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         mDataSet = TransferRecord.query(type);
 
 
-        // TODO 文件可能已经被删除：将接收到的文件发送一次，出现在了发送纪录里面，然后接收纪录里面并没有删除之。或者文件被其它应用删除
         // TODO 在历史纪录里面发送，要更新发送纪录，或者直接退出历史界面算了
     }
 
@@ -191,11 +199,23 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder hd, int position) {
         final TransferRecord record = mDataSet.get(position);
         final File file = record.getFile();
 
         final HistoryViewHolder holder = (HistoryViewHolder) hd;
+
+        if (!file.exists()) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    mDataSet.remove(record);
+                    mDataSet.refresh();
+                    notifyItemRemoved(hd.getAdapterPosition());
+                }
+            });
+        }
+
 
         if (StorageUtil.isVideoFile(file.getPath())) {
             mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
@@ -269,7 +289,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                         mOnChoosingListener.onFileDismissed(record.path);
                                     }
 
-                                    notifyDataSetChanged();
+                                    notifyItemRemoved(hd.getAdapterPosition());
 
 
                                     Log.i(TAG, "Delete file and record successfully: " + file.getAbsolutePath());
