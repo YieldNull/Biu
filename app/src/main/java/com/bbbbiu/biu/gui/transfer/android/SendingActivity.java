@@ -21,17 +21,14 @@ import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.service.UploadService;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.google.gson.Gson;
 import com.yieldnull.httpd.Streams;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import okhttp3.Request;
 import okhttp3.Response;
@@ -125,7 +122,7 @@ public class SendingActivity extends TransferBaseActivity {
             HashMap<String, String> map = new HashMap<>();
             map.put(HttpConstants.FILE_URI, item.uri);
 
-            UploadService.startUpload(this, mUploadUrl, item.uri, map, mProgressResultReceiver);
+            UploadService.startUpload(this, mUploadUrl, item, map, mProgressResultReceiver);
         }
     }
 
@@ -220,7 +217,7 @@ public class SendingActivity extends TransferBaseActivity {
      */
     private void onWifiConnected() {
         // 读取要发送的文件列表
-        genManifest(new ArrayList<>(PreferenceUtil.getFilesToSend(this)));
+        mFileManifest.addAll(PreferenceUtil.getFileItemsToSend(this));
 
         HandlerThread handlerThread = new HandlerThread("SendingManifestThread");
         handlerThread.start();
@@ -289,20 +286,6 @@ public class SendingActivity extends TransferBaseActivity {
             if (response != null) {
                 Streams.safeClose(response.body());
             }
-        }
-    }
-
-
-    /**
-     * 生成要发送文件的清单
-     *
-     * @param filePathList 要发送的文件绝对路径
-     */
-    private void genManifest(List<String> filePathList) {
-        for (final String filePath : filePathList) {
-            File file = new File(filePath);
-            String name = StorageUtil.getFileNameToDisplay(this, file);
-            mFileManifest.add(new FileItem(file.getAbsolutePath(), name, file.length()));
         }
     }
 

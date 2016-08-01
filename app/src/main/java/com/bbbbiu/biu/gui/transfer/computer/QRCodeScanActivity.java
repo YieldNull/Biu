@@ -10,16 +10,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.util.HttpManager;
 import com.bbbbiu.biu.util.PreferenceUtil;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.google.zxing.Result;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -96,7 +92,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                     case MSG_SERVER_ERROR:
                         Log.i(TAG, "Server error. Stop retrying");
                         Toast.makeText(QRCodeScanActivity.this, R.string.hint_net_server_error, Toast.LENGTH_SHORT).show();
-                        onBackPressed();
+                        finish();
                         break;
                 }
                 return false;

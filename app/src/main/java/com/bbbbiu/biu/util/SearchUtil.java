@@ -293,7 +293,7 @@ public class SearchUtil {
         List<FileItem> fileItems = new ArrayList<>();
 
         for (String path : pathList) {
-            FileItem item = new FileItem(path, StorageUtil.TYPE_DOC);
+            FileItem item = new FileItem(path, StorageUtil.getFileType(StorageUtil.getFileExtension(path)));
             fileItems.add(item);
 
             item.save();

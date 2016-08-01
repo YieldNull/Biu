@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.db;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -17,8 +18,11 @@ import com.raizlabs.android.dbflow.annotation.Table;
 import com.raizlabs.android.dbflow.list.FlowQueryList;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
+import com.yieldnull.httpd.Streams;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -29,7 +33,6 @@ import java.util.Arrays;
 public class TransferRecord extends BaseModel {
 
     private static final String TAG = TransferRecord.class.getSimpleName();
-
 
     @Database(name = MyDatabase.NAME, version = MyDatabase.VERSION)
     public class MyDatabase {
@@ -48,8 +51,12 @@ public class TransferRecord extends BaseModel {
     @Column
     public long timestamp;
 
+
     @Column
-    public String path;
+    public String name;
+
+    @Column
+    public String uri;
 
     @Column
     public long size;
@@ -61,19 +68,81 @@ public class TransferRecord extends BaseModel {
     }
 
 
-    public TransferRecord(long timestamp, String path, long size, int type) {
+    public TransferRecord(long timestamp, String uri, String name, long size, int type) {
         this.timestamp = timestamp;
-        this.path = path;
+        this.uri = uri;
         this.size = size;
         this.type = type;
+        this.name = name;
+
     }
 
-    public File getFile() {
-        return new File(path);
+
+    /**
+     * 获取对应的文件类型
+     *
+     * @return 文件类型，未知类型则返回-1
+     * @see StorageUtil
+     */
+    public int getFileType() {
+        return StorageUtil.getFileType(StorageUtil.getFileExtension(name));
     }
 
-    public String getName() {
-        return getFile().getName();
+
+    /**
+     * 获取对应的文件路径
+     *
+     * @return 返回{@link ContentResolver#SCHEME_FILE}对应的路径，{@link ContentResolver#SCHEME_CONTENT}返回null
+     */
+    public String getFilePath() {
+        Uri u = Uri.parse(uri);
+
+        if (u.getScheme().equals(ContentResolver.SCHEME_FILE)) {
+            return u.getPath();
+        }
+
+        return null;
+    }
+
+
+    /**
+     * 对应的文件是否存在
+     *
+     * @param context context
+     * @return 是否存在
+     */
+    public boolean fileExists(Context context) {
+        Uri u = Uri.parse(uri);
+
+        InputStream stream = null;
+        try {
+            stream = context.getContentResolver().openInputStream(u);
+            return true;
+        } catch (FileNotFoundException e) {
+            return false;
+        } finally {
+            if (stream != null) {
+                Streams.safeClose(stream);
+            }
+        }
+    }
+
+
+    /**
+     * 删除对应的文件
+     *
+     * @param context context
+     * @return 若为 {@link ContentResolver#SCHEME_CONTENT}则返回true，若为{@link ContentResolver#SCHEME_FILE}则看是否删除成功
+     */
+    public boolean deleteFile(Context context) {
+        Uri u = Uri.parse(uri);
+
+        if (u.getScheme().equals(ContentResolver.SCHEME_FILE)) {
+            return new File(u.getPath()).delete();
+        } else {
+            context.getContentResolver().delete(u, null, null);
+            return true;
+        }
     }
 
 
@@ -84,8 +153,9 @@ public class TransferRecord extends BaseModel {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(new Object[]{timestamp, path, size, type});
+        return Arrays.hashCode(new Object[]{timestamp, uri, size, type});
     }
+
 
     /**
      * 查询已下载或已发送纪录
@@ -100,7 +170,7 @@ public class TransferRecord extends BaseModel {
                 .from(TransferRecord.class)
                 .where(TransferRecord_Table.type.eq(type))
                 .orderBy(TransferRecord_Table.timestamp, false)
-                .groupBy(TransferRecord_Table.path, TransferRecord_Table.size)
+                .groupBy(TransferRecord_Table.uri, TransferRecord_Table.size)
                 .flowQueryList();
     }
 
@@ -114,7 +184,8 @@ public class TransferRecord extends BaseModel {
     public static void recordReceiving(Context context, File file) {
         new TransferRecord(
                 System.currentTimeMillis(),
-                file.getAbsolutePath(),
+                Uri.fromFile(file).toString(),
+                file.getName(),
                 file.length(), TYPE_RECEIVED).save();
 
 
@@ -125,13 +196,15 @@ public class TransferRecord extends BaseModel {
     /**
      * 保存发送纪录
      *
-     * @param file 发送的文件
+     * @param size 文件大小
+     * @param uri  文件Uri
      */
-    public static void recordSending(File file) {
+    public static void recordSending(String uri, String name, long size) {
         new TransferRecord(
                 System.currentTimeMillis(),
-                file.getAbsolutePath(),
-                file.length(), TYPE_SENT).save();
+                uri,
+                name,
+                size, TYPE_SENT).save();
     }
 
 
@@ -148,7 +221,7 @@ public class TransferRecord extends BaseModel {
         // 因此，下载之后通过首页的分类是查不出来的
         // 可能是因为放在了APP专属的目录下面
         // 通过文件管理器把一个包含图片的文件夹放入外置储存卡随便一个目录里面，结果就能识别出来
-        // 放入 ”/Android/data/package-name/“下面就跪了
+        // 放入 ”/Android/data/package-name/“下面就跪了, data 文件夹下面有".nomedia"文件
         MediaScannerConnection.scanFile(context, new String[]{file.getAbsolutePath()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     @Override
@@ -162,19 +235,19 @@ public class TransferRecord extends BaseModel {
         String path = file.getAbsolutePath();
         ModelItem item = null;
 
-        if (StorageUtil.getFileType(ext) == StorageUtil.TYPE_MUSIC
+        int fileType = StorageUtil.getFileType(ext);
+
+        if (fileType == StorageUtil.TYPE_MUSIC
                 || StorageUtil.getFileType(ext) == StorageUtil.TYPE_VIDEO) {
 
             item = MediaItem.newItem(context, path);
 
-        } else if (StorageUtil.getFileType(ext) == StorageUtil.TYPE_APK) {
+        } else if (fileType == StorageUtil.TYPE_APK) {
             item = ApkItem.newItem(context, path);
-
         } else {
-            int type = StorageUtil.getFileType(ext);
 
-            if (type > 0) {
-                item = new FileItem(path, StorageUtil.getFileType(ext));
+            if (fileType > 0) {
+                item = new FileItem(path, fileType);
             }
         }
 

@@ -396,6 +396,7 @@ public class HttpResponse {
         }
 
         outputStream.flush();
+        Streams.safeClose(mDataStream);
     }
 
 }

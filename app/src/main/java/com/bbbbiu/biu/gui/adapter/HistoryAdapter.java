@@ -2,6 +2,8 @@ package com.bbbbiu.biu.gui.adapter;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -73,18 +75,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public Set<String> getChosenFiles() {
         Set<String> files = new HashSet<>();
         for (TransferRecord record : mChosenFiles) {
-            files.add(record.path);
+            files.add(record.uri);
         }
         return files;
     }
 
+
     @Override
     public boolean isFileChosen(File file) {
-        for (TransferRecord record : mChosenFiles) {
-            if (record.getFile().equals(file)) {
-                return true;
-            }
-        }
+        // unused
         return false;
     }
 
@@ -114,15 +113,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         boolean allSucceeded = true;
         for (TransferRecord record : mChosenFiles) {
-            if (record.getFile().delete()) {
+            if (record.deleteFile(context)) {
                 mDataSet.remove(record);
                 toDelete.add(record);
 
-                Log.i(TAG, "Delete file and record successfully: " + record.path);
+                Log.i(TAG, "Delete file and record successfully: " + record.uri);
             } else {
                 allSucceeded = false;
 
-                Log.i(TAG, "Failed to delete file and record: " + record.path);
+                Log.i(TAG, "Failed to delete file and record: " + record.uri);
             }
         }
 
@@ -156,12 +155,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private void itemClicked(TransferRecord record) {
         if (!mChosenFiles.contains(record)) {
             mChosenFiles.add(record);
-            mOnChoosingListener.onFileChosen(record.path);
+            mOnChoosingListener.onFileChosen(record.uri);
 
         } else {
             mChosenFiles.remove(record);
 
-            mOnChoosingListener.onFileDismissed(record.path);
+            mOnChoosingListener.onFileDismissed(record.uri);
         }
 
         mOnChoosing = mChosenFiles.size() != 0;
@@ -201,11 +200,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder hd, int position) {
         final TransferRecord record = mDataSet.get(position);
-        final File file = record.getFile();
 
         final HistoryViewHolder holder = (HistoryViewHolder) hd;
 
-        if (!file.exists()) {
+        if (!record.fileExists(context)) {
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -217,22 +215,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
 
-        if (StorageUtil.isVideoFile(file.getPath())) {
-            mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
-                    .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
-                    .placeholder(R.drawable.ic_type_video)
-                    .into(holder.iconImage);
-
-        } else if (StorageUtil.isImgFile(file.getPath())) {
-            mImgPicasso.load(file)
-                    .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
-                    .placeholder(R.drawable.ic_type_img)
-                    .into(holder.iconImage);
-        } else {
-            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, file));
-        }
-
-        holder.nameText.setText(StorageUtil.getFileNameToDisplay(context, file));
+        holder.nameText.setText(record.name);
 
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH);
         holder.infoText.setText(String.format("%s %s",
@@ -241,11 +224,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
         if (mChosenFiles.contains(record)) {
-            holder.setItemStyleChosen(file);
+            holder.setItemStyleChosen();
         } else if (mOnChoosing) {
-            holder.setItemStyleChoosing(file);
+            holder.setItemStyleChoosing(record);
         } else {
-            holder.setItemStyleNormal(file);
+            holder.setItemStyleNormal(record);
         }
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -254,7 +237,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 if (isOnChoosing()) {
                     itemClicked(record);
                 } else {
-                    StorageUtil.openFile(context, file);
+                    StorageUtil.openFile(context, Uri.parse(record.uri), record.name);
                 }
             }
         });
@@ -276,7 +259,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                if (file.delete()) {
+                                if (record.deleteFile(context)) {
 
                                     mDataSet.remove(record);
                                     mDataSet.refresh();
@@ -286,17 +269,17 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                                         mChosenFiles.remove(record);
 
                                         mOnChoosing = mChosenFiles.size() != 0;
-                                        mOnChoosingListener.onFileDismissed(record.path);
+                                        mOnChoosingListener.onFileDismissed(record.uri);
                                     }
 
                                     notifyItemRemoved(hd.getAdapterPosition());
 
 
-                                    Log.i(TAG, "Delete file and record successfully: " + file.getAbsolutePath());
+                                    Log.i(TAG, "Delete file and record successfully: " + record.uri);
                                     Toast.makeText(context, R.string.delete_succeeded, Toast.LENGTH_SHORT).show();
                                 } else {
 
-                                    Log.i(TAG, "Failed to delete file and record: " + file.getAbsolutePath());
+                                    Log.i(TAG, "Failed to delete file and record: " + record.uri);
 
                                     Toast.makeText(context, R.string.delete_failed, Toast.LENGTH_SHORT).show();
                                 }
@@ -339,47 +322,57 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         /**
          * 正常显示样式
          *
-         * @param file 对应的文件
+         * @param record 纪录
          */
-        public void setItemStyleNormal(File file) {
+        public void setItemStyleNormal(TransferRecord record) {
             itemView.setBackgroundColor(context.getResources().getColor(android.R.color.background_light));
             iconImage.setBackgroundDrawable(null);
 
-            if (StorageUtil.isVideoFile(file.getPath())) {
-                mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + file.getAbsolutePath())
-                        .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
-                        .placeholder(R.drawable.ic_type_video)
-                        .tag(PICASSO_TAG)
-                        .into(iconImage);
+            if (record.getFileType() == StorageUtil.TYPE_VIDEO) {
+                String realPath = record.getFilePath();
 
-            } else if (StorageUtil.isImgFile(file.getPath())) {
-                mImgPicasso.load(file)
+                if (realPath == null) {
+                    iconImage.setImageDrawable(StorageUtil.getFileIcon(context, StorageUtil.TYPE_VIDEO));
+                } else {
+                    mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + realPath)
+                            .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
+                            .placeholder(R.drawable.ic_type_video)
+                            .tag(PICASSO_TAG)
+                            .into(iconImage);
+                }
+
+            } else if (record.getFileType() == StorageUtil.TYPE_IMG) {
+                mImgPicasso.load(record.uri)
                         .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_img)
                         .tag(PICASSO_TAG)
                         .into(iconImage);
+            } else if (record.getFileType() == StorageUtil.TYPE_APK) {
+                Drawable drawable = StorageUtil.getApkIcon(context, record.getFilePath());
+                if (drawable == null) {
+                    drawable = StorageUtil.getFileIcon(context, StorageUtil.TYPE_APK);
+                }
+                iconImage.setImageDrawable(drawable);
             } else {
-                iconImage.setImageDrawable(StorageUtil.getFileIcon(context, file));
+                iconImage.setImageDrawable(StorageUtil.getFileIcon(context, record.getFileType()));
             }
         }
 
         /**
          * 待选样式
          *
-         * @param file 对应的文件
+         * @param record 纪录
          */
-        public void setItemStyleChoosing(File file) {
-            setItemStyleNormal(file);
+        public void setItemStyleChoosing(TransferRecord record) {
+            setItemStyleNormal(record);
             iconImage.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg));
         }
 
 
         /**
          * 已选样式
-         *
-         * @param file 对应的文件
          */
-        public void setItemStyleChosen(File file) {
+        public void setItemStyleChosen() {
             itemView.setBackgroundColor(context.getResources().getColor(R.color.file_item_chosen));
             iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_file_chosen));
             iconImage.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));

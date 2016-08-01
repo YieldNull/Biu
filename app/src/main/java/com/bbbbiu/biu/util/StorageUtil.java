@@ -17,14 +17,23 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import com.bbbbiu.biu.R;
+import com.yieldnull.httpd.Streams;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class StorageUtil {
     private static final String TAG = StorageUtil.class.getSimpleName();
@@ -35,6 +44,19 @@ public class StorageUtil {
     public static final String PATH_STORAGE = "/storage";
     public static final String PATH_EMULATED = "/emulated";
     public static final String PATH_LEGACY = "/storage/emulated/legacy";
+
+
+    public static final int TYPE_MUSIC = 1;
+    public static final int TYPE_VIDEO = 2;
+    public static final int TYPE_IMG = 3;
+    public static final int TYPE_ARCHIVE = 4;
+    public static final int TYPE_APK = 5;
+    public static final int TYPE_DOC = 6; // 只用作集中查询，不赋给具体文件
+    public static final int TYPE_WORD = 7;
+    public static final int TYPE_PPT = 8;
+    public static final int TYPE_EXCEL = 9;
+    public static final int TYPE_PDF = 10;
+
 
     public static final List<String> EXTENSION_APK = Collections.singletonList("apk");
 
@@ -55,21 +77,18 @@ public class StorageUtil {
             "rar", "zip", "7z", "tar", "gz", "bz2", "xz", "lz", "lzma"
     );
 
-    public static final int TYPE_MUSIC = 1;
-    public static final int TYPE_VIDEO = 2;
-    public static final int TYPE_IMG = 3;
-    public static final int TYPE_ARCHIVE = 4;
-    public static final int TYPE_APK = 5;
-    public static final int TYPE_DOC = 6;
-
-
     public static final List<String> EXTENSION_WORD = Arrays.asList("doc", "docx", "odt");
     public static final List<String> EXTENSION_EXCEL = Arrays.asList("xls", "xlsx", "ods");
     public static final List<String> EXTENSION_PPT = Arrays.asList("ppt", "pptx", "odp");
     public static final List<String> EXTENSION_PDF = Collections.singletonList("pdf");
     public static final List<String> EXTENSION_TEXT = Collections.singletonList("txt");
 
-    public static final String CACHED_ICON_DIR = "apk_icon";
+    public static final String DIR_CACHED_ICON = "apk_icon";  // 内部储存
+
+    private static final String DIR_DOWNLOAD = "Download"; // 外部
+    private static final String DIR_TEXT = "text";  // "DIR_DOWNLOAD/DIR_TEXT"
+
+    private static final String TEXT_TO_FILE_NAME = "text2file";
 
 
     /**
@@ -106,16 +125,28 @@ public class StorageUtil {
      * 获取下载目录。有两个存储卡，就放到第二个。
      */
     public static File getDownloadDir(Context context) {
+        return getExternalDir(context, DIR_DOWNLOAD);
+    }
+
+
+    /**
+     * 获取外部储存中指定文件夹的路径
+     *
+     * @param context context
+     * @param dir     文件夹名
+     * @return 文件夹
+     */
+    private static File getExternalDir(Context context, String dir) {
         File downloads;
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-            File[] externals = ContextCompat.getExternalFilesDirs(context, "Download");
+            File[] externals = ContextCompat.getExternalFilesDirs(context, dir);
             if (externals.length > 1 && (externals[1] != null)) {
                 downloads = externals[1];
             } else {
                 downloads = externals[0];
             }
         } else {
-            downloads = context.getExternalFilesDir("Download");
+            downloads = context.getExternalFilesDir(dir);
         }
 
         return downloads;
@@ -216,8 +247,9 @@ public class StorageUtil {
         return root;
     }
 
+
     /**
-     * 获取文件对应的图标
+     * 获取文件对应的图标,处理APK获取其ICON
      *
      * @param context context
      * @param file    文件
@@ -263,6 +295,49 @@ public class StorageUtil {
         return context.getResources().getDrawable(id);
     }
 
+
+    /**
+     * 获取对应文件的图标，不进行图片，视频，APK的渲染，只得到默认的图标文件。
+     *
+     * @param context context
+     * @param type    文件类型
+     * @return 图标
+     */
+    public static Drawable getFileIcon(Context context, int type) {
+        int id;
+        switch (type) {
+            case TYPE_APK:
+                id = R.drawable.ic_type_apk;
+                break;
+            case TYPE_ARCHIVE:
+                id = R.drawable.ic_type_archive;
+                break;
+            case TYPE_IMG:
+                id = R.drawable.ic_type_img;
+                break;
+            case TYPE_MUSIC:
+                id = R.drawable.ic_type_music;
+                break;
+            case TYPE_VIDEO:
+                id = R.drawable.ic_type_video;
+                break;
+            case TYPE_PDF:
+                id = R.drawable.ic_type_pdf;
+                break;
+            case TYPE_WORD:
+                id = R.drawable.ic_type_word;
+                break;
+            case TYPE_EXCEL:
+                id = R.drawable.ic_type_excel;
+                break;
+            default:
+                id = R.drawable.ic_type_default;
+                break;
+        }
+
+        return context.getResources().getDrawable(id);
+    }
+
     /**
      * 用其它应用打开文件
      *
@@ -274,11 +349,22 @@ public class StorageUtil {
             return;
         }
 
+        openFile(context, Uri.fromFile(file), file.getName());
+    }
+
+
+    /**
+     * 根据文件Uri打开之
+     *
+     * @param context context
+     * @param uri     uri
+     * @param name    文件名
+     */
+    public static void openFile(Context context, Uri uri, String name) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        Uri uri = Uri.fromFile(file);
 
         // MimeTypeMap.getFileExtensionFromUrl()对中文不起作用
-        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(StorageUtil.getFileExtension(file.getName()));
+        String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(StorageUtil.getFileExtension(name));
 
         if (mime == null) {
             mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension("txt");
@@ -416,6 +502,10 @@ public class StorageUtil {
      * @return ICON as Drawable or null
      */
     public static Drawable getApkIcon(Context context, String path) {
+        if (path == null) {
+            return null;
+        }
+
         PackageManager manager = context.getPackageManager();
         PackageInfo packageInfo = manager.getPackageArchiveInfo(path, PackageManager.GET_ACTIVITIES);
 
@@ -438,7 +528,7 @@ public class StorageUtil {
      */
     public static String getCachedApkIconPath(Context context, String packageName) {
         return new File(
-                context.getDir(CACHED_ICON_DIR, Context.MODE_PRIVATE), packageName)
+                context.getDir(DIR_CACHED_ICON, Context.MODE_PRIVATE), packageName)
                 .getAbsolutePath();
     }
 
@@ -467,7 +557,7 @@ public class StorageUtil {
      *
      * @param ext 后缀名
      * @return 类型，不属于常见文件则为-1.
-     * @see #TYPE_DOC
+     * @see
      */
     public static int getFileType(String ext) {
         if (EXTENSION_MUSIC.contains(ext)) {
@@ -480,13 +570,25 @@ public class StorageUtil {
             return TYPE_APK;
         } else if (EXTENSION_ARCHIVE.contains(ext)) {
             return TYPE_ARCHIVE;
-        } else if (EXTENSION_DOC.contains(ext)) {
-            return TYPE_DOC;
+        } else if (EXTENSION_WORD.contains(ext)) {
+            return TYPE_WORD;
+        } else if (EXTENSION_PPT.contains(ext)) {
+            return TYPE_PPT;
+        } else if (EXTENSION_EXCEL.contains(ext)) {
+            return TYPE_EXCEL;
+        } else if (EXTENSION_PDF.contains(ext)) {
+            return TYPE_PDF;
         } else {
             return -1;
         }
     }
 
+    /**
+     * 根据Drawable获取bitmap
+     *
+     * @param drawable Drawable
+     * @return Bitmap
+     */
     public static Bitmap drawableToBitmap(Drawable drawable) {
         Bitmap bitmap;
 
@@ -507,5 +609,37 @@ public class StorageUtil {
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+
+    /**
+     * 将文本信息保存为文件
+     * <p/>
+     * 存到{@link #getDownloadDir(Context)} 目录下面的 “text”文件夹中
+     *
+     * @param context context
+     * @param text    文本内容
+     * @return 文件uri 保存失败则返回null
+     */
+    public static String storeTextToSend(Context context, String text) {
+        File repository = getExternalDir(context, DIR_TEXT);
+
+
+        File file = new File(repository, String.format("%s-%s.txt", TEXT_TO_FILE_NAME,
+                new SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ENGLISH).format(new Date())));
+
+        Writer writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(file));
+            writer.write(text);
+            return Uri.fromFile(file).getPath();
+        } catch (IOException e) {
+            Log.w(TAG, e.getMessage(), e);
+            return null;
+        } finally {
+            if (writer != null) {
+                Streams.safeClose(writer);
+            }
+        }
     }
 }

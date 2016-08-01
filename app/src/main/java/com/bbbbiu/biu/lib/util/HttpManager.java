@@ -2,10 +2,9 @@ package com.bbbbiu.biu.lib.util;
 
 import android.content.Context;
 
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.yieldnull.httpd.ProgressNotifier;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +33,7 @@ public class HttpManager {
                 .build();
     }
 
-    public static Request newFileUploadRequest(Context context, String uploadUrl, File file,
+    public static Request newFileUploadRequest(Context context, String uploadUrl, FileItem fileItem,
                                                Map<String, String> formData, ProgressNotifier notifier) {
 
         MultipartBody.Builder builder = new MultipartBody.Builder()
@@ -47,8 +46,8 @@ public class HttpManager {
         }
 
 
-        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, StorageUtil.getFileNameToDisplay(context, file),
-                new UploadRequestBody(null, file, notifier));
+        builder.addFormDataPart(HttpConstants.FILE_FORM_NAME, fileItem.name,
+                new UploadRequestBody(context, fileItem, notifier));
 
         return new Request.Builder()
                 .url(uploadUrl)
@@ -75,14 +74,15 @@ public class HttpManager {
      */
     public static class UploadRequestBody extends RequestBody {
         MediaType contentType;
-        File file;
+        FileItem fileItem;
+        Context context;
         ProgressNotifier notifier;
 
         final long DEFAULT_SEGMENT_SIZE = 8192;
 
-        public UploadRequestBody(MediaType contentType, File file, ProgressNotifier notifier) {
-            this.contentType = contentType;
-            this.file = file;
+        public UploadRequestBody(Context context, FileItem fileItem, ProgressNotifier notifier) {
+            this.context = context;
+            this.fileItem = fileItem;
             this.notifier = notifier;
         }
 
@@ -93,7 +93,7 @@ public class HttpManager {
 
         @Override
         public long contentLength() {
-            return file.length();
+            return fileItem.size;
         }
 
         @Override
@@ -101,7 +101,7 @@ public class HttpManager {
             System.setProperty("http.keepAlive", "false");
             Source source = null;
             try {
-                source = Okio.source(file);
+                source = Okio.source(fileItem.inputStream(context));
                 //sink.writeAll(source);
 
                 int read;

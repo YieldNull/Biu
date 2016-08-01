@@ -12,12 +12,12 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
+import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.util.HttpManager;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
 import com.yieldnull.httpd.Streams;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -40,7 +40,7 @@ public class UploadService extends Service {
     /**
      * Intent extra. 要上传的文件的绝对路径。
      */
-    private static final String EXTRA_FILE_PATH = "com.bbbbiu.biu.service.UploadService.extra.FILE_PATH";
+    private static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.service.UploadService.extra.FILE_PATH";
 
     /**
      * Intent extra. POST 文件 到该URL
@@ -84,17 +84,17 @@ public class UploadService extends Service {
      *
      * @param context        context
      * @param uploadUrl      上传URL
-     * @param filePath       文件路径
+     * @param fileItem       文件
      * @param formData       http getForm data
      * @param resultReceiver {@link ResultReceiver}
      */
-    public static void startUpload(Context context, String uploadUrl, String filePath,
+    public static void startUpload(Context context, String uploadUrl, FileItem fileItem,
                                    @Nullable HashMap<String, String> formData, ResultReceiver resultReceiver) {
 
         Intent intent = new Intent(context, UploadService.class);
 
         intent.putExtra(EXTRA_UPLOAD_URL, uploadUrl);
-        intent.putExtra(EXTRA_FILE_PATH, filePath);
+        intent.putExtra(EXTRA_FILE_ITEM, fileItem);
         intent.putExtra(EXTRA_FORM_DATA, formData);
         intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
 
@@ -123,7 +123,7 @@ public class UploadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction().equals(ACTION_START_UPLOAD)) {
-            final String fileUri = intent.getStringExtra(EXTRA_FILE_PATH);
+            final FileItem fileItem = intent.getParcelableExtra(EXTRA_FILE_ITEM);
             final String uploadUrl = intent.getStringExtra(EXTRA_UPLOAD_URL);
             final HashMap<String, String> formData = (HashMap<String, String>) intent.getSerializableExtra(EXTRA_FORM_DATA);
             final ResultReceiver resultReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER);
@@ -138,14 +138,14 @@ public class UploadService extends Service {
             mWorkerHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(TAG, "Start sending file " + fileUri);
+                    Log.i(TAG, "Start sending " + fileItem.uri);
 
                     ProgressListenerImpl progressListener = new ProgressListenerImpl(resultReceiver);
 
-                    boolean succeeded = uploadFile(uploadUrl, fileUri, formData, progressListener);
+                    boolean succeeded = uploadFile(uploadUrl, fileItem, formData, progressListener);
 
                     Bundle bundle = new Bundle();
-                    bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, fileUri);
+                    bundle.putString(ProgressListenerImpl.RESULT_EXTRA_FILE_URI, fileItem.uri);
 
                     if (succeeded) {
                         resultReceiver.send(ProgressListenerImpl.RESULT_SUCCEEDED, bundle);
@@ -186,19 +186,18 @@ public class UploadService extends Service {
      * 传文件
      *
      * @param uploadUrl        uploadUrl
-     * @param fileUri          文件路径
+     * @param fileItem         文件路径
      * @param formData         http getForm data
      * @param progressListener {@link ProgressListener} 监听发送进度
      * @return 是否发送成功
      */
-    private boolean uploadFile(String uploadUrl, String fileUri,
+    private boolean uploadFile(String uploadUrl, FileItem fileItem,
                                @Nullable HashMap<String, String> formData,
                                ProgressListener progressListener) {
 
-        File file = new File(fileUri);
         Request request = HttpManager.newFileUploadRequest(this,
-                uploadUrl, file, formData,
-                new ProgressNotifier(fileUri, progressListener, file.length()));
+                uploadUrl, fileItem, formData,
+                new ProgressNotifier(fileItem.uri, progressListener, fileItem.size));
 
 
         Response response;
@@ -210,7 +209,7 @@ public class UploadService extends Service {
             body = response.body();
 
         } catch (IOException e) {
-            Log.i(TAG, "Upload file failed. " + fileUri + "  HTTP error " + e.toString(), e);
+            Log.i(TAG, "Upload file failed. " + fileItem + "  HTTP error " + e.toString(), e);
             return false;
         } finally {
             Streams.safeClose(body);
@@ -222,9 +221,9 @@ public class UploadService extends Service {
         }
 
 
-        TransferRecord.recordSending(file);
+        TransferRecord.recordSending(fileItem.uri, fileItem.name, fileItem.size);
 
-        Log.i(TAG, "Upload file succeeded " + fileUri);
+        Log.i(TAG, "Upload file succeeded " + fileItem.uri);
 
         return true;
     }

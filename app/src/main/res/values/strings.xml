@@ -23,6 +23,9 @@
     <string name="title_activity_upload">正在上传</string>
     <string name="title_activity_file_move">选择文件夹</string>
 
+    <string name="title_activity_share">比鼬文件快传</string>
+
+
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
     <string name="action_history">历史</string>
@@ -104,5 +107,8 @@
 
     <string name="tab_received">已接收</string>
     <string name="tab_send">已发送</string>
-
+    <string name="share_android">发送给安卓</string>
+    <string name="share_computer">发送给电脑</string>
+    <string name="share_apple">发送给IPhone</string>
+    <string name="share_no_file_sendable">没有可传输的文件对象</string>
 </resources>

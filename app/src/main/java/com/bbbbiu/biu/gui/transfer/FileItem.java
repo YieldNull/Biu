@@ -1,11 +1,16 @@
 package com.bbbbiu.biu.gui.transfer;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.bbbbiu.biu.util.StorageUtil;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * Created by YieldNull at 4/26/16
@@ -19,6 +24,38 @@ public class FileItem implements Parcelable {
         this.uri = uri;
     }
 
+
+    public FileItem() {
+    }
+
+    public FileItem(String uri, String name, long size) {
+        this.uri = uri;
+        this.name = name;
+        this.size = size;
+    }
+
+
+    public InputStream inputStream(Context context) throws FileNotFoundException {
+        Uri uri = Uri.parse(this.uri);
+
+        if (uri.getScheme().equals(ContentResolver.SCHEME_FILE)) {
+            return new FileInputStream(uri.getPath());
+        } else {
+            return context.getContentResolver().openInputStream(uri);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof FileItem && o.hashCode() == hashCode();
+    }
+
+
+    @Override
+    public int hashCode() {
+        return uri.hashCode();
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -29,26 +66,6 @@ public class FileItem implements Parcelable {
         dest.writeString(this.uri);
         dest.writeString(this.name);
         dest.writeLong(this.size);
-    }
-
-    public FileItem() {
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof FileItem && ((FileItem) o).uri.equals(uri);
-    }
-
-    public FileItem(String uri, String name, long size) {
-        this.uri = uri;
-        this.name = name;
-        this.size = size;
-    }
-
-    @Override
-    public int hashCode() {
-        File file = new File(uri);
-        return file.exists() ? file.hashCode() : super.hashCode();
     }
 
     protected FileItem(Parcel in) {

@@ -43,7 +43,7 @@ public class UploadActivity extends TransferBaseActivity {
             UploadService.startUpload(
                     this,
                     HttpConstants.Computer.getUploadUrl(mUID),
-                    item.uri,
+                    item,
                     HttpConstants.Computer.getUploadFormData(mUID),
                     mProgressResultReceiver);
         }

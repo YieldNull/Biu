@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.db.search;
 
 import com.bbbbiu.biu.util.StorageUtil;
+import com.raizlabs.android.dbflow.sql.language.SQLCondition;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
 
@@ -76,9 +77,16 @@ public abstract class ModelItem extends BaseModel {
 
             allRecords.addAll(records);
         } else {
-            List<FileItem> records = SQLite.select()
-                    .from(FileItem.class)
-                    .where(FileItem_Table.type.eq(type))
+            SQLCondition condition;
+            if (type == StorageUtil.TYPE_DOC) {
+                condition = FileItem_Table.type.in(StorageUtil.TYPE_WORD, StorageUtil.TYPE_PPT,
+                        StorageUtil.TYPE_EXCEL, StorageUtil.TYPE_PDF);
+            } else {
+                condition = FileItem_Table.type.eq(type);
+            }
+
+            List<FileItem> records = SQLite.select().from(FileItem.class)
+                    .where(condition)
                     .queryList();
 
             removeNotExisting(records);

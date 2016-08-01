@@ -5,17 +5,15 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
+import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.lib.servlet.ProgressBaseServlet;
 import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.yieldnull.httpd.HttpDaemon;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;
 import com.yieldnull.httpd.ProgressNotifier;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
@@ -40,21 +38,21 @@ public class FileServlet extends ProgressBaseServlet {
     @Override
     public HttpResponse doGet(HttpRequest request) {
         String hashCode = request.uri().replace(HttpConstants.Apple.URL_DOWNLOAD + "/", "");
-        File file = null;
 
-        for (String path : PreferenceUtil.getFilesToSend(context)) {
-            File f = new File(path);
+        FileItem fileitem = null;
 
-            if ((f.hashCode() + "").equals(hashCode)) {
-                file = f;
+        for (FileItem item : PreferenceUtil.getFileItemsToSend((context))) {
+
+            if ((item.hashCode() + "").equals(hashCode)) {
+                fileitem = item;
                 break;
             }
         }
 
         InputStream inputStream = null;
-        if (file != null) {
+        if (fileitem != null) {
             try {
-                inputStream = new FileInputStream(file);
+                inputStream = fileitem.inputStream(context);
             } catch (FileNotFoundException e) {
                 Log.w(TAG, e);
             }
@@ -65,19 +63,19 @@ public class FileServlet extends ProgressBaseServlet {
                     HttpResponse.Status.NOT_FOUND.getDescription());
         }
 
-        HttpResponse response = HttpResponse.newResponse(inputStream, file.length());
+        HttpResponse response = HttpResponse.newResponse(inputStream, fileitem.size);
 
-        response.setProgressNotifier(new ProgressNotifier(file.getAbsolutePath(), getProgressListener(), file.length()));
+        response.setProgressNotifier(new ProgressNotifier(fileitem.uri, getProgressListener(), fileitem.size));
 
         // APK 名称
-        String name = StorageUtil.getFileNameToDisplay(context, file);
+        String name = fileitem.name;
 
         response.addHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\";filename*=UTF-8''%s",
                         name,
                         Uri.encode(name)));
 
-        TransferRecord.recordSending(file);
+        TransferRecord.recordSending(fileitem.uri, fileitem.name, fileitem.size);
 
         return response;
     }
