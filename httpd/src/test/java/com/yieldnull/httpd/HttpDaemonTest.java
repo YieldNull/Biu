@@ -52,6 +52,30 @@ public class HttpDaemonTest {
 
 
     @Test
+    public void testGet() throws Exception {
+        final String greet = "Hello World";
+
+        HttpDaemon.registerServlet("/", new HttpServlet() {
+            @Override
+            public HttpResponse doGet(HttpRequest request) {
+                return HttpResponse.newResponse(greet);
+            }
+
+            @Override
+            public HttpResponse doPost(HttpRequest request) {
+                return null;
+            }
+        });
+
+
+        Request request = new Request.Builder().url(url).build();
+
+        Response response = new OkHttpClient().newCall(request).execute();
+
+        assertThat(response.body().string(), is(greet));
+    }
+
+    @Test
     public void testFormFileProgress() throws Exception {
 
         final List<Integer> progressList = new ArrayList<>();

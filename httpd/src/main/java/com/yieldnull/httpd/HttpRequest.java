@@ -311,7 +311,7 @@ public class HttpRequest {
 
         String contentType = contentType();
 
-        if (contentType != null && (contentType.startsWith(ContentType.TEXT)
+        if (method.equals(Method.POST) && contentType != null && (contentType.startsWith(ContentType.TEXT)
                 || contentType.startsWith(ContentType.JSON))) {
             parseRawBody();
 
@@ -483,7 +483,11 @@ public class HttpRequest {
             String cl1 = headers().get("content-length");
             contentLength = Long.parseLong(cl1);
         } catch (NumberFormatException e) {
-            throw new IOException("Bad content-length");
+            if (method.equals(Method.POST)) {
+                throw new IOException("Bad content-length");
+            } else {
+                contentLength = -1;
+            }
         }
     }
 
