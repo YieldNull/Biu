@@ -79,6 +79,15 @@ public class TransferRecord extends BaseModel {
 
 
     /**
+     * 获取对应的文件Uri
+     *
+     * @return Uri
+     */
+    public Uri getUri() {
+        return Uri.parse(uri);
+    }
+
+    /**
      * 获取对应的文件类型
      *
      * @return 文件类型，未知类型则返回-1
@@ -95,7 +104,7 @@ public class TransferRecord extends BaseModel {
      * @return 返回{@link ContentResolver#SCHEME_FILE}对应的路径，{@link ContentResolver#SCHEME_CONTENT}返回null
      */
     public String getFilePath() {
-        Uri u = Uri.parse(uri);
+        Uri u = getUri();
 
         if (u.getScheme().equals(ContentResolver.SCHEME_FILE)) {
             return u.getPath();
@@ -112,11 +121,9 @@ public class TransferRecord extends BaseModel {
      * @return 是否存在
      */
     public boolean fileExists(Context context) {
-        Uri u = Uri.parse(uri);
-
         InputStream stream = null;
         try {
-            stream = context.getContentResolver().openInputStream(u);
+            stream = context.getContentResolver().openInputStream(getUri());
             return true;
         } catch (FileNotFoundException e) {
             return false;
@@ -135,7 +142,7 @@ public class TransferRecord extends BaseModel {
      * @return 若为 {@link ContentResolver#SCHEME_CONTENT}则返回true，若为{@link ContentResolver#SCHEME_FILE}则看是否删除成功
      */
     public boolean deleteFile(Context context) {
-        Uri u = Uri.parse(uri);
+        Uri u = getUri();
 
         if (u.getScheme().equals(ContentResolver.SCHEME_FILE)) {
             return new File(u.getPath()).delete();

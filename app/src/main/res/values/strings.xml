@@ -30,6 +30,7 @@
     <string name="title_transfer_waiting">正在等待</string>
     <string name="title_transfer_working">正在传输</string>
     <string name="title_file_rename">重命名</string>
+    <string name="title_share_file_to">分享文件到</string>
 
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
@@ -38,6 +39,7 @@
     <string name="action_choosing_dismiss">清除选择</string>
     <string name="action_delete">删除</string>
     <string name="action_about">关于</string>
+    <string name="action_share">分享</string>
 
 
     <string name="cate_image">图片</string>

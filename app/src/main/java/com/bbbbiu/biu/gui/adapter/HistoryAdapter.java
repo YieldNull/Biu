@@ -3,7 +3,6 @@ package com.bbbbiu.biu.gui.adapter;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -57,6 +56,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private boolean mOnChoosing;
 
+    public HistoryAdapter(final Activity context, final boolean showReceived) {
+        this.context = context;
+        this.mOnChoosingListener = (OnChoosingListener) context;
+
+
+        Picasso.Builder builder = new Picasso.Builder(context);
+        builder.addRequestHandler(new VideoIconRequestHandler());
+        mVideoPicasso = builder.build();
+        mImgPicasso = Picasso.with(context);
+
+        int type = showReceived ? TransferRecord.TYPE_RECEIVED : TransferRecord.TYPE_SENT;
+        mDataSet = TransferRecord.query(type);
+    }
+
+
     public void setOnChoosing() {
         mOnChoosing = true;
         notifyDataSetChanged();
@@ -102,6 +116,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         notifyDataSetChanged();
 
         Log.i(TAG, "All file dismissed");
+    }
+
+
+    /**
+     * 获取已选TransferRecord对象
+     *
+     * @return 已选对象
+     */
+    public Set<TransferRecord> getChosenRecords() {
+        return mChosenFiles;
     }
 
 
@@ -168,22 +192,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     }
 
-    public HistoryAdapter(final Activity context, final boolean showReceived) {
-        this.context = context;
-        this.mOnChoosingListener = (OnChoosingListener) context;
-
-
-        Picasso.Builder builder = new Picasso.Builder(context);
-        builder.addRequestHandler(new VideoIconRequestHandler());
-        mVideoPicasso = builder.build();
-        mImgPicasso = Picasso.with(context);
-
-        int type = showReceived ? TransferRecord.TYPE_RECEIVED : TransferRecord.TYPE_SENT;
-        mDataSet = TransferRecord.query(type);
-
-
-        // TODO 在历史纪录里面发送，要更新发送纪录，或者直接退出历史界面算了
-    }
 
     @Override
     public int getItemCount() {
@@ -237,7 +245,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 if (isOnChoosing()) {
                     itemClicked(record);
                 } else {
-                    StorageUtil.openFile(context, Uri.parse(record.uri), record.name);
+                    Log.i(TAG, "Open file: " + record.uri);
+                    StorageUtil.openFile(context, record.getUri(), record.name);
                 }
             }
         });
@@ -342,7 +351,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 }
 
             } else if (record.getFileType() == StorageUtil.TYPE_IMG) {
-                mImgPicasso.load(record.uri)
+                mImgPicasso.load(record.getUri())
                         .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
                         .placeholder(R.drawable.ic_type_img)
                         .tag(PICASSO_TAG)
@@ -378,5 +387,4 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             iconImage.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.shape_file_icon_bkg_chosen));
         }
     }
-
 }

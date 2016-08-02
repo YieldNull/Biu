@@ -1,6 +1,8 @@
 package com.bbbbiu.biu.gui;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -21,14 +23,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.gui.adapter.HistoryAdapter;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.util.PreferenceUtil;
+import com.bbbbiu.biu.util.StorageUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
@@ -42,6 +47,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class HistoryActivity extends AppCompatActivity implements OnChoosingListener {
+
     private static final String TAG = HistoryActivity.class.getSimpleName();
 
     @Bind(R.id.container)
@@ -75,7 +81,6 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
 
 
     private HistoryAdapter mCurrentHistoryAdapter;
-
     private TransferPageAdapter mPagerAdapter;
 
 
@@ -101,6 +106,32 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
 
+        // floating action menu show && hide动画
+        mFloatingActionMenu.setMenuButtonShowAnimation(AnimationUtils.loadAnimation(this, R.anim.show_from_bottom));
+        mFloatingActionMenu.setMenuButtonHideAnimation(AnimationUtils.loadAnimation(this, R.anim.hide_to_bottom));
+
+        // floating action menu
+        mFloatingActionMenu.setIconAnimated(false);
+        mFloatingActionMenu.setClosedOnTouchOutside(true);
+        mFloatingActionMenu.setOnMenuButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                HistoryAdapter adapter = getCurrentHistoryAdapter();
+                if (adapter.getChosenFiles().size() == 0) {
+
+                    Log.i(TAG, "No file chosen, abort sending");
+                    showToastInUI(R.string.hint_choose_file_required);
+
+                    if (!adapter.isOnChoosing()) {
+                        adapter.setOnChoosing();
+                    }
+                } else {
+                    mFloatingActionMenu.toggle(true);
+                }
+            }
+        });
+
+
         mPagerAdapter = new TransferPageAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mPagerAdapter);
         mTabLayout.setupWithViewPager(mViewPager);
@@ -124,37 +155,15 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
             }
         });
 
-
-        // floating action menu show && hide动画
-        mFloatingActionMenu.setMenuButtonShowAnimation(AnimationUtils.loadAnimation(this, R.anim.show_from_bottom));
-        mFloatingActionMenu.setMenuButtonHideAnimation(AnimationUtils.loadAnimation(this, R.anim.hide_to_bottom));
-
-        // floating action menu
-        mFloatingActionMenu.setIconAnimated(false);
-        mFloatingActionMenu.setClosedOnTouchOutside(true);
-        mFloatingActionMenu.setOnMenuButtonClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                HistoryAdapter adapter = getCurrentHistoryAdapter();
-                if (adapter.getChosenFiles().size() == 0) {
-                    showToastInUI(R.string.hint_choose_file_required);
-
-                    if (!adapter.isOnChoosing()) {
-                        adapter.setOnChoosing();
-                    }
-                } else {
-                    mFloatingActionMenu.toggle(true);
-                }
-            }
-        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         if (getCurrentHistoryAdapter().getChosenCount() == 0) {
             getMenuInflater().inflate(R.menu.common_normal, menu);
         } else {
-            getMenuInflater().inflate(R.menu.common_chosen, menu);
+            getMenuInflater().inflate(R.menu.history_chosen, menu);
         }
         return true;
     }
@@ -207,10 +216,13 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
                             }
                         }).show();
                 break;
+            case R.id.action_share:
+                shareFile();
+                break;
             default:
                 break;
         }
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -249,6 +261,11 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
     }
 
 
+    /**
+     * 获取当前 {@link HistoryAdapter}，不要直接使用{@link #mCurrentHistoryAdapter}
+     *
+     * @return {@link HistoryAdapter}
+     */
     private HistoryAdapter getCurrentHistoryAdapter() {
         if (mCurrentHistoryAdapter == null) {
             mCurrentHistoryAdapter = mPagerAdapter.getFragment(mViewPager.getCurrentItem()).adapter;
@@ -282,6 +299,44 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
         }
 
         Log.i(TAG, String.format("Sending files to %s. File Amount: %d", action, files.size()));
+    }
+
+
+    /**
+     * 分享选中文件
+     */
+    private void shareFile() {
+        Intent shareIntent = new Intent();
+
+        if (getCurrentHistoryAdapter().getChosenCount() == 1) {
+            TransferRecord record = getCurrentHistoryAdapter().getChosenRecords().iterator().next();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, record.getUri());
+
+            String mime = MimeTypeMap.getSingleton()
+                    .getMimeTypeFromExtension(StorageUtil.getFileExtension(record.name));
+            mime = mime == null ? "*/*" : mime;
+            shareIntent.setType(mime);
+
+            Log.i(TAG, "Ready to share a single file. MIME:" + mime + " Uri:" + record.uri);
+
+        } else {
+            ArrayList<Uri> uris = new ArrayList<>();
+            Log.i(TAG, "Ready to share multi files");
+
+            for (TransferRecord record : getCurrentHistoryAdapter().getChosenRecords()) {
+                uris.add(record.getUri());
+
+                Log.i(TAG, "Ready to share file. Uri:" + record.uri);
+            }
+
+            shareIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+            shareIntent.setType("*/*");
+        }
+
+        Log.i(TAG, "Show chooser list");
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.title_share_file_to)));
     }
 
 
