@@ -31,6 +31,9 @@ import java.util.Set;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+/**
+ * 接收其它应用分享的文件
+ */
 public class ShareActivity extends Activity {
 
     private static final String TAG = ShareActivity.class.getSimpleName();
@@ -83,11 +86,18 @@ public class ShareActivity extends Activity {
         if (action.equals(Intent.ACTION_SEND)) {
             if (type.equals("text/plain")) {
                 String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                String uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 
-                String uri = StorageUtil.storeTextToSend(this, text);
+                if (uri == null && text != null) {
+                    uri = StorageUtil.storeTextToSend(this, text);
+
+                    Log.i(TAG, "Write plain text to file. " + uri);
+                }
+
                 if (uri != null) {
                     filesToSend.add(uri);
                 }
+
             } else {
                 Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
                 if (isValid(uri)) {

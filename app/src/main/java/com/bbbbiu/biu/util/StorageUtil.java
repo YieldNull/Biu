@@ -632,7 +632,7 @@ public class StorageUtil {
         try {
             writer = new OutputStreamWriter(new FileOutputStream(file));
             writer.write(text);
-            return Uri.fromFile(file).getPath();
+            return Uri.fromFile(file).toString();
         } catch (IOException e) {
             Log.w(TAG, e.getMessage(), e);
             return null;
