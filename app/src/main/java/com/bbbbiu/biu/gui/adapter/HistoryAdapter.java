@@ -127,8 +127,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         mChosenFiles.removeAll(toDelete);
         final int stringId = allSucceeded
-                ? R.string.delete_succeeded
-                : R.string.delete_partly_succeeded;
+                ? R.string.hint_file_delete_succeeded
+                : R.string.hint_file_delete_partly_succeeded;
 
         mDataSet.refresh();
 
@@ -254,7 +254,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             @Override
             public void onClick(View v) {
                 new AlertDialog.Builder(context)
-                        .setMessage(context.getString(R.string.file_confirm_delete))
+                        .setMessage(context.getString(R.string.hint_file_delete_confirm))
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -276,19 +276,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 
                                     Log.i(TAG, "Delete file and record successfully: " + record.uri);
-                                    Toast.makeText(context, R.string.delete_succeeded, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, R.string.hint_file_delete_succeeded, Toast.LENGTH_SHORT).show();
                                 } else {
 
                                     Log.i(TAG, "Failed to delete file and record: " + record.uri);
 
-                                    Toast.makeText(context, R.string.delete_failed, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, R.string.hint_file_delete_failed, Toast.LENGTH_SHORT).show();
                                 }
                             }
                         })
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(context, R.string.delete_dismissed, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, R.string.hint_file_delete_dismissed, Toast.LENGTH_SHORT).show();
                             }
                         }).show();
             }

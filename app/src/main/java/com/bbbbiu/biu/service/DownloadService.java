@@ -11,7 +11,9 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
-import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.lib.HttpManager;
+import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
@@ -27,21 +29,66 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * 从服务器下载
+ * 从公网服务器下载文件。
  */
 public class DownloadService extends Service {
     private static final String TAG = DownloadService.class.getSimpleName();
 
+    /**
+     * 文件下载URL
+     * <p/>
+     * intent extra 的字段名，由开启服务者传来
+     */
     private static final String EXTRA_DOWNLOAD_URL = "com.bbbbiu.biu.service.DownloadService.extra.DOWNLOAD_URL";
+
+
+    /**
+     * 文件大小
+     * <p/>
+     * intent extra 的字段名，由开启服务者传来
+     */
     private static final String EXTRA_FILE_SIZE = "com.bbbbiu.biu.service.DownloadService.extra.FILE_SIZE";
+
+
+    /**
+     * 文件名
+     * <p/>
+     * intent extra 的字段名，由开启服务者传来
+     */
     private static final String EXTRA_FILE_NAME = "com.bbbbiu.biu.service.DownloadService.extra.FILE_NAME";
+
+
+    /**
+     * 接收下载结果
+     * <p/>
+     * intent extra 的字段名，由开启服务者传来
+     */
     private static final String EXTRA_RESULT_RECEIVER = "com.bbbbiu.biu.service.DownloadService.extra.RECEIVER";
 
-    private static final String ACTION_START_DOWNLOAD = "com.bbbbiu.biu.service.computer.DownloadService.action.ACTION_START_DOWNLOAD";
 
+    /**
+     * 开启服务，用于intent.setAction()
+     *
+     * @see #addTask(Context, FileItem, ResultReceiver)
+     */
+    private static final String ACTION_START_DOWNLOAD = "com.bbbbiu.biu.service.DownloadService.action.ACTION_START_DOWNLOAD";
+
+
+    /**
+     * 工作线程
+     */
     private HandlerThread mWorkerThread;
-    private Handler mHandler;
 
+
+    /**
+     * 工作线程Handler
+     */
+    private Handler mWorkerHandler;
+
+
+    /**
+     * 当前的okhttp call, 纪录之用于取消当前请求
+     */
     private Call mCurrentHttpCall;
 
 
@@ -49,17 +96,15 @@ public class DownloadService extends Service {
      * 开始下载
      *
      * @param context        context
-     * @param downloadUrl    下载URL
-     * @param fileName       存到文件系统中的文件名
-     * @param fileSize       文件大小 bytes
+     * @param item           要下载的 {@link FileItem}
      * @param resultReceiver {@link ResultReceiver}
      */
-    public static void addTask(Context context, String downloadUrl, String fileName, long fileSize, ResultReceiver resultReceiver) {
+    public static void addTask(Context context, FileItem item, ResultReceiver resultReceiver) {
         Intent intent = new Intent(context, DownloadService.class);
 
-        intent.putExtra(EXTRA_DOWNLOAD_URL, downloadUrl);
-        intent.putExtra(EXTRA_FILE_NAME, fileName);
-        intent.putExtra(EXTRA_FILE_SIZE, fileSize);
+        intent.putExtra(EXTRA_DOWNLOAD_URL, item.uri);
+        intent.putExtra(EXTRA_FILE_NAME, item.name);
+        intent.putExtra(EXTRA_FILE_SIZE, item.size);
         intent.putExtra(EXTRA_RESULT_RECEIVER, resultReceiver);
 
         intent.setAction(ACTION_START_DOWNLOAD);
@@ -94,10 +139,10 @@ public class DownloadService extends Service {
             if (mWorkerThread == null) {
                 mWorkerThread = new HandlerThread("FileDownloadThread");
                 mWorkerThread.start();
-                mHandler = new Handler(mWorkerThread.getLooper());
+                mWorkerHandler = new Handler(mWorkerThread.getLooper());
             }
 
-            mHandler.post(new Runnable() {
+            mWorkerHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.i(TAG, "Start downloading file " + downloadUrl);
@@ -136,11 +181,11 @@ public class DownloadService extends Service {
             mCurrentHttpCall.cancel();
         }
 
-        if (mHandler != null) {
+        if (mWorkerHandler != null) {
             Log.i(TAG, "Quit working thread");
 
-            mHandler.removeCallbacksAndMessages(null);
-            mHandler.getLooper().quit();
+            mWorkerHandler.removeCallbacksAndMessages(null);
+            mWorkerHandler.getLooper().quit();
         }
 
     }
@@ -172,12 +217,12 @@ public class DownloadService extends Service {
                 body = response.body();
 
             } catch (IOException e) {
-                Log.i(TAG, "Download file failed. " + downloadUrl + "  HTTP error" + e.toString());
+                Log.w(TAG, "Download file failed. " + downloadUrl + "  HTTP error", e);
                 return false;
             }
 
             if (response.code() != 200) {
-                Log.i(TAG, "Get file list failed. Response status code " + response.code());
+                Log.w(TAG, "Get file list failed. Response status code " + response.code());
                 return false;
             }
 

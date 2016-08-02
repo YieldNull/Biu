@@ -2,9 +2,9 @@ package com.bbbbiu.biu.lib.servlet.apple;
 
 import android.content.Context;
 
+import com.bbbbiu.biu.lib.HtmlReader;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.lib.servlet.ReceivingBaseServlet;
-import com.bbbbiu.biu.lib.util.HtmlReader;
-import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.yieldnull.httpd.HttpDaemon;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;

@@ -4,12 +4,6 @@
     <color name="colorPrimaryDark">#1976D2</color>
     <color name="colorAccent">@color/colorPrimary</color>
 
-    <color name="tab_background">@color/colorPrimary</color>
-    <color name="tab_text">#e6e6e6</color>
-    <color name="tab_chosen">#FFFFFF</color>
-    <color name="tab_indicator">#ffcc99</color>
-
-    <color name="drawer_background">@color/colorPrimary</color>
 
     <color name="fbtn">#2196F3</color>
     <color name="fbtn_shadow">#ccffffff</color>
@@ -29,6 +23,7 @@
 
     <color name="apk_chosen_shape">@color/fbtn</color>
     <color name="apk_chosen_bkg">#DD9E9E9E</color>
+    <color name="apk_package_name">@android:color/black</color>
 
     <color name="option_panel_bkgd">@android:color/white</color>
     <color name="option_panel_text">#232323</color>
@@ -37,12 +32,13 @@
     <color name="option_panel_pressed">#E0E0E0</color>
     <color name="option_toggle">#818181</color>
 
-    <color name="apk_package_name">@android:color/black</color>
-
     <color name="img_placeholder">#EEEEEE</color>
     <color name="loading_indicator">@color/fbtn</color>
 
     <color name="transfer_waiting">#BDBDBD</color>
 
     <color name="share_text">#616161</color>
+
+    <color name="history_tab_indicator">#90CAF9</color>
+
 </resources>

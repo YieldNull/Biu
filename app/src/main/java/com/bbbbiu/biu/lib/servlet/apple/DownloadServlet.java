@@ -4,8 +4,8 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.lib.util.HtmlReader;
-import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.HtmlReader;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;

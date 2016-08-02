@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.lib.util;
+package com.bbbbiu.biu.lib;
 
 import android.content.Context;
 import android.util.Log;

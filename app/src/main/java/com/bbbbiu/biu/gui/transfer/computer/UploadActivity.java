@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.service.UploadService;
 
 import java.util.ArrayList;
@@ -32,10 +32,6 @@ public class UploadActivity extends TransferBaseActivity {
         addTask(getIntent());
     }
 
-    @Override
-    protected void onCancelTransfer() {
-        UploadService.stopUpload(this);
-    }
 
     @Override
     protected void onAddNewTask(ArrayList<FileItem> fileItems) {
@@ -47,6 +43,16 @@ public class UploadActivity extends TransferBaseActivity {
                     HttpConstants.Computer.getUploadFormData(mUID),
                     mProgressResultReceiver);
         }
+    }
+
+    @Override
+    protected void onTransferCancled() {
+        onTransferFinished();
+    }
+
+    @Override
+    protected void onTransferFinished() {
+        UploadService.stopUpload(this);
     }
 
 }

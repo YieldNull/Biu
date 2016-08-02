@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:text="@string/transfer_waiting"
+            android:text="@string/title_transfer_waiting"
             android:textColor="@color/transfer_waiting"
             android:textSize="12sp" />
     </LinearLayout>

@@ -50,16 +50,16 @@ public class ShareActivity extends Activity {
         ButterKnife.bind(this);
 
         if (!handleIntent()) {
-            Toast.makeText(this, R.string.share_no_file_sendable, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.hint_share_no_file_sendable, Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
         List<TargetItem> dataSet = new ArrayList<>();
 
-        dataSet.add(new TargetItem(R.drawable.ic_share_android, R.string.share_android));
-        dataSet.add(new TargetItem(R.drawable.ic_share_apple, R.string.share_apple));
-        dataSet.add(new TargetItem(R.drawable.ic_share_computer, R.string.share_computer));
+        dataSet.add(new TargetItem(R.drawable.ic_share_android, R.string.list_share_android));
+        dataSet.add(new TargetItem(R.drawable.ic_share_apple, R.string.list_share_apple));
+        dataSet.add(new TargetItem(R.drawable.ic_share_computer, R.string.list_share_computer));
         mListView.setItemsCanFocus(false);
         mListView.setAdapter(new TargetArrayAdapter(this, dataSet));
 

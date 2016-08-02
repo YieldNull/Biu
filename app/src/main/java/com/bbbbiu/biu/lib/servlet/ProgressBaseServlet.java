@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.service.ProgressListenerImpl;
+import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;
 import com.yieldnull.httpd.HttpServlet;

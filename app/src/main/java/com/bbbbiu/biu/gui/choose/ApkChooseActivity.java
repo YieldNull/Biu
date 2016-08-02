@@ -14,11 +14,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.gui.adapter.choose.content.ApkContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.CommonContentAdapter;
-import com.bbbbiu.biu.db.search.ApkItem;
+import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
 
 import java.io.File;
 import java.util.LinkedList;
@@ -96,7 +96,7 @@ public class ApkChooseActivity extends BaseChooseActivity {
         Dialog dialog = new AlertDialog.Builder(this)
                 .setTitle(apkItem.name)
                 .setIcon(apkItem.getIcon(this))
-                .setMessage(getString(R.string.apk_confirm_delete))
+                .setMessage(getString(R.string.hint_apk_delete_confirm))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -104,11 +104,11 @@ public class ApkChooseActivity extends BaseChooseActivity {
 
                         if (!file.delete()) {
                             Toast.makeText(ApkChooseActivity.this,
-                                    getString(R.string.delete_failed), Toast.LENGTH_LONG)
+                                    getString(R.string.hint_file_delete_failed), Toast.LENGTH_LONG)
                                     .show();
                         } else {
                             Toast.makeText(ApkChooseActivity.this,
-                                    getString(R.string.delete_succeeded),
+                                    getString(R.string.hint_file_delete_succeeded),
                                     Toast.LENGTH_SHORT).show();
 
                             onFinishDelete(apkItem);
@@ -118,7 +118,7 @@ public class ApkChooseActivity extends BaseChooseActivity {
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(ApkChooseActivity.this, R.string.delete_dismissed,
+                        Toast.makeText(ApkChooseActivity.this, R.string.hint_file_delete_dismissed,
                                 Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -172,20 +172,20 @@ public class ApkChooseActivity extends BaseChooseActivity {
 
         if (requestCode == REQUEST_CODE_UNINSTALL) {
             if (resultCode == RESULT_OK) {
-                Toast.makeText(ApkChooseActivity.this, R.string.apk_uninstall_succeeded,
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_succeeded,
                         Toast.LENGTH_SHORT).show();
 
                 onFinishDelete(mApkToUninstallQueue.remove());
                 mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
 
             } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(ApkChooseActivity.this, R.string.apk_uninstall_dismissed,
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_dismissed,
                         Toast.LENGTH_SHORT).show();
 
                 mApkToUninstallQueue.remove();
                 mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
             } else {
-                Toast.makeText(ApkChooseActivity.this, R.string.apk_uninstall_failed,
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_failed,
                         Toast.LENGTH_SHORT).show();
                 mApkToUninstallQueue.remove();
                 mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);

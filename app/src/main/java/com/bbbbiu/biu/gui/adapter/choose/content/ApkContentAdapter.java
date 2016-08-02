@@ -11,11 +11,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.bbbbiu.biu.db.search.ApkItem;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -170,11 +170,11 @@ public class ApkContentAdapter extends CommonContentAdapter {
         if (getItemViewType(position) == VIEW_TYPE_HEADER) {
             HeaderViewHolder holder = (HeaderViewHolder) hd;
             if (mSystemApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText(context.getString(R.string.apk_header_system));
+                holder.headerText.setText(context.getString(R.string.header_apk_system));
             } else if (mNormalApkList.contains(getApkAt(position + 1))) {
-                holder.headerText.setText(context.getString(R.string.apk_header_normal));
+                holder.headerText.setText(context.getString(R.string.header_apk_normal));
             } else {
-                holder.headerText.setText(context.getString(R.string.apk_header_standalone));
+                holder.headerText.setText(context.getString(R.string.header_apk_standalone));
             }
         } else {
             final ApkViewHolder holder = (ApkViewHolder) hd;

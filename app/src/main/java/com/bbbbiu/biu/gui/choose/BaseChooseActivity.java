@@ -21,13 +21,13 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
-import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
-import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
-import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.gui.adapter.choose.content.FileContentAdapter;
-import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
+import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
+import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
+import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
+import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
@@ -363,7 +363,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
             case R.id.action_delete:
                 new AlertDialog.Builder(this)
-                        .setMessage(getString(R.string.file_confirm_delete))
+                        .setMessage(getString(R.string.hint_file_delete_confirm))
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -388,7 +388,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                showToastInUI(R.string.delete_dismissed);
+                                showToastInUI(R.string.hint_file_delete_dismissed);
                             }
                         }).show();
                 return true;
@@ -532,9 +532,9 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
         }
 
         if (!allSucceeded) {
-            showToastInUI(R.string.delete_failed);
+            showToastInUI(R.string.hint_file_delete_failed);
         } else {
-            showToastInUI(R.string.delete_succeeded);
+            showToastInUI(R.string.hint_file_delete_succeeded);
         }
     }
 

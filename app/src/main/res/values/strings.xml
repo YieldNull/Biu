@@ -22,9 +22,14 @@
     <string name="title_activity_download">正在下载</string>
     <string name="title_activity_upload">正在上传</string>
     <string name="title_activity_file_move">选择文件夹</string>
-
     <string name="title_activity_share">比鼬文件快传</string>
 
+
+    <string name="title_chosen_file_count">已选择%d项</string>
+    <string name="title_transfer_connecting">正在连接</string>
+    <string name="title_transfer_waiting">正在等待</string>
+    <string name="title_transfer_working">正在传输</string>
+    <string name="title_file_rename">重命名</string>
 
     <string name="action_settings">设置</string>
     <string name="action_search">搜索</string>
@@ -33,6 +38,7 @@
     <string name="action_choosing_dismiss">清除选择</string>
     <string name="action_delete">删除</string>
     <string name="action_about">关于</string>
+
 
     <string name="cate_image">图片</string>
     <string name="cate_music">音乐</string>
@@ -45,37 +51,13 @@
     <string name="cate_storage">内存设备</string>
     <string name="cate_sdcard">SD卡</string>
 
+
     <string name="fbtn_receive">接收文件从</string>
     <string name="fbtn_send">发送文件到</string>
     <string name="fbtn_android">安卓</string>
     <string name="fbtn_computer">电脑</string>
     <string name="fbtn_ios">苹果</string>
 
-    <string name="apk_header_normal">已安装</string>
-    <string name="apk_header_system">系统应用</string>
-    <string name="apk_header_standalone">未安装</string>
-
-    <string name="hint_net_server_error">服务器无响应，请稍后再试</string>
-    <string name="hint_choose_file_required">请先选择文件</string>
-
-    <string name="hint_chosen_file_count">已选择%d项</string>
-
-    <string name="apk_confirm_delete">是否删除此应用程序安装文件</string>
-    <string name="apk_uninstall_failed">未知错误，卸载失败</string>
-    <string name="apk_uninstall_dismissed">卸载已取消</string>
-    <string name="apk_uninstall_succeeded">卸载成功</string>
-
-    <string name="delete_dismissed">删除已取消</string>
-    <string name="delete_failed">删除失败，请用系统文件管理器删除</string>
-    <string name="delete_succeeded">删除成功</string>
-    <string name="delete_partly_succeeded">部分文件无法删除，请用系统文件管理器删除</string>
-
-    <string name="transfer_connecting">正在连接</string>
-    <string name="transfer_waiting">正在等待</string>
-    <string name="transfer_working">正在传输</string>
-
-    <string name="file_header_folder">文件夹</string>
-    <string name="file_header_file">文件</string>
 
     <string name="file_option_open">打开</string>
     <string name="file_option_rename">重命名</string>
@@ -84,31 +66,55 @@
     <string name="file_option_delete">删除</string>
     <string name="file_option_info">详情</string>
 
-    <string name="file_rename_title">重命名</string>
-    <string name="file_rename_succeeded">重命名成功</string>
-    <string name="file_rename_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
 
-    <string name="file_move_running">正在移动</string>
-    <string name="file_move_succeeded">已成功移动文件</string>
-    <string name="file_move_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+    <string name="header_apk_normal">已安装</string>
+    <string name="header_apk_system">系统应用</string>
+    <string name="header_apk_standalone">未安装</string>
+    <string name="header_folder">文件夹</string>
+    <string name="header_file">文件</string>
 
-    <string name="file_copy_running">正在复制</string>
-    <string name="file_copy_succeeded">已成功复制文件</string>
-    <string name="file_copy_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
 
-    <string name="file_exists_folder">操作失败，文件夹已存在</string>
-    <string name="file_exists_file">操作失败，文件已存在</string>
+    <string name="hint_net_server_error">服务器无响应，请稍后再试</string>
+    <string name="hint_choose_file_required">请先选择文件</string>
 
-    <string name="file_confirm_delete">您确认要删除选中的文件吗</string>
+    <string name="hint_file_delete_dismissed">删除已取消</string>
+    <string name="hint_file_delete_failed">删除失败，请用系统文件管理器删除</string>
+    <string name="hint_file_delete_succeeded">删除成功</string>
+    <string name="hint_file_delete_confirm">您确认要删除选中的文件吗</string>
+    <string name="hint_file_delete_partly_succeeded">部分文件无法删除，请用系统文件管理器删除</string>
 
-    <string name="file_operation_canceled">操作已取消</string>
-    <string name="file_background_running">正在后台执行操作</string>
-    <string name="file_background_run">后台运行</string>
+    <string name="hitn_file_rename_succeeded">重命名成功</string>
+    <string name="hitn_file_rename_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+
+    <string name="hint_file_move_running">正在移动</string>
+    <string name="hint_file_move_succeeded">已成功移动文件</string>
+    <string name="hint_file_move_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+
+    <string name="hint_file_copy_running">正在复制</string>
+    <string name="hint_file_copy_succeeded">已成功复制文件</string>
+    <string name="hint_file_copy_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+
+    <string name="hint_file_exists_folder">操作失败，文件夹已存在</string>
+    <string name="hint_file_exists_file">操作失败，文件已存在</string>
+
+    <string name="hint_file_operation_canceled">操作已取消</string>
+    <string name="hint_file_operation_background_running">正在后台执行操作</string>
+    <string name="hint_file_operation_background_run">后台运行</string>
+
+    <string name="hint_apk_delete_confirm">是否删除此应用程序安装文件</string>
+    <string name="hint_apk_delete_failed">未知错误，卸载失败</string>
+    <string name="hint_apk_delete_dismissed">卸载已取消</string>
+    <string name="hint_apk_delete_succeeded">卸载成功</string>
+
+    <string name="hint_share_no_file_sendable">没有可传输的文件对象</string>
+    <string name="hint_transfer_abort_confirm">确认终止任务</string>
+
 
     <string name="tab_received">已接收</string>
-    <string name="tab_send">已发送</string>
-    <string name="share_android">发送给安卓</string>
-    <string name="share_computer">发送给电脑</string>
-    <string name="share_apple">发送给IPhone</string>
-    <string name="share_no_file_sendable">没有可传输的文件对象</string>
+    <string name="tab_sent">已发送</string>
+
+    <string name="list_share_android">发送给安卓</string>
+    <string name="list_share_computer">发送给电脑</string>
+    <string name="list_share_apple">发送给IPhone</string>
+
 </resources>

@@ -178,7 +178,7 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
                 break;
             case R.id.action_delete:
                 new AlertDialog.Builder(this)
-                        .setMessage(getString(R.string.file_confirm_delete))
+                        .setMessage(getString(R.string.hint_file_delete_confirm))
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -203,7 +203,7 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                showToastInUI(R.string.delete_dismissed);
+                                showToastInUI(R.string.hint_file_delete_dismissed);
                             }
                         }).show();
                 break;
@@ -243,7 +243,7 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
         if (getCurrentHistoryAdapter().getChosenCount() == 0) {
             getSupportActionBar().setTitle(R.string.title_activity_history);
         } else {
-            getSupportActionBar().setTitle(getString(R.string.hint_chosen_file_count,
+            getSupportActionBar().setTitle(getString(R.string.title_chosen_file_count,
                     mCurrentHistoryAdapter.getChosenCount()));
         }
     }
@@ -341,7 +341,7 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
                 case 0:
                     return getString(R.string.tab_received);
                 case 1:
-                    return getString(R.string.tab_send);
+                    return getString(R.string.tab_sent);
             }
             return null;
         }

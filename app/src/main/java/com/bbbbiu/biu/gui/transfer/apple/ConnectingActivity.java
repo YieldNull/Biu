@@ -17,12 +17,12 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
-import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
-import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
+import com.bbbbiu.biu.lib.WifiApManager;
 import com.bbbbiu.biu.lib.servlet.ManifestServlet;
+import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
+import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
+import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
 import com.bbbbiu.biu.lib.servlet.apple.UploadServlet;
-import com.bbbbiu.biu.lib.util.WifiApManager;
 import com.bbbbiu.biu.service.HttpdService;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;

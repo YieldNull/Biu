@@ -3,7 +3,7 @@ package com.bbbbiu.biu.lib.servlet;
 import android.content.Context;
 import android.webkit.MimeTypeMap;
 
-import com.bbbbiu.biu.lib.util.HtmlReader;
+import com.bbbbiu.biu.lib.HtmlReader;
 import com.yieldnull.httpd.HttpDaemon;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;

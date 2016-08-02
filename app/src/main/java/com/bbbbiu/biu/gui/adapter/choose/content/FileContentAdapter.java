@@ -160,9 +160,9 @@ public class FileContentAdapter extends BaseContentAdapter {
         if (viewType == VIEW_TYPE_HEADER) {
             HeaderViewHolder holder = (HeaderViewHolder) h;
             if (position == 0 && mSubDirs.length > 0) {
-                holder.headerText.setText(context.getString(R.string.file_header_folder));
+                holder.headerText.setText(context.getString(R.string.header_folder));
             } else {
-                holder.headerText.setText(context.getString(R.string.file_header_file));
+                holder.headerText.setText(context.getString(R.string.header_file));
             }
         } else {
             ItemViewHolder holder = (ItemViewHolder) h;
@@ -185,7 +185,7 @@ public class FileContentAdapter extends BaseContentAdapter {
                 }).length;
 
                 holder.infoText.setText(String.format("%s  %s %d ", modifyTime,
-                        context.getString(R.string.file_header_file), itemCount));
+                        context.getString(R.string.header_file), itemCount));
 
                 holder.iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
 

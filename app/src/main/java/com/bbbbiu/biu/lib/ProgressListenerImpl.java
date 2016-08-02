@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.service;
+package com.bbbbiu.biu.lib;
 
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -19,11 +19,11 @@ public class ProgressListenerImpl implements ProgressListener {
     /**
      * Intent extra. 文件uri
      */
-    public static final String RESULT_EXTRA_FILE_URI = "com.bbbbiu.biu.service.ProgressListenerImpl.result.FILE_URI";
+    public static final String RESULT_EXTRA_FILE_URI = "com.bbbbiu.biu.lib.ProgressListenerImpl.result.FILE_URI";
     /**
      * Intent extra. {@link #RESULT_EXTRA_FILE_URI} 对应文件的工作进度，0-100
      */
-    public static final String RESULT_EXTRA_PROGRESS = "com.bbbbiu.biu.service.ProgressListenerImpl.result.PROGRESS";
+    public static final String RESULT_EXTRA_PROGRESS = "com.bbbbiu.biu.lib.ProgressListenerImpl.result.PROGRESS";
     /**
      * ResultCode. 工作失败
      */

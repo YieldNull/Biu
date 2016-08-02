@@ -12,10 +12,9 @@ import android.support.test.runner.AndroidJUnit4;
 import android.support.v4.content.LocalBroadcastManager;
 
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
+import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.bbbbiu.biu.lib.servlet.ReceivingBaseServlet;
-import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.service.HttpdService;
-import com.bbbbiu.biu.service.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.google.common.io.Files;
 import com.yieldnull.httpd.HttpDaemon;
@@ -37,7 +36,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 
 /**

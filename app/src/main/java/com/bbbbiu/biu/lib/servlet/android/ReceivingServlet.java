@@ -2,8 +2,8 @@ package com.bbbbiu.biu.lib.servlet.android;
 
 import android.content.Context;
 
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.lib.servlet.ReceivingBaseServlet;
-import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.yieldnull.httpd.HttpDaemon;
 
 /**

@@ -9,10 +9,9 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.WifiApManager;
+import com.bbbbiu.biu.lib.WifiApManager;
 import com.bbbbiu.biu.lib.servlet.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.android.ReceivingServlet;
 import com.bbbbiu.biu.service.HttpdService;
@@ -95,7 +94,12 @@ public class ReceivingActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onCancelTransfer() {
+    protected void onTransferCancled() {
+        onTransferFinished();
+    }
+
+    @Override
+    protected void onTransferFinished() {
         HttpdService.stopService(this);
     }
 }

@@ -27,7 +27,7 @@
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabIndicatorColor="#90CAF9"
+            app:tabIndicatorColor="@color/history_tab_indicator"
             app:tabIndicatorHeight="2dp"
             app:tabTextAppearance="@style/TabTextAppearance" />
 

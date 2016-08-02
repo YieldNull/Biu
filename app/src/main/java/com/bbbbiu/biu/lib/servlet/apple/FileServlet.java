@@ -6,8 +6,8 @@ import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.lib.servlet.ProgressBaseServlet;
-import com.bbbbiu.biu.lib.util.HttpConstants;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.yieldnull.httpd.HttpDaemon;
 import com.yieldnull.httpd.HttpRequest;

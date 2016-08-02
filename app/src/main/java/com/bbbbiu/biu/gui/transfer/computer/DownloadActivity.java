@@ -8,7 +8,7 @@ import android.os.ResultReceiver;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.service.DownloadService;
 import com.bbbbiu.biu.service.PollingService;
 
@@ -61,15 +61,21 @@ public class DownloadActivity extends TransferBaseActivity {
         super.onDestroy();
     }
 
-    @Override
-    protected void onCancelTransfer() {
-        DownloadService.stopService(this);
-    }
 
     @Override
     protected void onAddNewTask(ArrayList<FileItem> fileItems) {
         for (FileItem item : fileItems) {
-            DownloadService.addTask(this, item.uri, item.name, item.size, mProgressResultReceiver);
+            DownloadService.addTask(this, item, mProgressResultReceiver);
         }
+    }
+
+    @Override
+    protected void onTransferCancled() {
+        onTransferFinished();
+    }
+
+    @Override
+    protected void onTransferFinished() {
+        DownloadService.stopService(this);
     }
 }

@@ -10,8 +10,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.lib.util.HttpConstants;
-import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.HttpConstants;
+import com.bbbbiu.biu.lib.HttpManager;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.zxing.Result;
 

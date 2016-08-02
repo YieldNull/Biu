@@ -20,8 +20,6 @@ import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
  * - 然后更新数据集并显示，{@link CommonContentAdapter#updateDataSet()}
  * <p/>
  * <p/>
- * 如何显示 TODO
- * <p/>
  * Created by YieldNull at 3/26/16
  */
 public abstract class CommonContentAdapter extends BaseContentAdapter {

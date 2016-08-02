@@ -13,7 +13,8 @@ import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.HttpManager;
+import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.yieldnull.httpd.ProgressListener;
 import com.yieldnull.httpd.ProgressNotifier;
 import com.yieldnull.httpd.Streams;

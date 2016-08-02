@@ -47,7 +47,12 @@ public class ReceivingActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onCancelTransfer() {
+    protected void onTransferCancled() {
+        onTransferFinished();
+    }
+
+    @Override
+    protected void onTransferFinished() {
         HttpdService.stopService(this);
     }
 }

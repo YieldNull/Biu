@@ -213,18 +213,18 @@ public class FileOptionAdapter extends BaseOptionAdapter {
     private void deleteFile() {
         new AlertDialog.Builder(context)
                 .setTitle(mBoundFile.getName())
-                .setMessage(context.getString(R.string.file_confirm_delete))
+                .setMessage(context.getString(R.string.hint_file_delete_confirm))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (!FileUtils.deleteQuietly(mBoundFile)) {
                             Toast.makeText(context,
-                                    context.getString(R.string.delete_failed),
+                                    context.getString(R.string.hint_file_delete_failed),
                                     Toast.LENGTH_SHORT)
                                     .show();
                         } else {
                             Toast.makeText(context,
-                                    context.getString(R.string.delete_succeeded),
+                                    context.getString(R.string.hint_file_delete_succeeded),
                                     Toast.LENGTH_SHORT)
                                     .show();
 
@@ -237,7 +237,7 @@ public class FileOptionAdapter extends BaseOptionAdapter {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(context,
-                                R.string.delete_dismissed,
+                                R.string.hint_file_delete_dismissed,
                                 Toast.LENGTH_SHORT)
                                 .show();
                     }
@@ -262,7 +262,7 @@ public class FileOptionAdapter extends BaseOptionAdapter {
         final EditText editText = (EditText) view.findViewById(R.id.editText);
         editText.setText(mBoundFile.getName());
 
-        builder.setTitle(context.getString(R.string.file_rename_title))
+        builder.setTitle(context.getString(R.string.title_file_rename))
                 .setView(view)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
@@ -273,14 +273,14 @@ public class FileOptionAdapter extends BaseOptionAdapter {
                                 new File(mBoundFile.getParentFile(), editText.getText().toString()));
 
                         if (result) {
-                            Toast.makeText(context, R.string.file_rename_succeeded,
+                            Toast.makeText(context, R.string.hitn_file_rename_succeeded,
                                     Toast.LENGTH_SHORT).show();
 
                             if (!newName.equals(mBoundFile.getName())) {
                                 mOptionPanelListener.onOptionModifyContent();
                             }
                         } else {
-                            Toast.makeText(context, R.string.file_rename_failed,
+                            Toast.makeText(context, R.string.hitn_file_rename_failed,
                                     Toast.LENGTH_SHORT).show();
                         }
                     }

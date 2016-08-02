@@ -15,9 +15,9 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.HttpConstants;
-import com.bbbbiu.biu.lib.util.HttpManager;
-import com.bbbbiu.biu.lib.util.WifiApManager;
+import com.bbbbiu.biu.lib.HttpConstants;
+import com.bbbbiu.biu.lib.HttpManager;
+import com.bbbbiu.biu.lib.WifiApManager;
 import com.bbbbiu.biu.service.UploadService;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
@@ -157,7 +157,12 @@ public class SendingActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onCancelTransfer() {
+    protected void onTransferCancled() {
+        onTransferFinished();
+    }
+
+    @Override
+    protected void onTransferFinished() {
         UploadService.stopUpload(this);
     }
 

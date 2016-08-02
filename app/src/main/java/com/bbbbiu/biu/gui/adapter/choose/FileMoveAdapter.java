@@ -146,7 +146,7 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     }
                 }).length;
 
-                holder.infoText.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.file_header_file), itemCount));
+                holder.infoText.setText(String.format("%s  %s %d ", modifyTime, context.getString(R.string.header_file), itemCount));
                 holder.iconImage.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_type_folder));
 
             } else { // 文件
@@ -169,9 +169,9 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             HeaderViewHolder holder = (HeaderViewHolder) hd;
 
             if (mDirList.contains(getItem(position + 1))) {
-                holder.headerText.setText(R.string.file_header_folder);
+                holder.headerText.setText(R.string.header_folder);
             } else {
-                holder.headerText.setText(R.string.file_header_file);
+                holder.headerText.setText(R.string.header_file);
             }
         }
     }

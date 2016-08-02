@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.db.TransferRecord;
-import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.yieldnull.httpd.HttpRequest;
 import com.yieldnull.httpd.HttpResponse;

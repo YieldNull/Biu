@@ -4,7 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
-import com.bbbbiu.biu.lib.util.HttpConstants;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

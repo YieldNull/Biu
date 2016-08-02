@@ -10,8 +10,8 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.lib.util.HttpConstants;
-import com.bbbbiu.biu.lib.util.HttpManager;
+import com.bbbbiu.biu.lib.HttpConstants;
+import com.bbbbiu.biu.lib.HttpManager;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -26,10 +26,8 @@ import okhttp3.ResponseBody;
 /**
  * 轮询Service，用于电脑将文件先传到公网服务器，然后再从服务器下载的情景。
  * <p/>
- * 需要轮询原因：
- * <p/>
- * 1.用户上传文件后可以选择继续上传或者从手机端下载文件，不能要求用户再次扫码
- * 2.用户上传两个文件的时间间隔比较大，比如传大文件，一次无法获取所有文件列表
+ * 从公网服务器下载文件清单，然后传递到{@link com.bbbbiu.biu.gui.transfer.computer.DownloadActivity}，
+ * 再由其启动下载服务{@link DownloadService}。
  */
 public class PollingService extends Service {
     private static final String TAG = PollingService.class.getSimpleName();
@@ -42,7 +40,7 @@ public class PollingService extends Service {
     public static final int RESULT_OK = 0;
 
     /**
-     * 服务器故障
+     * 服务器故障，失败次数超过{@link #MAX_RETRY_TIME}
      * <p/>
      * 轮询的结果，{@link ResultReceiver} send() 中 statusCode参数
      */
@@ -76,13 +74,14 @@ public class PollingService extends Service {
      */
     private static final String ACTION_STOP = "com.bbbbiu.biu.service.PollingService.action.STOP";
 
+
     /**
      * 从服务器获取文件列表的失败重试次数，超过此次数则停止轮询
      * 失败指的是出现IO异常，HTTP返回码非200，返回的json数据非法等
      * <p/>
      * 详见{@link PollingService#downloadFileList()}
      */
-    private static final int RETRY_TIME = 20;
+    private static final int MAX_RETRY_TIME = 20;
 
     public PollingService() {
     }
@@ -94,7 +93,7 @@ public class PollingService extends Service {
     private String mUid;
 
     /**
-     * 用于接受伦须结果及数据，由开启服务者传来
+     * 用于接收轮询结果及数据，由开启服务者传来；结果由其发送给使用者
      */
     private ResultReceiver mResultReceiver;
 
@@ -191,10 +190,10 @@ public class PollingService extends Service {
                 break;
             }
 
-            if (retryCount > RETRY_TIME) { // 服务器故障
-                Log.i(TAG, "Server error. Stop self.");
+            if (retryCount > MAX_RETRY_TIME) { // 服务器故障
+                Log.w(TAG, "Server error. Retried as many times as possible. Stop self.");
                 mResultReceiver.send(RESULT_ERROR, null);
-                stopSelf(); // TODO 终止Thread还是Service？
+                stopSelf(); // 失败多次之后，直接关闭服务
                 break;
             }
 

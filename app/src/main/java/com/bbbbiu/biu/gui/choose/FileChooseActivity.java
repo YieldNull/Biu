@@ -166,7 +166,7 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
         }
 
         if (data == null || destDir == null) {
-            Toast.makeText(this, R.string.file_operation_canceled, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.hint_file_operation_canceled, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -193,7 +193,7 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
 
         //showOperationRunningDialog(isCopy);
 
-        showToastInUI(R.string.file_background_running);
+        showToastInUI(R.string.hint_file_operation_background_running);
 
         final File src = mOptionAdapter.getBoundFile();
         final File finalDestDir = destDir;
@@ -219,8 +219,8 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
      */
     private void showOperationRunningDialog(boolean isCopy) {
         String message = isCopy ?
-                getString(R.string.file_copy_running) :
-                getString(R.string.file_move_running);
+                getString(R.string.hint_file_copy_running) :
+                getString(R.string.hint_file_move_running);
 
 
         final ProgressDialog progressDialog = new ProgressDialog(this);
@@ -231,14 +231,14 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        showToastInUI(R.string.file_operation_canceled);
+                        showToastInUI(R.string.hint_file_operation_canceled);
                     }
                 });
-        progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.file_background_run),
+        progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.hint_file_operation_background_run),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        showToastInUI(R.string.file_background_running);
+                        showToastInUI(R.string.hint_file_operation_background_running);
                     }
                 });
         progressDialog.show();
@@ -266,26 +266,26 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
         } catch (FileExistsException e) {
             Log.w(TAG, e.toString());
             if (src.isFile()) {
-                showToastInUI(R.string.file_exists_file);
+                showToastInUI(R.string.hint_file_exists_file);
             } else {
-                showToastInUI(R.string.file_exists_folder);
+                showToastInUI(R.string.hint_file_exists_folder);
             }
             return false;
         } catch (IOException e) {
             Log.w(TAG, e.toString());
 
             if (isCopy) {
-                showToastInUI(R.string.file_copy_failed);
+                showToastInUI(R.string.hint_file_copy_failed);
             } else {
-                showToastInUI(R.string.file_move_failed);
+                showToastInUI(R.string.hint_file_move_failed);
             }
             return false;
         }
 
         if (isCopy) {
-            showToastInUI(R.string.file_copy_succeeded);
+            showToastInUI(R.string.hint_file_copy_succeeded);
         } else {
-            showToastInUI(R.string.file_move_succeeded);
+            showToastInUI(R.string.hint_file_move_succeeded);
         }
 
         return true;

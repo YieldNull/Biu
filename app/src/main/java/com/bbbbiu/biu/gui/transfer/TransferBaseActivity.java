@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.TransferAdapter;
-import com.bbbbiu.biu.service.ProgressListenerImpl;
+import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.wang.avi.AVLoadingIndicatorView;
@@ -36,19 +36,50 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
- * 文件传输的界面基类
+ * 文件传输的界面基类。显示上传，下载均可。
+ * <p/>
+ * 使用{@link ResultReceiver} 传递成功或失败信息，使用{@link ProgressListenerImpl}传递进度信息。
+ * <p/>
+ * 使用{@link LocalBroadcastManager} 发送广播，来提交新的任务；以及更新进度信息（在{@link ProgressListenerImpl}）使用
  * <p/>
  * Created by YieldNull at 4/26/16
  */
 public abstract class TransferBaseActivity extends AppCompatActivity {
     private static final String TAG = TransferBaseActivity.class.getSimpleName();
 
-    // 从Service接收进度时使用
+    /**
+     * intent action:从Service接收进度
+     */
     public static final String ACTION_UPDATE_PROGRESS = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.action.UPDATE_PROGRESS";
+
+    /**
+     * intent extra: 从Service接收进度，
+     *
+     * @see ProgressListenerImpl#RESULT_FAILED
+     * @see ProgressListenerImpl#RESULT_PROGRESS
+     * @see ProgressListenerImpl#RESULT_SUCCEEDED
+     */
     public static final String EXTRA_RESULT_CODE = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.RESULT_CODE";
+
+
+    /**
+     * Intent extra:从Service接收进度，内含文件uri,当前进度
+     *
+     * @see ProgressListenerImpl#RESULT_EXTRA_FILE_URI
+     * @see ProgressListenerImpl#RESULT_EXTRA_PROGRESS
+     */
     public static final String EXTRA_RESULT_BUNDLE = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.RESULT_BUNDLE";
 
+
+    /**
+     * intent action，增加新的传输任务
+     */
     public static final String ACTION_ADD_TASK = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.action.ADD_TASK";
+
+
+    /**
+     * Intent extra， 新的传输任务对应的{@link FileItem}
+     */
     public static final String EXTRA_FILE_ITEM = "com.bbbbiu.biu.gui.transfer.TransferBaseActivity.extra.FILE_ITEM";
 
 
@@ -95,14 +126,6 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * 上一次更新的时间
      */
     private long mPreviousTime = System.currentTimeMillis();
-
-
-    /**
-     * 接收到新的任务，对其进行处理。
-     *
-     * @param fileItems 任务对象
-     */
-    protected abstract void onAddNewTask(ArrayList<FileItem> fileItems);
 
 
     /**
@@ -239,7 +262,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     protected void showConnectingAnim() {
         mLoadingIndicatorView.setVisibility(View.VISIBLE);
         mMeasureLinearLayout.setVisibility(View.GONE);
-        setTitle(getString(R.string.transfer_connecting));
+        setTitle(getString(R.string.title_transfer_connecting));
     }
 
     /**
@@ -248,7 +271,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     protected void closeConnectionAnim() {
         mLoadingIndicatorView.setVisibility(View.GONE);
         mMeasureLinearLayout.setVisibility(View.VISIBLE);
-        setTitle(getString(R.string.transfer_working));
+        setTitle(getString(R.string.title_transfer_working));
     }
 
     /**
@@ -271,8 +294,8 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     protected void addTask(ArrayList<FileItem> fileItems) {
         Log.i(TAG, "Adding task...");
         if (fileItems != null) {
-            mTransferAdapter.addItem(fileItems);
-            onAddNewTask(fileItems);
+            mTransferAdapter.addItem(fileItems); // 显示在界面上
+            onAddNewTask(fileItems);  // 基类处理任务
             closeConnectionAnim();
         }
     }
@@ -299,11 +322,11 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (!mTransferAdapter.finished()) {
             new AlertDialog.Builder(this)
-                    .setTitle("确认终止任务")
+                    .setTitle(getString(R.string.hint_transfer_abort_confirm))
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            onCancelTransfer();
+                            onTransferCancled();
                             TransferBaseActivity.super.onBackPressed();
                         }
                     })
@@ -315,10 +338,29 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     })
                     .show();
         } else {
-            onCancelTransfer();
+            onTransferCancled();
             super.onBackPressed();
         }
     }
 
-    protected abstract void onCancelTransfer();
+    /**
+     * 接收到新的任务，对其进行处理。
+     * <p/>
+     * 基类可以进行上传、下载，然后进度消息会通过广播传递过来，并显示
+     *
+     * @param fileItems 任务对象
+     */
+    protected abstract void onAddNewTask(ArrayList<FileItem> fileItems);
+
+
+    /**
+     * 中途取消任务
+     */
+    protected abstract void onTransferCancled();
+
+
+    /**
+     * 任务完成
+     */
+    protected abstract void onTransferFinished();
 }
