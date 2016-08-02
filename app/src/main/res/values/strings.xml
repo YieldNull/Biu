@@ -70,6 +70,9 @@
     <string name="header_apk_normal">已安装</string>
     <string name="header_apk_system">系统应用</string>
     <string name="header_apk_standalone">未安装</string>
+    <string name="header_transfer_working">正在传输</string>
+    <string name="header_transfer_waiting">正在等待</string>
+    <string name="header_transfer_finished">已完成</string>
     <string name="header_folder">文件夹</string>
     <string name="header_file">文件</string>
 
@@ -116,5 +119,4 @@
     <string name="list_share_android">发送给安卓</string>
     <string name="list_share_computer">发送给电脑</string>
     <string name="list_share_apple">发送给IPhone</string>
-
 </resources>

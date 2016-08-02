@@ -1,7 +1,9 @@
 package com.bbbbiu.biu.gui.adapter;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +14,10 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,9 +53,21 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private File mDownloadDir;
 
 
+    private static final String PICASSO_TAG = "tag-img";
+
+    private Picasso mVideoPicasso;
+    private Picasso mImgPicasso;
+
+
     public TransferAdapter(Context context) {
         this.context = context;
         mDownloadDir = StorageUtil.getDownloadDir(context);
+
+        Picasso.Builder builder = new Picasso.Builder(context);
+        builder.addRequestHandler(new VideoIconRequestHandler());
+        mVideoPicasso = builder.build();
+        mImgPicasso = Picasso.with(context);
+
     }
 
 
@@ -234,15 +250,18 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             fileItem = getItem(position + 1);
             if (mWorkingItem == fileItem) {
-                holder.headerText.setText("正在传输");
+                holder.headerText.setText(R.string.header_transfer_working);
             } else if (mWaitingQueue.contains(fileItem)) {
-                holder.headerText.setText("正在等待");
+                holder.headerText.setText(R.string.header_transfer_waiting);
             } else {
-                holder.headerText.setText("已完成");
+                holder.headerText.setText(R.string.header_transfer_finished
+                );
             }
 
         } else {
-            Drawable iconDrawable = StorageUtil.getFileIcon(context, new File(fileItem.uri));
+            Drawable iconDrawable = StorageUtil.getFileIcon(context, StorageUtil.getFileType(
+                    StorageUtil.getFileExtension(fileItem.name)));
+
             String name = fileItem.name;
             String readableSize = StorageUtil.getReadableSize(fileItem.size);
 
@@ -263,21 +282,61 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             } else {
                 FinishedViewHolder holder = (FinishedViewHolder) hd;
+
+                final Uri uri;
+                String filePath = null;
+
                 File file = new File(mDownloadDir, fileItem.name);
-                if (!file.exists()) {
-                    file = new File(fileItem.uri);
+                if (file.exists()) {
+                    uri = Uri.fromFile(file); // 表示下载
+                    filePath = file.getAbsolutePath();
+                } else {
+                    uri = Uri.parse(fileItem.uri); // 表示上传,需要注意 "content://"情况
+                    if (uri.getScheme().equals(ContentResolver.SCHEME_FILE)) {
+                        filePath = uri.getPath();
+                    }
                 }
 
-                holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, file));
                 holder.nameText.setText(name);
                 holder.infoText.setText(readableSize);
 
+                int fileType = StorageUtil.getFileType(StorageUtil.getFileExtension(fileItem.name));
 
-                final File finalFile = file;
+                if (fileType == StorageUtil.TYPE_VIDEO) {
+
+                    if (filePath == null) {
+                        holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, StorageUtil.TYPE_VIDEO));
+                    } else {
+                        mVideoPicasso.load(VideoIconRequestHandler.PICASSO_SCHEME_VIDEO + ":" + filePath)
+                                .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
+                                .placeholder(R.drawable.ic_type_video)
+                                .tag(PICASSO_TAG)
+                                .into(holder.iconImage);
+                    }
+
+                } else if (fileType == StorageUtil.TYPE_IMG) {
+                    mImgPicasso.load(uri)
+                            .resize(VideoIconRequestHandler.THUMB_SIZE, VideoIconRequestHandler.THUMB_SIZE)
+                            .placeholder(R.drawable.ic_type_img)
+                            .tag(PICASSO_TAG)
+                            .into(holder.iconImage);
+
+                } else if (fileType == StorageUtil.TYPE_APK) {
+                    Drawable drawable = StorageUtil.getApkIcon(context, filePath);
+                    if (drawable == null) {
+                        drawable = StorageUtil.getFileIcon(context, StorageUtil.TYPE_APK);
+                    }
+                    holder.iconImage.setImageDrawable(drawable);
+
+                } else {
+                    holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, fileType));
+                }
+
+                final FileItem finalFileItem = fileItem;
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        StorageUtil.openFile(context, finalFile);
+                        StorageUtil.openFile(context, uri, finalFileItem.name);
                     }
                 });
             }
