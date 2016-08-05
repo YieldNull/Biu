@@ -27,7 +27,6 @@ import com.bbbbiu.biu.gui.adapter.TransferAdapter;
 import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
-import com.wang.avi.AVLoadingIndicatorView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
@@ -85,8 +84,12 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
     @Bind(R.id.recyclerView)
     protected RecyclerView mRecyclerView;
-    @Bind(R.id.loadingIndicatorView)
-    protected AVLoadingIndicatorView mLoadingIndicatorView; //正在加载动画
+
+    @Bind(R.id.linearLayout_loading)
+    protected LinearLayout mLoadingLinearLayout;
+
+    @Bind(R.id.textView_loading)
+    protected TextView mLoadingTextView;
 
     @Bind(R.id.linearLayout_measure)
     protected LinearLayout mMeasureLinearLayout;
@@ -249,7 +252,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this).build());
 
-        mLoadingIndicatorView.setVisibility(View.GONE);
+        mLoadingLinearLayout.setVisibility(View.GONE);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mTaskBroadcastReceiver, new IntentFilter(ACTION_ADD_TASK));
         LocalBroadcastManager.getInstance(this).registerReceiver(mProgressBroadcastReceiver, new IntentFilter(ACTION_UPDATE_PROGRESS));
@@ -260,7 +263,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * 显示正在连接动画
      */
     protected void showConnectingAnim() {
-        mLoadingIndicatorView.setVisibility(View.VISIBLE);
+        mLoadingLinearLayout.setVisibility(View.VISIBLE);
         mMeasureLinearLayout.setVisibility(View.GONE);
         setTitle(getString(R.string.title_transfer_connecting));
     }
@@ -269,7 +272,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * 关闭正在连接动画
      */
     protected void closeConnectionAnim() {
-        mLoadingIndicatorView.setVisibility(View.GONE);
+        mLoadingLinearLayout.setVisibility(View.GONE);
         mMeasureLinearLayout.setVisibility(View.VISIBLE);
         setTitle(getString(R.string.title_transfer_working));
     }
@@ -300,6 +303,16 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * 更新加载提示
+     *
+     * @param hint 提示文字
+     */
+    protected void updateLoadingText(String hint) {
+        mLoadingTextView.setText(hint);
+    }
+
+
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mTaskBroadcastReceiver);
@@ -326,7 +339,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            onTransferCancled();
+                            onTransferCanceled();
                             TransferBaseActivity.super.onBackPressed();
                         }
                     })
@@ -338,7 +351,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     })
                     .show();
         } else {
-            onTransferCancled();
+            onTransferCanceled();
             super.onBackPressed();
         }
     }
@@ -356,7 +369,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     /**
      * 中途取消任务
      */
-    protected abstract void onTransferCancled();
+    protected abstract void onTransferCanceled();
 
 
     /**

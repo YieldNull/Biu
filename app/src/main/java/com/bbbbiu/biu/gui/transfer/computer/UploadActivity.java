@@ -46,7 +46,7 @@ public class UploadActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onTransferCancled() {
+    protected void onTransferCanceled() {
         onTransferFinished();
     }
 

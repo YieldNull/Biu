@@ -47,7 +47,7 @@ public class ReceivingActivity extends TransferBaseActivity {
     }
 
     @Override
-    protected void onTransferCancled() {
+    protected void onTransferCanceled() {
         onTransferFinished();
     }
 

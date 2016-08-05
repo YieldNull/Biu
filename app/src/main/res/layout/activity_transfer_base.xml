@@ -84,12 +84,28 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-    <com.wang.avi.AVLoadingIndicatorView
-        android:id="@+id/loadingIndicatorView"
+    <LinearLayout
+        android:id="@+id/linearLayout_loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        app:indicator="BallPulse"
-        app:indicator_color="@color/loading_indicator" />
+        android:gravity="center">
+
+        <com.wang.avi.AVLoadingIndicatorView
+            android:id="@+id/loadingIndicatorView"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            app:indicator="BallScaleMultiple"
+            app:indicator_color="@color/loading_indicator" />
+
+        <TextView
+            android:id="@+id/textView_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text=""
+            android:textColor="@color/loading_indicator" />
+    </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>

@@ -10,9 +10,9 @@ import java.lang.reflect.Method;
 
 /**
  * 使用反射机制使{@link WifiManager}中隐藏的关于WifiAp的方法可见。
- * <p>
+ * <p/>
  * 增加功能：
- * 1.恢复开热点之前wifi状态
+ * 1.开热点之前禁止WIFI
  * 2.HTC开热点时的API reflection
  */
 public class WifiApManager {
@@ -28,17 +28,11 @@ public class WifiApManager {
 
 
     private final WifiManager mWifiManager;
-    private Context context;
-
-    private int mWifiState;
 
     private boolean isHtc = false;
 
     public WifiApManager(Context context) {
-        this.context = context;
-        mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
-
-        mWifiState = mWifiManager.getWifiState();
+        mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         // check whether this is a HTC device
         try {
@@ -95,15 +89,6 @@ public class WifiApManager {
     }
 
     /**
-     * 恢复开启热点之前的状态
-     */
-    protected void restoreWifiState() {
-        if (mWifiState == WifiManager.WIFI_STATE_ENABLED || mWifiState == WifiManager.WIFI_STATE_ENABLING) {
-            mWifiManager.setWifiEnabled(true);
-        }
-    }
-
-    /**
      * Start AccessPoint mode with the specified
      * configuration. If the radio is already running in
      * AP mode, update the new configuration
@@ -117,8 +102,6 @@ public class WifiApManager {
         try {
             if (enabled) {
                 mWifiManager.setWifiEnabled(false); // 首先关闭Wifi连接
-            } else {
-                restoreWifiState();
             }
 
             if (isHtc) {
