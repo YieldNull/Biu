@@ -108,7 +108,4 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
-
-    // TODO check 在任何需要使用wifi的情况下，wifi是否可用？是不是要自动打开Wifi？
 }

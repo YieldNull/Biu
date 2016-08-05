@@ -75,20 +75,20 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
         final int stringId = getStringId(position);
         int imageId = nameImgMap.get(position)[1];
 
         if (getItemViewType(position) == TYPE_CATEGORY) {
-            CategoryHolder holder = (CategoryHolder) hd;
+            final CategoryHolder holder = (CategoryHolder) hd;
             holder.iconImage.setImageDrawable(context.getResources().getDrawable(imageId));
             holder.nameText.setText(context.getString(stringId));
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Class theClass = null;
-                    switch (getStringId(position)) {
+                    Class<? extends BaseChooseActivity> theClass = null;
+                    switch (getStringId(holder.getAdapterPosition())) {
                         case R.string.cate_image:
                             theClass = ImgChooseActivity.class;
                             break;
