@@ -88,6 +88,18 @@ public class SendingActivity extends TransferBaseActivity {
 
 
     /**
+     * 进入页面之前WIFI是不是已经打开了
+     */
+    private boolean mWasWifiOpened;
+
+
+    /**
+     * bbbbiu WIFI ID
+     */
+    private int mNetId;
+
+
+    /**
      * 扫描Wifi的task，周期性扫描，直到成功连接
      */
     private Runnable mWifiScanTask;
@@ -166,6 +178,10 @@ public class SendingActivity extends TransferBaseActivity {
         mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         mConnManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 
+
+        int state = mWifiManager.getWifiState();
+        mWasWifiOpened = state == WifiManager.WIFI_STATE_ENABLED || state == WifiManager.WIFI_STATE_ENABLING;
+        Log.i(TAG, "Was wifi already opened? " + mWasWifiOpened);
 
         // 接收wifi列表的扫描结果
         mWifiListReceiver = new BroadcastReceiver() {
@@ -257,6 +273,16 @@ public class SendingActivity extends TransferBaseActivity {
         // 主线程里面的，退了Activity还能在消息队列里面跑
         mHandler.removeCallbacks(mWaitingWifiConnectionTask);
         mHandler = null;
+
+        // 断开wifi连接，forget WIFI：连上wifi之后无法访问互联网，下次连接时系统可能会禁止连接
+        mWifiManager.removeNetwork(mNetId);
+        mWifiManager.saveConfiguration();
+        Log.i(TAG, "Forget the wifi hotspot");
+
+        if (!mWasWifiOpened) {
+            Log.i(TAG, "Closing WIFI");
+            mWifiManager.setWifiEnabled(false);
+        }
     }
 
 
@@ -323,6 +349,7 @@ public class SendingActivity extends TransferBaseActivity {
                     unregisterReceiver(mWifiListReceiver); // 不再接受广播
                     Log.i(TAG, "Unregister wifi scan broadcast receiver");
 
+                    mNetId = netId;
                     waitWifiConnected();
                 } else {
                     Log.i(TAG, "Connect wifi failed: Enable network failed");
