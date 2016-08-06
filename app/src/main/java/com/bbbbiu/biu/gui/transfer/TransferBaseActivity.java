@@ -27,6 +27,7 @@ import com.bbbbiu.biu.gui.adapter.TransferAdapter;
 import com.bbbbiu.biu.lib.ProgressListenerImpl;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
+import com.yieldnull.httpd.HttpDaemon;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import java.util.ArrayList;
@@ -132,6 +133,27 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
 
     /**
+     * 是否使用HTTPd,接收文件
+     */
+    private boolean mReceiveUsingHttpd;
+
+
+    /**
+     * 使用Http服务器接受文件时的TIMEOUT
+     *
+     * @see #setReceiveTimeout()
+     */
+    private static final long RECEIVE_TIMEOUT = 5000;
+
+    public TransferBaseActivity() {
+    }
+
+    public TransferBaseActivity(boolean receiveUsingHttpd) {
+        mReceiveUsingHttpd = receiveUsingHttpd;
+    }
+
+
+    /**
      * 接收任务广播
      */
     protected BroadcastReceiver mTaskBroadcastReceiver = new BroadcastReceiver() {
@@ -173,7 +195,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      *                   {@link ProgressListenerImpl#RESULT_FAILED}，
      *                   {@link ProgressListenerImpl#RESULT_SUCCEEDED}，
      *                   {@link ProgressListenerImpl#RESULT_PROGRESS}
-     * @param resultData a{@link Bundle},包含以下 EXTRA：
+     * @param resultData {@link Bundle},包含以下 EXTRA：
      *                   {@link ProgressListenerImpl#RESULT_EXTRA_FILE_URI}，
      *                   {@link ProgressListenerImpl#RESULT_EXTRA_PROGRESS}，
      */
@@ -182,13 +204,26 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
         switch (resultCode) {
             case ProgressListenerImpl.RESULT_FAILED:
-                mTransferAdapter.setTaskFailed(fileUri);
-                break;
-            case ProgressListenerImpl.RESULT_SUCCEEDED:
-                mTransferAdapter.setTaskFinished(fileUri);
+                Log.i(TAG, "Task failed:" + fileUri);
+                mTransferAdapter.setTaskFailed();
+
                 mPreviousTime = System.currentTimeMillis();
                 mPreviousProgress = 0;
                 mCurrentTaskSize = 0;
+
+                setReceiveTimeout();
+
+                break;
+            case ProgressListenerImpl.RESULT_SUCCEEDED:
+                Log.i(TAG, "Task succeeded:" + fileUri);
+
+                mTransferAdapter.setTaskFinished();
+
+                mPreviousTime = System.currentTimeMillis();
+                mPreviousProgress = 0;
+                mCurrentTaskSize = 0;
+
+                setReceiveTimeout();
 
                 break;
             case ProgressListenerImpl.RESULT_PROGRESS:
@@ -227,6 +262,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                 break;
         }
     }
+
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -302,6 +338,39 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
             closeConnectionAnim();
         }
     }
+
+
+    /**
+     * 上一个任务完成或失败之后，要是当前任务在该时间间隔内进度没变，
+     * 而且Http服务器当前没有请求，则表示连接已经中断，剩下的任务直接全部失败
+     */
+    private void setReceiveTimeout() {
+        final int progress = mPreviousProgress;
+        final FileItem item = mTransferAdapter.getCurrentItem();
+
+        if (!mTransferAdapter.finished() && mReceiveUsingHttpd) {
+
+            Log.i(TAG, "Setting timeout for httpd receiving");
+
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    if (!mTransferAdapter.finished()    // currentItem非空
+                            && mTransferAdapter.getCurrentItem().equals(item)  // 任务相同
+                            && mPreviousProgress == progress        // 进度没有改变
+                            && HttpDaemon.getSingleton().aliveRequests() == 0) { // 没有连接
+
+                        Log.i(TAG, "httpd receiving timeout. connection reset. all pending task failed");
+
+                        mTransferAdapter.setAllTaskFailed(); // 连接已断开，未完成的任务全部跪了
+                    }
+                }
+            }, RECEIVE_TIMEOUT);
+        }
+    }
+
 
     /**
      * 更新加载提示

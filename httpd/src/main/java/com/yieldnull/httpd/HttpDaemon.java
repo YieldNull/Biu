@@ -69,7 +69,7 @@ public class HttpDaemon {
     /**
      * Socket 读取超时时间
      */
-    private static final int SOCKET_READ_TIMEOUT = 5000;
+    private static final int SOCKET_READ_TIMEOUT = 4000;
 
 
     /**
@@ -173,6 +173,16 @@ public class HttpDaemon {
         return this.mServerSocket != null && this.mListenThread != null;
     }
 
+
+    /**
+     * 当前Alive的请求数
+     *
+     * @return 请求数
+     */
+    public int aliveRequests() {
+        return mRequestManager.aliveCount();
+    }
+
     /**
      * 服务器主程序，监听请求
      */
@@ -242,6 +252,10 @@ public class HttpDaemon {
             thread.start();
         }
 
+
+        int aliveCount() {
+            return handlerList.size();
+        }
 
         void close(RequestHandler requestHandler) {
             handlerList.remove(requestHandler);

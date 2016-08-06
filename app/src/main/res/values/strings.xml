@@ -139,4 +139,5 @@
 
     <string name="hint_connect_manifest_resend_title">重试发送</string>
     <string name="hint_connect_manifest_resend_confirm">发送文件清单失败，是否重新发送清单？</string>
+    <string name="header_transfer_failed">传输失败</string>
 </resources>

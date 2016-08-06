@@ -62,6 +62,11 @@ public class ReceivingActivity extends TransferBaseActivity {
     }
 
 
+    public ReceivingActivity() {
+        super(true);
+    }
+
+
     /**
      * 接收发送方发过来的文件清单，并提交任务
      */

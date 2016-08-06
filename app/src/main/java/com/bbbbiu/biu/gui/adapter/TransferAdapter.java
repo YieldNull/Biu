@@ -40,21 +40,44 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int VIEW_TYPE_WORKING = 1;
     private static final int VIEW_TYPE_WAITING = 2;
     private static final int VIEW_TYPE_FINISHED = 3;
-
+    private static final int VIEW_TYPE_FAILED = 4;
 
     private final Context context;
 
+    /**
+     * Adapter 数据集
+     */
     private ArrayList<FileItem> mDataSet = new ArrayList<>();
 
+    /**
+     * 等待队列
+     */
     private Queue<FileItem> mWaitingQueue = new LinkedList<>();
+
+    /**
+     * 已完成
+     */
     private List<FileItem> mFinishedList = new ArrayList<>();
+
+    /**
+     * 已失败
+     */
+    private List<FileItem> mFailedList = new ArrayList<>();
+
+
+    /**
+     * 当前任务对象
+     */
     private FileItem mWorkingItem;
 
+
+    /**
+     * 下载文件存放处
+     */
     private File mDownloadDir;
 
 
     private static final String PICASSO_TAG = "tag-img";
-
     private Picasso mVideoPicasso;
     private Picasso mImgPicasso;
 
@@ -92,7 +115,13 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             mDataSet.addAll(mFinishedList);
         }
 
+        if (mFailedList.size() != 0) {
+            mDataSet.add(null);
+            mDataSet.addAll(mFailedList);
+        }
+
     }
+
 
     /**
      * 将任务加入等待队列
@@ -120,16 +149,14 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     /**
      * 任务完成
-     *
-     * @param fileUri file uri
      */
-    public void setTaskFinished(String fileUri) {
+    public void setTaskFinished() {
 
         mDataSet.clear();
 
         mFinishedList.add(mWorkingItem);
 
-        mWorkingItem = mWaitingQueue.poll(); // TODO 为空，所有任务都完成了
+        mWorkingItem = mWaitingQueue.poll();
 
         refreshDataSet();
 
@@ -138,14 +165,44 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     /**
      * 任务失败
-     *
-     * @param fileUri file uri
      */
-    public void setTaskFailed(String fileUri) {
-        // TODO 失败后怎么办？
+    public void setTaskFailed() {
+        mDataSet.clear();
+
+        mFailedList.add(mWorkingItem);
+
+        mWorkingItem = mWaitingQueue.poll();
+
+        refreshDataSet();
+
+        notifyDataSetChanged();
     }
 
 
+    /**
+     * 剩下的所有任务全部失败
+     */
+    public void setAllTaskFailed() {
+        mDataSet.clear();
+
+        mFailedList.add(mWorkingItem);
+        mFailedList.addAll(mWaitingQueue);
+
+        mWaitingQueue.clear();
+        mWorkingItem = null;
+
+        refreshDataSet();
+        notifyDataSetChanged();
+    }
+
+
+    /**
+     * 根据文件Uri找到对应的文件，并更新进度
+     *
+     * @param recyclerView RecyclerView
+     * @param fileUri      文件Uri
+     * @param progress     当前进度 0-100
+     */
     public void updateProgress(RecyclerView recyclerView, String fileUri, int progress) {
         int position;
         FileItem fileItem;
@@ -176,14 +233,57 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
 
+    /**
+     * 所有任务是否完成或失败，即没有剩余的任务等待执行
+     *
+     * @return 是否完成
+     */
+    public boolean finished() {
+        return mWaitingQueue.size() == 0 && mWorkingItem == null;
+    }
+
+
+    /**
+     * 获取当前任务对象
+     *
+     * @return 当前任务
+     *
+     */
+    public FileItem getCurrentItem() {
+        return mWorkingItem;
+    }
+
+    /**
+     * 根据文件Uri找到其对应的任务在Adapter中的位置
+     * <p/>
+     * {@link FileItem} 重写equals方法，使Uri相同则两对象相同
+     *
+     * @param fileUri 文件Uri
+     * @return 位置
+     * @see FileItem
+     */
     public int getPosition(String fileUri) {
         return mDataSet.indexOf(new FileItem(fileUri, "", 0));
     }
 
+
+    /**
+     * 找到FileItem在 Adapter中的位置
+     *
+     * @param fileItem FileItem
+     * @return 位置
+     */
     public int getPosition(FileItem fileItem) {
         return mDataSet.indexOf(fileItem);
     }
 
+
+    /**
+     * 根据文件Uri获取在数据集中对应的FileItem
+     *
+     * @param fileUri 文件Uri
+     * @return 对应的FileItem
+     */
     public FileItem getItem(String fileUri) {
         if (fileUri != null) {
             return mDataSet.get(getPosition(fileUri));
@@ -192,14 +292,16 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    /**
+     * 获取指定位置的FileItem
+     *
+     * @param position 位置
+     * @return Item
+     */
     public FileItem getItem(int position) {
         return mDataSet.get(position);
     }
 
-
-    public boolean finished() {
-        return mWaitingQueue.size() == 0 && mWorkingItem == null;
-    }
 
     @Override
     public int getItemCount() {
@@ -217,8 +319,10 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return VIEW_TYPE_WORKING;
         } else if (mWaitingQueue.contains(item)) {
             return VIEW_TYPE_WAITING;
-        } else {
+        } else if (mFinishedList.contains(item)) {
             return VIEW_TYPE_FINISHED;
+        } else {
+            return VIEW_TYPE_FAILED;
         }
     }
 
@@ -234,9 +338,12 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         } else if (viewType == VIEW_TYPE_WAITING) {
             View itemView = inflater.inflate(R.layout.list_transfer_waiting, parent, false);
             return new WaitingViewHolder(itemView);
-        } else {
+        } else if (viewType == VIEW_TYPE_FINISHED) {
             View itemView = inflater.inflate(R.layout.list_transfer_finished, parent, false);
             return new FinishedViewHolder(itemView);
+        } else {
+            View itemView = inflater.inflate(R.layout.list_transfer_failed, parent, false);
+            return new FailedViewHolder(itemView);
         }
     }
 
@@ -253,9 +360,10 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 holder.headerText.setText(R.string.header_transfer_working);
             } else if (mWaitingQueue.contains(fileItem)) {
                 holder.headerText.setText(R.string.header_transfer_waiting);
+            } else if (mFinishedList.contains(fileItem)) {
+                holder.headerText.setText(R.string.header_transfer_finished);
             } else {
-                holder.headerText.setText(R.string.header_transfer_finished
-                );
+                holder.headerText.setText(R.string.header_transfer_failed);
             }
 
         } else {
@@ -279,6 +387,12 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 holder.iconImage.setImageDrawable(iconDrawable);
                 holder.nameText.setText(name);
                 holder.sizeText.setText(readableSize);
+
+            } else if (type == VIEW_TYPE_FAILED) {
+                FailedViewHolder holder = (FailedViewHolder) hd;
+                holder.iconImage.setImageDrawable(iconDrawable);
+                holder.nameText.setText(name);
+                holder.infoText.setText(readableSize);
 
             } else {
                 FinishedViewHolder holder = (FinishedViewHolder) hd;
@@ -343,6 +457,7 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+
     class WorkingViewHolder extends RecyclerView.ViewHolder {
 
         @Bind(R.id.imageView_icon)
@@ -397,6 +512,25 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         ImageView optionImage;
 
         public FinishedViewHolder(View itemView) {
+            super(itemView);
+
+            ButterKnife.bind(this, itemView);
+        }
+    }
+
+
+    class FailedViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.imageView_icon)
+        ImageView iconImage;
+
+        @Bind(R.id.textView_name)
+        TextView nameText;
+
+        @Bind(R.id.textView_info)
+        TextView infoText;
+
+        public FailedViewHolder(View itemView) {
             super(itemView);
 
             ButterKnife.bind(this, itemView);

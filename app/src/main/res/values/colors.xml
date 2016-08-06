@@ -36,6 +36,7 @@
     <color name="loading_indicator">@color/fbtn</color>
 
     <color name="transfer_waiting">#BDBDBD</color>
+    <color name="transfer_failed">@android:color/holo_red_light</color>
 
     <color name="share_text">#616161</color>
 
