@@ -1,8 +1,10 @@
 package com.bbbbiu.biu.gui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 
@@ -86,17 +89,18 @@ public class ShareActivity extends Activity {
         if (action.equals(Intent.ACTION_SEND)) {
             if (type.equals("text/plain")) {
                 String text = intent.getStringExtra(Intent.EXTRA_TEXT);
-                String uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
+                Uri streamUri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
 
-                if (uri == null && text != null) {
-                    uri = StorageUtil.storeTextToSend(this, text);
+                if (streamUri != null) {
+                    filesToSend.add(streamUri.toString());
 
+                } else if (text != null) { // streamUri is null
+                    String uri = StorageUtil.storeTextToSend(this, text);
                     Log.i(TAG, "Write plain text to file. " + uri);
-                }
 
-                if (uri != null) {
                     filesToSend.add(uri);
                 }
+
 
             } else {
                 Uri uri = intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -142,6 +146,27 @@ public class ShareActivity extends Activity {
         return false;
     }
 
+
+    /**
+     * 检查VPN连接，并发送
+     */
+    private void prepareSending(final int resId) {
+        if (NetworkUtil.isVpnEnabled()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.hint_connect_vpn_title_close))
+                    .setMessage(getString(R.string.hint_connect_vpn_close))
+                    .setPositiveButton(getString(R.string.hint_connect_vpn_button_close), null)
+                    .setNegativeButton(getString(R.string.hint_connect_vpn_button_ignore), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            sendFile(resId);
+                        }
+                    })
+                    .show();
+        } else {
+            sendFile(resId);
+        }
+    }
 
     /**
      * 发送文件
@@ -209,7 +234,7 @@ public class ShareActivity extends Activity {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    sendFile(item.drawableId);
+                    prepareSending(item.drawableId);
                 }
             });
 

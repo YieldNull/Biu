@@ -5,7 +5,9 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
+import java.util.Collections;
 
 public class NetworkUtil {
     private static final String TAG = NetworkUtil.class.getSimpleName();
@@ -35,5 +37,24 @@ public class NetworkUtil {
             Log.w(TAG, e.toString());
             return null;
         }
+    }
+
+
+    /**
+     * 检查是否连接了VPN
+     *
+     * @return 是否连接了VPN
+     */
+    public static boolean isVpnEnabled() {
+        try {
+            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (networkInterface.isUp() && networkInterface.getName().startsWith("tun")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return false;
     }
 }

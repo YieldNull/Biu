@@ -1,8 +1,10 @@
 package com.bbbbiu.biu.gui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +17,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -27,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
+    private static final String ACTION_RECEIVE_ANDROID = "Android";
+    private static final String ACTION_RECEIVE_COMPUTER = "Computer";
+    private static final String ACTION_RECEIVE_APPLE = "Apple";
+
 
     @Bind(R.id.float_action_menu_main)
     FloatingActionMenu mActionMenu;
@@ -36,22 +43,19 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.fbtn_receive_computer)
     void receiveComputer() {
-        mActionMenu.toggle(false);
-
-        ConnectingActivity.connectForReceiving(this);
+        prepareReceiving(ACTION_RECEIVE_COMPUTER);
     }
 
     @OnClick(R.id.fbtn_receive_ios)
     void receiveApple() {
-        mActionMenu.toggle(false);
-        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(this);
+        prepareReceiving(ACTION_RECEIVE_APPLE);
     }
 
     @OnClick(R.id.fbtn_receive_android)
     void receiveAndroid() {
-        mActionMenu.toggle(false);
-        ReceivingActivity.startConnection(this);
+        prepareReceiving(ACTION_RECEIVE_ANDROID);
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,5 +111,52 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+
+    /**
+     * 检查是否开了VPN
+     *
+     * @param action 从谁接受
+     */
+    private void prepareReceiving(final String action) {
+        mActionMenu.toggle(false);
+
+        if (NetworkUtil.isVpnEnabled()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.hint_connect_vpn_title_close))
+                    .setMessage(getString(R.string.hint_connect_vpn_close))
+                    .setPositiveButton(getString(R.string.hint_connect_vpn_button_close), null)
+                    .setNegativeButton(getString(R.string.hint_connect_vpn_button_ignore), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            receiveFile(action);
+                        }
+                    })
+                    .show();
+        } else {
+            receiveFile(action);
+        }
+    }
+
+    /**
+     * 接受文件
+     *
+     * @param action 从谁接受
+     */
+    private void receiveFile(String action) {
+        switch (action) {
+            case ACTION_RECEIVE_ANDROID:
+                ReceivingActivity.startConnection(this);
+                break;
+            case ACTION_RECEIVE_APPLE:
+                com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(this);
+                break;
+            case ACTION_RECEIVE_COMPUTER:
+                ConnectingActivity.connectForReceiving(this);
+                break;
+            default:
+                break;
+        }
     }
 }

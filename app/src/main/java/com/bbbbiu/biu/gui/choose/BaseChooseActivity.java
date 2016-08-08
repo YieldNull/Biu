@@ -28,6 +28,7 @@ import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
@@ -91,17 +92,17 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
     @OnClick(R.id.fbtn_send_android)
     protected void clickSendAndroid() {
-        sendFile(ACTION_SEND_ANDROID);
+        prepareSending(ACTION_SEND_ANDROID);
     }
 
     @OnClick(R.id.fbtn_send_apple)
     protected void clickSendApple() {
-        sendFile(ACTION_SEND_APPLE);
+        prepareSending(ACTION_SEND_APPLE);
     }
 
     @OnClick(R.id.fbtn_send_computer)
     protected void clickSendComputer() {
-        sendFile(ACTION_SEND_COMPUTER);
+        prepareSending(ACTION_SEND_COMPUTER);
     }
 
 
@@ -486,9 +487,33 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
      *
      * @param action 发送给谁
      */
-    private void sendFile(String action) {
+    private void prepareSending(final String action) {
         mFloatingActionMenu.toggle(false);
 
+        if (NetworkUtil.isVpnEnabled()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.hint_connect_vpn_title_close))
+                    .setMessage(getString(R.string.hint_connect_vpn_close))
+                    .setPositiveButton(getString(R.string.hint_connect_vpn_button_close), null)
+                    .setNegativeButton(getString(R.string.hint_connect_vpn_button_ignore), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            sendFile(action);
+                        }
+                    })
+                    .show();
+        } else {
+            sendFile(action);
+        }
+    }
+
+
+    /**
+     * 发送文件
+     *
+     * @param action 发送给谁
+     */
+    private void sendFile(String action) {
         Set<String> files = mContentAdapter.getChosenFiles();
         PreferenceUtil.storeFilesToSend(this, files);
 

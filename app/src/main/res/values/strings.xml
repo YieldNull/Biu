@@ -75,6 +75,7 @@
     <string name="header_transfer_working">正在传输</string>
     <string name="header_transfer_waiting">正在等待</string>
     <string name="header_transfer_finished">已完成</string>
+    <string name="header_transfer_failed">传输失败</string>
     <string name="header_folder">文件夹</string>
     <string name="header_file">文件</string>
 
@@ -139,5 +140,9 @@
 
     <string name="hint_connect_manifest_resend_title">重试发送</string>
     <string name="hint_connect_manifest_resend_confirm">发送文件清单失败，是否重新发送清单？</string>
-    <string name="header_transfer_failed">传输失败</string>
+
+    <string name="hint_connect_vpn_title_close">关闭VPN连接</string>
+    <string name="hint_connect_vpn_close">检测到您已连接VPN，使用VPN可能会导致传输失败，请先关闭VPN</string>
+    <string name="hint_connect_vpn_button_close">去关闭</string>
+    <string name="hint_connect_vpn_button_ignore">忽略</string>
 </resources>
