@@ -102,9 +102,10 @@ public class ConnectingActivity extends AppCompatActivity {
             UploadServlet.register(this);
         } else {
             DownloadServlet.register(this);
-            FileIconServlet.register(this);
             FileServlet.register(this);
         }
+
+        FileIconServlet.register(this);
     }
 
 

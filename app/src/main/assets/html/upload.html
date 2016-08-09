@@ -1,36 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html class="">
 <head>
-    <meta charset="utf-8"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
 
     <title>Biu文件快传</title>
-    <link rel="stylesheet" type="text/css" href="/static/css/normalize.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/base.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/webuploader.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-material.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/upload.css">
 
 </head>
 
 <body>
-<div class="mobile">
-    <div class="header">
-        <a style=" color:#fff; ">上传</a>
-    </div>
-    <div id="uploader" class="wu-example open">
+<div class="header">
+    <div style="text-align:center;color:#fff;font-size: 1.5em; font-weight: bold; ">发送文件</div>
+</div>
+<div class="container-fluid">
+    <div class="col-lg-6 col-lg-offset-3 col-md-8 col-md-offset-2 col-sm-12" id="uploader">
         <div class="queueList">
+            <div class="uploader-list" id="filelist">
 
-            <div id="filelist" class="uploader-list"></div>
+            </div>
+
             <div class="btns">
-                <div id="picker">选择文件
-                    <form action="/upload" name="theForm" id="theForm" enctype="multipart/form-data"
-                          method="post">
-                        <input class="webuploader-element-invisible"
-                               name="upfile" id="fileUpload" accept="*/*"
-                               type="file" multiple="multiple"/>
-                    </form>
+                <div class="webuploader-container" id="picker">
+                    <div>选择文件
+                        <form action="/upload" name="theForm" id="theForm"
+                              enctype="multipart/form-data"
+                              method="post">
+                            <input class="webuploader-element-invisible" name="upfile"
+                                   id="fileUpload" accept="*/*"
+                                   multiple="multiple" type="file">
+                        </form>
+                    </div>
+
                 </div>
             </div>
 
@@ -42,80 +50,97 @@
 <script type="text/javascript" src="/static/js/webuploader.js"></script>
 
 <script>
-    var fileUriQueue=[];
+    var fileUriQueue = [];
 
     var uploader = WebUploader.create({
-            // swf文件路径
-            swf:  '/static/js/Uploader.swf',
+        // swf文件路径
+        swf: '/static/js/Uploader.swf',
 
-            // 文件接收服务端。
-            server: '/upload',
+        // 文件接收服务端。
+        server: '/upload',
 
-            threads: 1,
+        threads: 1,
 
-            // 选择文件的按钮。可选。
-            // 内部根据当前运行是创建，可能是input元素，也可能是flash.
-            pick: '#picker',
+        // 选择文件的按钮。可选。
+        // 内部根据当前运行是创建，可能是input元素，也可能是flash.
+        pick: '#picker',
 
-            auto : false,
+        auto: false,
 
-            // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
-            resize: false
-        });
+        // 不压缩image, 默认如果是jpeg，文件上传前会压缩一把再上传！
+        resize: false
+    });
 
-        var $list =  $("#filelist");
+    var $list = $("#filelist");
 
-        // 当有文件被添加进队列的时候
-        uploader.on( 'fileQueued', function( file ) {
-              $list.append( '<div id="' + file.id + '" class="item">' +
-                   '<h4 class="info">' + file.name + '</h4>' +
-                   '<p class="state">等待上传...</p>' +
-                '</div>' );
-        });
-
-        uploader.on( 'filesQueued' , function( fileArr ) {
-              sendManifest(fileArr);
-        });
-
-
-        // 文件上传过程中创建进度条实时显示。
-        uploader.on( 'uploadProgress', function( file, percentage ) {
-             var $li = $( '#'+file.id ),
-        $percent = $li.find('.progress .progress-bar');
-
-        // 避免重复创建
-        if ( !$percent.length ) {
-            $percent = $('<div class="progress progress-striped active">' +
-                '<div class="progress-bar" role="progressbar" style="width: 0%">' +
+    // 当有文件被添加进队列的时候
+    uploader.on('fileQueued', function (file) {
+        var idArray = file.id.split("_");
+        var idChar = idArray[2];
+        var idInt = parseInt(idChar);
+        $list.append('<div class="panel panel-default" id=' + file.id + '>' +
+                '<div class="panel-body">' +
+                '<div class="row-picture"><img class="circle" src="/icon/' + file.name + '" alt="icon"></div>' +
+                '<div class="row-content"><h5 class="list-group-item-heading filename">' +
+                file.name + '</h5>' +
+                '<div class="progress progress-striped active">' +
+                '<div class="progress-bar" style="width: 100%"></div>' +
                 '</div>' +
-            '</div>').appendTo( $li ).find('.progress-bar');
-        }
+                '<h5 class="upload-info">等待发送</h5>' +
+                '</div>' +
+                '</div>' +
+                '</div>'
+        );
 
-        $li.find('p.state').text('上传中');
+        $('#' + file.id).find('.progress').hide();
 
-        $percent.css( 'width', percentage * 100 + '%' );
-        });
+    });
 
-        uploader.on( 'uploadSuccess', function( file ) {
-            uploader.options.formData={'fileUri':fileUriQueue.shift()}
-            $( '#'+file.id ).find('p.state').text('已上传');
-        });
+    uploader.on('filesQueued', function (fileArr) {
+        sendManifest(fileArr);
+    });
 
-        uploader.on( 'uploadError', function( file ) {
-            $( '#'+file.id ).find('p.state').text('上传出错');
-        });
 
-        uploader.on( 'uploadComplete', function( file ) {
-               $( '#'+file.id ).find('.progress').fadeOut();
+    // 文件上传过程中创建进度条实时显示。
+    uploader.on('uploadProgress', function (file, percentage) {
+        var $li = $('#' + file.id);
+        var $percent = $li.find('.progress-bar');
+
+        $('#' + file.id).find('.progress').show();
+        $('#' + file.id).find('h5.upload-info').text('');
+
+        $percent.css('width', percentage * 100 + '%');
+    });
+
+    uploader.on('uploadSuccess', function (file) {
+        uploader.options.formData = {'fileUri': fileUriQueue.shift()};
+        $('#' + file.id).find('h5.upload-info').text('已发送');
+        $('#' + file.id).find('.progress').hide();
+    });
+
+    uploader.on('uploadError', function (file) {
+        $('#' + file.id).find('h5.upload-info').text('发送出错');
+
+        $('#' + file.id).find('h5.upload-info').addClass('upload-error');
+        $('#' + file.id).find('h5.filename').addClass('upload-error');
+
+    });
+
+    uploader.on('uploadComplete', function (file) {
+        $('#' + file.id).find('.progress').hide();
     });
 
     function sendManifest(fileArr) {
         if (fileArr.length == 0) {
-            alert("请先选择文件");
+            if ($list.length > 0) {
+                alert("文件已选择");
+            } else {
+                alert("请先选择文件");
+            }
             return;
         }
 
-        var manifest=[];
+        var manifest = [];
         var time;
         for (var i = 0; i < fileArr.length; i++) {
             time = new Date().getTime();
@@ -123,14 +148,14 @@
             var file = fileArr[i];
             var info = {};
             info['size'] = file.size;
-            info['name'] = file.name;   // TODO 处理同名文件
+            info['name'] = file.name;
             info['uri'] = time + "/" + file.name; // "timestamp/filename"
 
             while (time == new Date().getTime()) {
 
             }
 
-            fileUriQueue.push(info['uri'])
+            fileUriQueue.push(info['uri']);
             manifest.push(info);
         }
 
@@ -143,16 +168,14 @@
         var json = JSON.stringify(manifest);
 
         xhr.onloadend = function () {
-            uploader.options.formData={'fileUri':fileUriQueue.shift()};
+            uploader.options.formData = {'fileUri': fileUriQueue.shift()};
             uploader.upload();
         };
 
         xhr.send(json);
     }
-
-
 </script>
+
 
 </body>
 </html>
-

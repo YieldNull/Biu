@@ -1,0 +1,130 @@
+.header {
+    width: 100%;
+    position: relative;
+    background: #00bb9c;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 60px;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background-color: #fff;
+}
+
+body, html {
+    height: 100%;
+}
+
+.container-fluid {
+    height: 84%;
+}
+
+#uploader {
+    height: 100%;
+}
+
+#uploader .queueList {
+    overflow-y: auto;
+    height: 100%;
+    margin-top: 4%;
+    margin-bottom: 4%;
+    border: 3px dashed #e6e6e6;
+    font-size: 18px;
+
+}
+
+.uploader-list {
+    padding-top: 10px;
+}
+
+.btns {
+    text-align: center;
+    margin: 10%;
+    height: 0;
+}
+
+.webuploader-pick {
+    padding: 6px 10px;
+}
+
+.webuploader-container {
+    position: relative;
+}
+
+.webuploader-element-invisible {
+    position: absolute !important;
+    clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+    clip: rect(1px, 1px, 1px, 1px);
+}
+
+.webuploader-pick {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    background: #00b7ee;
+    /* background: #16a085; */
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.webuploader-pick-hover {
+    background: #00a2d4;
+}
+
+.webuploader-pick-disable {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.panel {
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 16px;
+
+    padding: 0;
+}
+
+.panel-body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+
+.progress {
+    margin-bottom: 0;
+    margin-top: 10px;
+}
+
+.container-fluid {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.filename {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-x: hidden;
+}
+
+.row-picture, .row-content {
+    display: inline-block;
+}
+
+.row-content {
+    width: -webkit-calc(100% - 68px);
+    width: calc(100% - 68px);
+
+    vertical-align: middle;
+
+    margin-left: 10px;
+}
+
+.upload-info {
+    margin: 0;
+}
+
+.upload-error {
+    color: red;
+}
