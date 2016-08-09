@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.widget.Toast;
 
+import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.HttpConstants;
@@ -14,6 +16,10 @@ import com.bbbbiu.biu.service.PollingService;
 
 import java.util.ArrayList;
 
+
+/**
+ * 通过轮训服务，下载文件，若轮询失败，则报错。
+ */
 public class DownloadActivity extends TransferBaseActivity {
 
     private static final String EXTRA_UID = "com.bbbbiu.biu.gui.transfer.computer.DownloadActivity.extra.UID";
@@ -39,7 +45,8 @@ public class DownloadActivity extends TransferBaseActivity {
                     addTask(fileItems);
                 }
             } else {
-                // 连不上啊
+                // 轮训失败，多次server  error
+                Toast.makeText(DownloadActivity.this, R.string.hint_connect_server_error, Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -52,6 +59,8 @@ public class DownloadActivity extends TransferBaseActivity {
 
         mUid = getIntent().getStringExtra(EXTRA_UID);
         PollingService.startPolling(this, mUid, mPollingResultReceiver);
+
+        updateLoadingText(getString(R.string.hint_connect_waiting_upload));
     }
 
     @Override

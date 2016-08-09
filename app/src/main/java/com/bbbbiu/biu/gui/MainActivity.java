@@ -124,10 +124,10 @@ public class MainActivity extends AppCompatActivity {
 
         if (NetworkUtil.isVpnEnabled()) {
             new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.hint_connect_vpn_title_close))
-                    .setMessage(getString(R.string.hint_connect_vpn_close))
-                    .setPositiveButton(getString(R.string.hint_connect_vpn_button_close), null)
-                    .setNegativeButton(getString(R.string.hint_connect_vpn_button_ignore), new DialogInterface.OnClickListener() {
+                    .setTitle(getString(R.string.dialog_vpn_title))
+                    .setMessage(getString(R.string.dialog_vpn_message))
+                    .setPositiveButton(getString(R.string.dialog_vpn_button_close), null)
+                    .setNegativeButton(getString(R.string.dialog_vpn_button_ignore), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             receiveFile(action);

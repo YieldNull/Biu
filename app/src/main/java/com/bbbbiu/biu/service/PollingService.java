@@ -233,7 +233,7 @@ public class PollingService extends Service {
                 response = HttpManager.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
-                Log.w(TAG, "Get file list failed. HTTP error.", e);
+                Log.w(TAG, "Get file list failed. HTTP error." + e.getMessage());
                 return null;
             }
 

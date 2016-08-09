@@ -1,6 +1,8 @@
 package com.bbbbiu.biu.util;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
@@ -56,5 +58,19 @@ public class NetworkUtil {
         }
 
         return false;
+    }
+
+    /**
+     * 检查设备是否联网
+     *
+     * @param context context
+     * @return 是否联网
+     */
+    public static boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo info = cm.getActiveNetworkInfo();
+
+        return !(info == null || !info.isConnected());
     }
 }

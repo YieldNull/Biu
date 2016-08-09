@@ -5,19 +5,26 @@ import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+
+/**
+ * 连接PC方式提示页面。若选择经由公网传输文件，则要检查设备有没有联网
+ */
 public class ConnectingActivity extends AppCompatActivity {
     private static final String TAG = ConnectingActivity.class.getSimpleName();
 
@@ -42,10 +49,12 @@ public class ConnectingActivity extends AppCompatActivity {
 
     @OnClick(R.id.linearLayout_computer_scan)
     void scanQRCode() {
-        if (mAction.equals(ACTION_RECEIVE)) {
-            QRCodeScanActivity.scanForDownload(this);
-        } else {
-            QRCodeScanActivity.scanForUpload(this);
+        if (isOnline()) {
+            if (mAction.equals(ACTION_RECEIVE)) {
+                QRCodeScanActivity.scanForDownload(this);
+            } else {
+                QRCodeScanActivity.scanForUpload(this);
+            }
         }
     }
 
@@ -90,6 +99,7 @@ public class ConnectingActivity extends AppCompatActivity {
 
         mScanQRCodeTextView.setPaintFlags(mScanQRCodeTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         mJumpTextView.setPaintFlags(mJumpTextView.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
     }
 
     @Override
@@ -99,5 +109,29 @@ public class ConnectingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    /**
+     * 查看设备是否联网
+     *
+     * @return 是否联网
+     */
+    private boolean isOnline() {
+        Log.i(TAG, "Checking if the device can access internet");
+        if (!NetworkUtil.isOnline(this)) {
+            Log.i(TAG, "Device is offline");
+
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.dialog_offline_title))
+                    .setMessage(getString(R.string.dialog_offline_message))
+                    .setPositiveButton(android.R.string.ok, null).create()
+                    .show();
+
+            return false;
+        }
+
+        Log.i(TAG, "Device is online");
+        return true;
     }
 }

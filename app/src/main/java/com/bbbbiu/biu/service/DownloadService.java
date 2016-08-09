@@ -238,6 +238,8 @@ public class DownloadService extends Service {
 
             } catch (IOException e) {
                 Log.w(TAG, "Store file failed", e);
+
+                return false;
             }
         } finally {
             if (body != null) {

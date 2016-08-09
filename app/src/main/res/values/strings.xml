@@ -80,7 +80,6 @@
     <string name="header_file">文件</string>
 
 
-    <string name="hint_net_server_error">服务器无响应，请稍后再试</string>
     <string name="hint_choose_file_required">请先选择文件</string>
 
     <string name="hint_file_delete_dismissed">删除已取消</string>
@@ -123,26 +122,34 @@
     <string name="list_share_computer">发送给电脑</string>
     <string name="list_share_apple">发送给IPhone</string>
 
+    <string name="hint_connect_aborted">传输已取消</string>
+
     <string name="hint_connect_ap_opening">正在开启WIFI热点</string>
     <string name="hint_connect_ap_opened">WIFI热点已开启,等待对方连接</string>
     <string name="hint_connect_ap_create_failed">开启Wifi热点失败，请换用其它方式接收文件</string>
 
     <string name="hint_connect_mobile_disabled">为保护流量，已暂时关闭数据网络</string>
     <string name="hint_connect_mobile_close_manually">请手动关闭数据流量</string>
-    <string name="hint_connect_sending_manifest">连接成功，正在发送文件清单</string>
 
-    <string name="hint_connect_aborted">传输已取消</string>
     <string name="hint_connect_wifi_conn_manually">等待手动连接WIFI-\"bbbbiu.com\"</string>
+    <string name="hint_connect_sending_manifest">连接成功，正在发送文件清单</string>
     <string name="hint_connect_scanning_wifi">正在扫描WIFI列表</string>
+    <string name="hint_connect_waiting_upload">正在等待对方上传文件到服务器</string>
 
-    <string name="hint_connect_wifi_manually_title">连接WIFI</string>
-    <string name="hint_connect_wifi_manually_confirm">未检测到对方WIFI热点，请手动连接WIFI-\"bbbbiu.com\"</string>
+    <string name="hint_connect_server_error">无法连接服务器，请稍后再试</string>
+    <string name="hint_connect_device_offline">无法连接互联网，请检查网络设置</string>
 
-    <string name="hint_connect_manifest_resend_title">重试发送</string>
-    <string name="hint_connect_manifest_resend_confirm">发送文件清单失败，是否重新发送清单？</string>
+    <string name="dialog_wifi_manually_title">连接WIFI</string>
+    <string name="dialog_wifi_manually_message">未检测到对方WIFI热点，请手动连接WIFI-\"bbbbiu.com\"</string>
 
-    <string name="hint_connect_vpn_title_close">关闭VPN连接</string>
-    <string name="hint_connect_vpn_close">检测到您已连接VPN，使用VPN可能会导致传输失败，请先关闭VPN</string>
-    <string name="hint_connect_vpn_button_close">去关闭</string>
-    <string name="hint_connect_vpn_button_ignore">忽略</string>
+    <string name="dialog_manifest_resend_title">重试发送</string>
+    <string name="dialog_manifest_resend_message">发送文件清单失败，是否重新发送清单？</string>
+
+    <string name="dialog_vpn_title">关闭VPN连接</string>
+    <string name="dialog_vpn_message">检测到您已连接VPN，使用VPN可能会导致传输失败，请先关闭VPN</string>
+    <string name="dialog_vpn_button_close">去关闭</string>
+    <string name="dialog_vpn_button_ignore">忽略</string>
+
+    <string name="dialog_offline_title">打开网络连接</string>
+    <string name="dialog_offline_message">您的手机处于断网状态，请先打开网络连接，然后进行文件传输</string>
 </resources>

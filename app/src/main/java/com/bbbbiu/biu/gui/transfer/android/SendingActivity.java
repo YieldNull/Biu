@@ -369,8 +369,8 @@ public class SendingActivity extends TransferBaseActivity {
             Log.i(TAG, "Unregister wifi scan broadcast receiver");
 
             new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.hint_connect_wifi_manually_title))
-                    .setMessage(getString(R.string.hint_connect_wifi_manually_confirm))
+                    .setTitle(getString(R.string.dialog_wifi_manually_title))
+                    .setMessage(getString(R.string.dialog_wifi_manually_message))
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -456,8 +456,8 @@ public class SendingActivity extends TransferBaseActivity {
                         @Override
                         public void run() {
                             new AlertDialog.Builder(SendingActivity.this)
-                                    .setTitle(getString(R.string.hint_connect_manifest_resend_title))
-                                    .setMessage(getString(R.string.hint_connect_manifest_resend_confirm))
+                                    .setTitle(getString(R.string.dialog_manifest_resend_title))
+                                    .setMessage(getString(R.string.dialog_manifest_resend_message))
                                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 
                                         @Override

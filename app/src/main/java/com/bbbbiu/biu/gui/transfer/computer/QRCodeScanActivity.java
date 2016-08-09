@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.lib.HttpManager;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.google.zxing.Result;
 
@@ -24,6 +25,12 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
+ * 扫描二维码连接服务器。
+ * <p/>
+ * 根据扫描得到的uid，尝试连接服务器。
+ * <p/>
+ * 若连接成功，则跳转到相应的上传或下载页面。失败{@link #RETRY_THRESHOLD}次则报错。
+ * <p/>
  * Created by YieldNull at 3/22/16
  */
 
@@ -37,6 +44,12 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     private static final int MSG_ENTER_DOWNLOAD_ACTIVITY = 0;
     private static final int MSG_ENTER_UPLOAD_ACTIVITY = 1;
     private static final int MSG_SERVER_ERROR = 2;
+    private static final int MSG_DEVICE_OFFLINE = 3;
+
+    /**
+     * 连接服务器重试次数
+     */
+    private static final int RETRY_THRESHOLD = 10;
 
     private String mBindAction;
     private ZXingScannerView mScannerView;
@@ -91,8 +104,15 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
 
                     case MSG_SERVER_ERROR:
                         Log.i(TAG, "Server error. Stop retrying");
-                        Toast.makeText(QRCodeScanActivity.this, R.string.hint_net_server_error, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(QRCodeScanActivity.this, R.string.hint_connect_server_error, Toast.LENGTH_LONG).show();
                         finish();
+                        break;
+                    case MSG_DEVICE_OFFLINE:
+                        Log.i(TAG, "Device is offline. Stop retrying");
+                        Toast.makeText(QRCodeScanActivity.this, R.string.hint_connect_device_offline, Toast.LENGTH_LONG).show();
+                        finish();
+                        break;
+                    default:
                         break;
                 }
                 return false;
@@ -124,12 +144,16 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
         new Thread(new Runnable() {
             @Override
             public void run() {
-                bind();
+                tryBind();
             }
         }).start();
     }
 
-    private void bind() {
+
+    /**
+     * 尝试连接服务器，重试一定次数之后就报错
+     */
+    private void tryBind() {
         Log.i(TAG, "Try to bind server");
 
         int retry = 0;
@@ -143,13 +167,24 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
 
             Log.i(TAG, "Retry binding server");
 
-            if (retry > 10) {
-                mHandler.sendEmptyMessage(MSG_SERVER_ERROR);
+            if (retry > RETRY_THRESHOLD) {
+
+                if (NetworkUtil.isOnline(QRCodeScanActivity.this)) {
+                    mHandler.sendEmptyMessage(MSG_SERVER_ERROR);
+                } else {
+                    mHandler.sendEmptyMessage(MSG_DEVICE_OFFLINE);
+                }
                 break;
             }
         }
     }
 
+
+    /**
+     * 连接服务器
+     *
+     * @return 是否连接成功
+     */
     private boolean bindServer() {
         String url;
         if (mBindAction.equals(ACTION_DOWNLOAD)) {
@@ -168,7 +203,7 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
                 response = HttpManager.newHttpClient().newCall(request).execute();
                 body = response.body();
             } catch (IOException e) {
-                Log.i(TAG, "Bind server failed. HTTP error " + e.toString());
+                Log.i(TAG, "Bind server failed. HTTP error " + e.getMessage());
                 return false;
             }
 
