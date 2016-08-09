@@ -239,6 +239,9 @@ public class DownloadService extends Service {
             } catch (IOException e) {
                 Log.w(TAG, "Store file failed", e);
 
+                //noinspection ResultOfMethodCallIgnored
+                destFile.delete();
+
                 return false;
             }
         } finally {
