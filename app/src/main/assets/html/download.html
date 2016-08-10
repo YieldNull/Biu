@@ -1,35 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html class="">
 <head>
-    <meta charset="utf-8"/>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
     <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+          content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
 
     <title>Biu文件快传</title>
-
-    <link rel="stylesheet" type="text/css" href="/static/css/normalize.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/base.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/css/download.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-material.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/basic.css">
 
 </head>
 
 <body>
 <div class="header">
-    <a style=" color:#fff; ">下载</a>
+    <div style="text-align:center;color:#fff;font-size: 1.5em; font-weight: bold; ">点击下载</div>
 </div>
 
-<div class="filelist">
-    {{#files }}
-    <div class="downItem" onclick="download({{hashCode}})">
-        <div class="ordername">
-            <div class="fileImg" style="background: url('/icon/{{name}}') no-repeat 0 0px;"></div>
-            <div class="filename">{{name}}</div>
-            <div class="size">{{readableSize}}</div>
+<div class="container-fluid">
+    <div class="col-lg-6 col-lg-offset-3 col-md-8 col-md-offset-2 col-sm-12" id="uploader">
+        <div class="queueList">
+            <div class="uploader-list" id="filelist">
+                {{#files }}
+                <div class="panel panel-default" onclick="download({{hashCode}})">
+                    <div class="panel-body">
+                        <div class="row-picture"><img class="circle" src="/icon/{{name}}"
+                                                      alt="icon"></div>
+                        <div class="row-content">
+                            <h5 class="list-group-item-heading filename">{{name}}</h5>
+                            <h5 class="upload-info">{{readableSize}}</h5>
+                        </div>
+                    </div>
+                </div>
+                {{/files}}
+            </div>
         </div>
+        >
     </div>
-    {{/files}}
 </div>
 
 <script>
