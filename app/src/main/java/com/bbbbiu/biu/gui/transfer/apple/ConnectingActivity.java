@@ -5,9 +5,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -15,8 +19,11 @@ import android.view.Display;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.gui.transfer.OpenApThread;
+import com.bbbbiu.biu.lib.HttpConstants;
 import com.bbbbiu.biu.lib.WifiApManager;
 import com.bbbbiu.biu.lib.servlet.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
@@ -24,6 +31,7 @@ import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
 import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
 import com.bbbbiu.biu.lib.servlet.apple.UploadServlet;
 import com.bbbbiu.biu.service.HttpdService;
+import com.bbbbiu.biu.util.NetworkUtil;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
@@ -39,8 +47,6 @@ public class ConnectingActivity extends AppCompatActivity {
 
     private static final String ACTION_SENDING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
     private static final String ACTION_RECEIVING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
-
-    private static final String HOME_URL = "http://192.168.43.1:5050";
 
 
     public static void connectForSending(Context context) {
@@ -59,7 +65,18 @@ public class ConnectingActivity extends AppCompatActivity {
     ImageView mQRCodeImage;
 
 
+    private WifiManager mWifiManager;
     private WifiApManager mApManager;
+
+
+    private boolean mIsWifiOpened;
+    private boolean mIsMobileOpened;
+
+
+    /**
+     * 等待WIFI打开
+     */
+    private Thread mApThread;
 
 
     @Override
@@ -81,17 +98,51 @@ public class ConnectingActivity extends AppCompatActivity {
             tintManager.setStatusBarTintColor(getResources().getColor(R.color.colorPrimary));
         }
 
+        ConnectivityManager mConnManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         mApManager = new WifiApManager(this);
 
-        new Handler().postDelayed(new Runnable() {
+
+        mIsWifiOpened = mWifiManager.isWifiEnabled();
+
+
+        // 检测数据流量是否打开，好像有点测不准2333
+        NetworkInfo mobileInfo = mConnManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        String reason = mobileInfo.getReason();
+        boolean mobileDisabled = mobileInfo.getState() == NetworkInfo.State.DISCONNECTED
+                && (reason == null || reason.equals("specificDisabled"));
+        mIsMobileOpened = !mobileDisabled;
+
+        Log.i(TAG, "Is WIFI opened? " + mIsWifiOpened);
+        Log.i(TAG, "Is Mobile opened? " + mIsMobileOpened);
+
+
+        Handler mHandler = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                if (msg.what == OpenApThread.MSG_FAILED) {
+                    Toast.makeText(ConnectingActivity.this, R.string.hint_connect_ap_create_failed,
+                            Toast.LENGTH_LONG).show();
+
+                }
+                return false;
+            }
+        });
+
+        mApThread = new OpenApThread(this, mHandler, mIsMobileOpened);
+
+
+        // 提交 AP Thread，关数据流量，开启WIFI AP, 知道成功打开AP 为止
+        mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mApManager.createAp();
+                Log.i(TAG, "Creating Wifi AP");
+                mApThread.start();
             }
         }, 1000);
 
 
-        mQRCodeImage.setImageBitmap(genQRCode(HOME_URL));
+        mQRCodeImage.setImageBitmap(genQRCode(HttpConstants.Apple.HOME_URL));
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
@@ -111,8 +162,28 @@ public class ConnectingActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        mApManager.closeAp();
         HttpdService.stopService(this);
+
+        // wifi 没有开启成功，一直在循环等待
+        if (mApThread.isAlive()) {
+            Log.i(TAG, "Wifi AP was created but has not started. Interrupt ap thread");
+            mApThread.interrupt();
+        }
+
+        Log.i(TAG, "Closing Wifi AP if it has been created");
+        mApManager.closeAp();
+
+
+        if (mIsMobileOpened) {
+            NetworkUtil.setMobileDataEnabled(this, true);
+            Log.i(TAG, "Restore mobile state. Opening it");
+        }
+
+        if (mIsWifiOpened) {
+            mWifiManager.setWifiEnabled(true);
+
+            Log.i(TAG, "Restore wifi state. Opening it");
+        }
 
         super.onDestroy();
     }
@@ -132,13 +203,13 @@ public class ConnectingActivity extends AppCompatActivity {
      * @param url 二维码包含的URL信息
      * @return Bitmap
      */
+    @SuppressWarnings("SuspiciousNameCombination")
     private Bitmap genQRCode(String url) {
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         int width = (int) (size.x / 1.5);
-        int height = size.y;
 
         Bitmap bitmap = null;
         QRCodeWriter writer = new QRCodeWriter();

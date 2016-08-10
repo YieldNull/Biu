@@ -69,6 +69,7 @@ public class HttpConstants {
     public static class Apple {
         public static final String URL_UPLOAD = "/upload";
         public static final String URL_DOWNLOAD = "/download";
+        public static final String HOME_URL = "http://192.168.43.1:5050";
     }
 
 }

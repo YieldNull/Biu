@@ -9,22 +9,21 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.Gravity;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.transfer.FileItem;
+import com.bbbbiu.biu.gui.transfer.OpenApThread;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
 import com.bbbbiu.biu.lib.WifiApManager;
 import com.bbbbiu.biu.lib.servlet.ManifestServlet;
 import com.bbbbiu.biu.lib.servlet.android.ReceivingServlet;
 import com.bbbbiu.biu.service.HttpdService;
-import com.bbbbiu.biu.util.SizeUtil;
+import com.bbbbiu.biu.util.NetworkUtil;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -82,7 +81,6 @@ public class ReceivingActivity extends TransferBaseActivity {
 
     private WifiManager mWifiManager;
     private WifiApManager mApManager;
-    private ConnectivityManager mConnManager;
 
 
     private boolean mIsWifiOpened;
@@ -90,32 +88,16 @@ public class ReceivingActivity extends TransferBaseActivity {
 
 
     /**
-     * 主线程Handler
-     */
-    private Handler mHandler;
-
-    /**
      * 等待WIFI打开
      */
     private Thread mApThread;
 
 
-    /**
-     * 在 AP Thread 检查WIFI是否开启的时间间隔
-     */
-    private static final long AP_CHECK_INTERVAL = 1000;
-
-
-    /**
-     * 检查重试次数阈值，达到则放弃传输
-     */
-    private static final int AP_CHECK_RETRY_THRESHOLD = 15;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mConnManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        ConnectivityManager mConnManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
         mApManager = new WifiApManager(this);
 
@@ -134,90 +116,22 @@ public class ReceivingActivity extends TransferBaseActivity {
         Log.i(TAG, "Is Mobile opened? " + mIsMobileOpened);
 
 
-        mHandler = new Handler();
-
-        mApThread = new Thread(new Runnable() {
+        Handler mHandler = new Handler(new Handler.Callback() {
             @Override
-            public void run() {
-
-                if (mIsMobileOpened) {
-                    Log.i(TAG, "Turn off mobile data");
-
-
-                    // 尝试关闭数据流量
-                    if (!setMobileDataEnabled(false)) {
-
-                        // Android 5.0+ 关闭失败，请用户手动关闭
-                        Log.i(TAG, "Failed in closing mobile network");
-
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast toast = Toast.makeText(ReceivingActivity.this, R.string.hint_connect_mobile_close_manually,
-                                        Toast.LENGTH_LONG);
-                                toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                        0, (int) SizeUtil.convertDpToPixel(10));
-
-                                toast.show();
-                            }
-                        });
-
-                    } else {
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast toast = Toast.makeText(ReceivingActivity.this, R.string.hint_connect_mobile_disabled,
-                                        Toast.LENGTH_LONG);
-
-                                toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL,
-                                        0, (int) SizeUtil.convertDpToPixel(10));
-
-                                toast.show();
-                            }
-                        });
-                    }
+            public boolean handleMessage(Message msg) {
+                if (msg.what == OpenApThread.MSG_FAILED) { // AP开启失败
+                    Toast.makeText(ReceivingActivity.this, R.string.hint_connect_ap_create_failed,
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                } else { // AP 开启成功
+                    updateLoadingText(getString(R.string.hint_connect_ap_opened));
                 }
 
-
-                // 尝试创建WIFI AP， 失败则直接退出传输
-                if (!mApManager.createAp()) {
-                    openApFailed();
-                    return;
-                }
-
-
-                // 等待 WIFI AP成功开启，一段时间内没有成功开启则直接退出传输
-                int retryCount = 0;
-                while (mApManager.getWifiApState() != WifiApManager.WIFI_AP_STATE_ENABLED) {
-                    try {
-                        Log.i(TAG, "Wifi AP not started yet. Waiting...");
-                        Thread.sleep(AP_CHECK_INTERVAL);
-                    } catch (InterruptedException e) {
-                        Log.w(TAG, "Ap Thread interrupted. Quit thread");
-                        return;
-                    }
-
-                    retryCount++;
-
-                    if (retryCount >= AP_CHECK_RETRY_THRESHOLD) {
-                        openApFailed();
-                        return;
-                    }
-
-                    if (Thread.interrupted()) {
-                        return;
-                    }
-                }
-
-                Log.i(TAG, "Wifi AP started. Waiting for connection");
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateLoadingText(getString(R.string.hint_connect_ap_opened));
-                    }
-                });
+                return false;
             }
         });
+
+        mApThread = new OpenApThread(this, mHandler, mIsMobileOpened);
 
 
         // 提交 AP Thread，关数据流量，开启WIFI AP, 知道成功打开AP 为止
@@ -268,7 +182,7 @@ public class ReceivingActivity extends TransferBaseActivity {
 
 
         if (mIsMobileOpened) {
-            setMobileDataEnabled(true);
+            NetworkUtil.setMobileDataEnabled(this, true);
             Log.i(TAG, "Restore mobile state. Opening it");
         }
 
@@ -290,52 +204,5 @@ public class ReceivingActivity extends TransferBaseActivity {
     @Override
     protected void onTransferFinished() {
         HttpdService.stopService(this);
-    }
-
-
-    /**
-     * 开启WIFI 热点失败了，退出界面
-     */
-    private void openApFailed() {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(ReceivingActivity.this, R.string.hint_connect_ap_create_failed,
-                        Toast.LENGTH_LONG).show();
-
-                finish();
-            }
-        });
-    }
-
-
-    /**
-     * 开启或关闭数据流量，只对Android 4 有效
-     *
-     * @param enabled 是否开启
-     * @return 是否执行成功
-     */
-    boolean setMobileDataEnabled(boolean enabled) {
-        try {
-
-            final Class<?> conmanClass = Class.forName(mConnManager.getClass()
-                    .getName());
-            final Field iConnectivityManagerField = conmanClass
-                    .getDeclaredField("mService");
-            iConnectivityManagerField.setAccessible(true);
-            final Object iConnectivityManager = iConnectivityManagerField
-                    .get(mConnManager);
-            final Class<?> iConnectivityManagerClass = Class
-                    .forName(iConnectivityManager.getClass().getName());
-            final Method setMobileDataEnabledMethod = iConnectivityManagerClass
-                    .getDeclaredMethod("setMobileDataEnabled", Boolean.TYPE);
-            setMobileDataEnabledMethod.setAccessible(true);
-            setMobileDataEnabledMethod.invoke(iConnectivityManager, enabled);
-            return true;
-
-        } catch (Exception e) {
-            Log.w("Mobile Data", "error turning on/off data");
-            return false;
-        }
     }
 }

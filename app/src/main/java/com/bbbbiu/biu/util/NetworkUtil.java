@@ -6,6 +6,8 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
@@ -72,5 +74,37 @@ public class NetworkUtil {
         NetworkInfo info = cm.getActiveNetworkInfo();
 
         return !(info == null || !info.isConnected());
+    }
+
+    /**
+     * 开启或关闭数据流量，只对Android 4 有效
+     *
+     * @param enabled 是否开启
+     * @return 是否执行成功
+     */
+    public static boolean setMobileDataEnabled(Context context, boolean enabled) {
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        try {
+
+            final Class<?> conmanClass = Class.forName(manager.getClass()
+                    .getName());
+            final Field iConnectivityManagerField = conmanClass
+                    .getDeclaredField("mService");
+            iConnectivityManagerField.setAccessible(true);
+            final Object iConnectivityManager = iConnectivityManagerField
+                    .get(manager);
+            final Class<?> iConnectivityManagerClass = Class
+                    .forName(iConnectivityManager.getClass().getName());
+            final Method setMobileDataEnabledMethod = iConnectivityManagerClass
+                    .getDeclaredMethod("setMobileDataEnabled", Boolean.TYPE);
+            setMobileDataEnabledMethod.setAccessible(true);
+            setMobileDataEnabledMethod.invoke(iConnectivityManager, enabled);
+            return true;
+
+        } catch (Exception e) {
+            Log.w("Mobile Data", "error turning on/off data");
+            return false;
+        }
     }
 }
