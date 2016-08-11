@@ -14,9 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
- * HTTP服务器。
+ * HTTP服务器。单例，stop之后可再start
  * <p/>
  * RequestListener 监听TCP端口，等待请求到来
  * RequestManager 管理请求，每个请求开一个线程处理
@@ -101,7 +104,6 @@ public class HttpDaemon {
      */
     public HttpDaemon(int port) {
         sPort = port;
-        mRequestManager = new RequestManager();
     }
 
     public HttpDaemon() {
@@ -115,6 +117,8 @@ public class HttpDaemon {
      * @throws IOException 端口已被使用
      */
     public void start() throws IOException {
+        mRequestManager = new RequestManager();
+
         mServerSocket = new ServerSocket();
         mServerSocket.setReuseAddress(true);
 
@@ -238,6 +242,15 @@ public class HttpDaemon {
 
         private final List<RequestHandler> handlerList = Collections.synchronizedList(new ArrayList<RequestHandler>());
 
+        private int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
+
+        private ThreadPoolExecutor executor = new ThreadPoolExecutor(NUMBER_OF_CORES,
+                NUMBER_OF_CORES * 2,
+                1L,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>());
+
+
         void handleRequest(InputStream inputStream, Socket acceptSocket) {
             RequestHandler requestHandler = new RequestHandler(inputStream, acceptSocket);
             handlerList.add(requestHandler);
@@ -246,10 +259,7 @@ public class HttpDaemon {
             LOGGER.i(String.format("Request #%s comes from %s",
                     requestCount, acceptSocket.getInetAddress().getHostAddress()));
 
-            Thread thread = new Thread(requestHandler);
-            thread.setDaemon(true);
-            thread.setName("Handler #" + this.requestCount);
-            thread.start();
+            executor.execute(requestHandler);
         }
 
 
@@ -266,6 +276,8 @@ public class HttpDaemon {
             for (RequestHandler requestHandler : new ArrayList<>(handlerList)) {
                 requestHandler.close();
             }
+
+            executor.shutdown();
         }
     }
 
