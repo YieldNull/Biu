@@ -148,12 +148,14 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
 
     @Override
     public void onBackPressed() {
-        closeBottomPanel();
-
-        if (mDirStack.size() == 1) {
-            super.onBackPressed();
+        if (isBottomPanelOpened()) {
+            closeBottomPanel();
         } else {
-            onExitDir(null);
+            if (mDirStack.size() == 1) {
+                super.onBackPressed();
+            } else {
+                onExitDir(null);
+            }
         }
     }
 

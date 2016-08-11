@@ -64,7 +64,7 @@ public class ArchiveContentAdapter extends CommonSortedAdapter {
     }
 
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
         ArchiveViewHolder holder = (ArchiveViewHolder) hd;
         final FileItem item = (FileItem) getItemAt(position);
 
@@ -91,7 +91,10 @@ public class ArchiveContentAdapter extends CommonSortedAdapter {
             }
         });
 
-        holder.optionImage.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.optionImage.setOnTouchListener(new OnViewTouchListener(context));
+
+
+        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
     }
 
     class ArchiveViewHolder extends RecyclerView.ViewHolder {

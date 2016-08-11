@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
@@ -153,7 +154,7 @@ public class FileContentAdapter extends BaseContentAdapter {
 
     @SuppressLint("DefaultLocale")
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder h, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder h, int position) {
         int viewType = getItemViewType(position);
 
         // 判断Layout类型
@@ -165,7 +166,7 @@ public class FileContentAdapter extends BaseContentAdapter {
                 holder.headerText.setText(context.getString(R.string.header_file));
             }
         } else {
-            ItemViewHolder holder = (ItemViewHolder) h;
+            final ItemViewHolder holder = (ItemViewHolder) h;
             holder.setPosition(position);
 
             // 设置文件信息
@@ -211,15 +212,18 @@ public class FileContentAdapter extends BaseContentAdapter {
                 }
             });
 
+            holder.optionToggleImage.setOnTouchListener(new OnViewTouchListener(context));
+
+
             // 禁止选文件夹好了
             if (file.isFile()) {
                 holder.iconImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (isFileChosen(position)) {
-                            setFileChosen(position, false);
+                        if (isFileChosen(holder.getAdapterPosition())) {
+                            setFileChosen(holder.getAdapterPosition(), false);
                         } else {
-                            setFileChosen(position, true);
+                            setFileChosen(holder.getAdapterPosition(), true);
                         }
                     }
                 });
@@ -358,6 +362,8 @@ public class FileContentAdapter extends BaseContentAdapter {
             ButterKnife.bind(this, itemView);
 
             itemView.setOnClickListener(this);
+
+            itemView.setOnTouchListener(new OnViewTouchListener(context));
         }
 
         public void setPosition(int position) {

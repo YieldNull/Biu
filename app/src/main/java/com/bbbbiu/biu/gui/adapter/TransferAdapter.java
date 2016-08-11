@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.util.StorageUtil;
@@ -247,7 +248,6 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
      * 获取当前任务对象
      *
      * @return 当前任务
-     *
      */
     public FileItem getCurrentItem() {
         return mWorkingItem;
@@ -453,6 +453,8 @@ public class TransferAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         StorageUtil.openFile(context, uri, finalFileItem.name);
                     }
                 });
+
+                holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
             }
         }
     }

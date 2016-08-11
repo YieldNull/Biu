@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.db.TransferRecord;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.util.StorageUtil;
@@ -258,6 +259,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 return true;
             }
         });
+
+        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
+
+        holder.optionToggleImage.setOnTouchListener(new OnViewTouchListener(context));
 
         holder.optionToggleImage.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -75,7 +75,7 @@ public class MusicContentAdapter extends CommonSortedAdapter {
     }
 
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
         MusicViewHolder holder = (MusicViewHolder) hd;
 
         final MediaItem item = (MediaItem) getItemAt(position);
@@ -86,6 +86,7 @@ public class MusicContentAdapter extends CommonSortedAdapter {
 
         if (isItemChosen(position)) {
             holder.setItemStyleChosen();
+
         } else {
             holder.setItemStyleChoosing();
         }
@@ -96,14 +97,16 @@ public class MusicContentAdapter extends CommonSortedAdapter {
                 setItemChosen(item);
             }
         });
-
-        holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
         holder.optionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 notifyOptionToggleClicked(item.getFile());
             }
         });
+
+        holder.optionButton.setOnTouchListener(new OnViewTouchListener(context));
+
     }
 
     public class MusicViewHolder extends RecyclerView.ViewHolder {

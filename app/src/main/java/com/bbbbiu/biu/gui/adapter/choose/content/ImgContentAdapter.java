@@ -86,8 +86,9 @@ public class ImgContentAdapter extends CommonSortedAdapter {
         return new ImgViewHolder(inflater.inflate(R.layout.list_img_item, parent, false));
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
         ImgViewHolder holder = (ImgViewHolder) hd;
         final ModelItem item = getItemAt(position);
         mPicasso.load(item.getFile())

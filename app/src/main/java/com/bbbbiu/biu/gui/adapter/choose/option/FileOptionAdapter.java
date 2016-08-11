@@ -89,9 +89,9 @@ public class FileOptionAdapter extends BaseOptionAdapter {
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder hd, final int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder hd, int position) {
 
-        hd.itemView.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        hd.itemView.setOnTouchListener(new OnViewTouchListener(context));
 
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             OperationViewHolder holder = (OperationViewHolder) hd;
@@ -110,7 +110,7 @@ public class FileOptionAdapter extends BaseOptionAdapter {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            onOptionClicked(position);
+                            onOptionClicked(hd.getAdapterPosition());
                         }
                     }, 200);
                 }

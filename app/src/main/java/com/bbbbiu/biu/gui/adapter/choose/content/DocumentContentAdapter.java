@@ -67,7 +67,7 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
 
 
     @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
         DocumentViewHolder holder = (DocumentViewHolder) hd;
         final FileItem item = (FileItem) getItemAt(position);
 
@@ -86,14 +86,16 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
                 setItemChosen(item);
             }
         });
-
-        holder.optionButton.setOnTouchListener(OnViewTouchListener.getSingleton(context));
+        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
         holder.optionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 notifyOptionToggleClicked(item.getFile());
             }
         });
+
+        holder.optionButton.setOnTouchListener(new OnViewTouchListener(context));
+
     }
 
     class DocumentViewHolder extends RecyclerView.ViewHolder {

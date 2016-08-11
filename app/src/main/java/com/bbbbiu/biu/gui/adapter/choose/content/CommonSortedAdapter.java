@@ -1,7 +1,6 @@
 package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -156,7 +155,7 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder hd, final int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
         if (getItemViewType(position) == VIEW_TYPE_ITEM) {
             onBindItemViewHolder(hd, position);
         } else {

@@ -57,7 +57,7 @@ import butterknife.OnClick;
 public abstract class BaseChooseActivity extends AppCompatActivity implements
         OnChoosingListener, OptionPanelActionListener, OnLoadingDataListener {
 
-    private static final String TAG = FileChooseActivity.class.getSimpleName();
+    private static final String TAG = BaseChooseActivity.class.getSimpleName();
 
     private static final String ACTION_SEND_ANDROID = "Android";
     private static final String ACTION_SEND_COMPUTER = "Computer";
@@ -111,6 +111,8 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
      */
     private int mPreviousVisibleItem;
 
+
+    private boolean mBottomPanelOpened;
 
     protected BaseContentAdapter mContentAdapter;
     protected BaseOptionAdapter mPanelAdapter;
@@ -235,8 +237,8 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
 
-                Log.d(TAG, "PanelState pre:" + String.valueOf(previousState));
-                Log.d(TAG, "PanelState new:" + String.valueOf(newState));
+//                Log.d(TAG, "PanelState pre:" + String.valueOf(previousState));
+//                Log.d(TAG, "PanelState new:" + String.valueOf(newState));
 
                 if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING
                         && newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
@@ -595,6 +597,16 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
         refreshTitle();
     }
 
+
+    /**
+     * 划出菜单是否已打开
+     *
+     * @return 是否打开
+     */
+    protected boolean isBottomPanelOpened() {
+        return mBottomPanelOpened;
+    }
+
     /**
      * 关闭底部滑出菜单
      */
@@ -608,6 +620,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
      * 当底部滑出Panel关闭后，enable ContentRecyclerView
      */
     protected void onBottomPanelClose() {
+        mBottomPanelOpened = false;
         if (mContentRecyclerView != null) {
             mContentRecyclerView.setEnabled(true);
         }
@@ -625,6 +638,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
      * 否则 SlidingUpLayout的FadeOnClickListener会与RecyclerView相应的监听器冲突
      */
     protected void onBottomPanelOpen() {
+        mBottomPanelOpened = true;
         if (mContentRecyclerView != null) {
             mContentRecyclerView.setEnabled(false);
         }
