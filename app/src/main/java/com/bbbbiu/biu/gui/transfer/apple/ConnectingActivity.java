@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.gui.transfer.apple;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -41,12 +43,19 @@ import com.readystatesoftware.systembartint.SystemBarTintManager;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-
+/**
+ * 连接apple提示界面，开启httpd。
+ * <p/>
+ * 也是给apple发文件的界面，发文件不显示进度。因为用户要是重复下载两次呢？
+ * 用于发文件时，按返回键时要提醒用户。
+ */
 public class ConnectingActivity extends AppCompatActivity {
     private static final String TAG = ConnectingActivity.class.getSimpleName();
 
     private static final String ACTION_SENDING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.UPLOAD";
     private static final String ACTION_RECEIVING = "com.bbbbiu.biu.gui.transfer.apple.ConnectAppleActivity.action.DOWNLOAD";
+
+    private String action;
 
 
     public static void connectForSending(Context context) {
@@ -124,6 +133,9 @@ public class ConnectingActivity extends AppCompatActivity {
                     Toast.makeText(ConnectingActivity.this, R.string.hint_connect_ap_create_failed,
                             Toast.LENGTH_LONG).show();
 
+                }else{
+                    Toast.makeText(ConnectingActivity.this, R.string.hint_connect_ap_create_succeeded,
+                            Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -146,7 +158,7 @@ public class ConnectingActivity extends AppCompatActivity {
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
-        String action = getIntent().getAction();
+        action = getIntent().getAction();
 
         if (action.equals(ACTION_RECEIVING)) {
             ManifestServlet.register(this, false);
@@ -159,6 +171,24 @@ public class ConnectingActivity extends AppCompatActivity {
         FileIconServlet.register(this);
     }
 
+
+    @Override
+    public void onBackPressed() {
+        if (action.equals(ACTION_SENDING)) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.hint_transfer_abort_confirm))
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ConnectingActivity.super.onBackPressed();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        } else {
+            super.onBackPressed();
+        }
+    }
 
     @Override
     protected void onDestroy() {

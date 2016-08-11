@@ -127,6 +127,7 @@
     <string name="hint_connect_ap_opening">正在开启WIFI热点</string>
     <string name="hint_connect_ap_opened">WIFI热点已开启,等待对方连接</string>
     <string name="hint_connect_ap_create_failed">开启Wifi热点失败，请换用其它方式接收文件</string>
+    <string name="hint_connect_ap_create_succeeded">已成功开启Wifi热点</string>
 
     <string name="hint_connect_mobile_disabled">为保护流量，已暂时关闭数据网络</string>
     <string name="hint_connect_mobile_close_manually">请手动关闭数据流量</string>
