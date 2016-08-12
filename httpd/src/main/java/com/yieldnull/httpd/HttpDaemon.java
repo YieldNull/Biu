@@ -160,6 +160,10 @@ public class HttpDaemon {
 
         } catch (Exception e) {
             LOGGER.w("Could not stop all connections", e);
+        } finally {
+            mServerSocket = null;
+            mRequestManager = null;
+            mListenThread = null;
         }
     }
 

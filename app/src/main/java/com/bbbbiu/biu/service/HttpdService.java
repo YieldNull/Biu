@@ -56,10 +56,15 @@ public class HttpdService extends Service {
             final String action = intent.getAction();
             switch (action) {
                 case ACTION_START:
-                    startHttpd();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startHttpd();
+                        }
+                    }).start();
                     break;
                 case ACTION_STOP:
-                    stopHttpd();
+                    stopSelf();
                     break;
                 default:
                     break;
@@ -72,7 +77,12 @@ public class HttpdService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        stopHttpd();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stopHttpd();
+            }
+        }).start();
     }
 
     @Nullable

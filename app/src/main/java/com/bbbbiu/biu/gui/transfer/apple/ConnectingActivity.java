@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -17,8 +16,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.MenuItem;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -126,14 +125,14 @@ public class ConnectingActivity extends AppCompatActivity {
         Log.i(TAG, "Is Mobile opened? " + mIsMobileOpened);
 
 
-        Handler mHandler = new Handler(new Handler.Callback() {
+        final Handler mHandler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
                 if (msg.what == OpenApThread.MSG_FAILED) {
                     Toast.makeText(ConnectingActivity.this, R.string.hint_connect_ap_create_failed,
                             Toast.LENGTH_LONG).show();
 
-                }else{
+                } else {
                     Toast.makeText(ConnectingActivity.this, R.string.hint_connect_ap_create_succeeded,
                             Toast.LENGTH_SHORT).show();
                 }
@@ -154,7 +153,29 @@ public class ConnectingActivity extends AppCompatActivity {
         }, 1000);
 
 
-        mQRCodeImage.setImageBitmap(genQRCode(HttpConstants.Apple.HOME_URL));
+        // 等待placeholder绘制完成，以计算二维码的长度
+        ViewTreeObserver observer = mQRCodeImage.getViewTreeObserver();
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                mQRCodeImage.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+
+                // 非 UI线程生产二维码，然后在UI线程绘制
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Bitmap qrcode = genQRCode(HttpConstants.Apple.HOME_URL);
+
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mQRCodeImage.setImageBitmap(qrcode);
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
 
         // 开HttpServer,注册servlet
         HttpdService.startService(this);
@@ -170,7 +191,6 @@ public class ConnectingActivity extends AppCompatActivity {
 
         FileIconServlet.register(this);
     }
-
 
     @Override
     public void onBackPressed() {
@@ -233,13 +253,10 @@ public class ConnectingActivity extends AppCompatActivity {
      * @param url 二维码包含的URL信息
      * @return Bitmap
      */
-    @SuppressWarnings("SuspiciousNameCombination")
     private Bitmap genQRCode(String url) {
 
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int width = (int) (size.x / 1.5);
+        // 等待placeholder绘制完成之后调用
+        int width = mQRCodeImage.getMeasuredWidth();
 
         Bitmap bitmap = null;
         QRCodeWriter writer = new QRCodeWriter();
