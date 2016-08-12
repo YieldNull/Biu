@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
+apply plugin: 'bugly'
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bugly {
+    appId = properties.getProperty("bugly.appId")
+    appKey = properties.getProperty("bugly.appKey")
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
@@ -81,6 +89,9 @@ dependencies {
 
     // 模板引擎
     compile 'com.samskivert:jmustache:1.12'
+
+    // 崩溃报告
+    compile 'com.tencent.bugly:crashreport:2.2.0.0'
 
     compile project(':httpd')
 }
