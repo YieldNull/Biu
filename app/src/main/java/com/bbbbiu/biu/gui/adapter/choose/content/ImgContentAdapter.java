@@ -55,7 +55,7 @@ public class ImgContentAdapter extends CommonSortedAdapter {
         mImgWidth = (int) (screenWidth - dpMargin * 2) / 3;
 
         // tint place holder
-        Drawable drawable = context.getResources().getDrawable(R.drawable.img_placeholder);
+        Drawable drawable = context.getResources().getDrawable(R.drawable.ph_img);
         mPlaceholder = DrawableCompat.wrap(drawable);
         DrawableCompat.setTint(mPlaceholder, context.getResources().getColor(R.color.img_placeholder));
 

@@ -11,9 +11,16 @@ import com.bbbbiu.biu.R;
  */
 public class OnViewTouchListener implements View.OnTouchListener {
     private Context context;
+    private int pressedResId;
+
 
     public OnViewTouchListener(Context context) {
+        this(context, R.color.option_panel_pressed);
+    }
+
+    public OnViewTouchListener(Context context, int pressedResId) {
         this.context = context;
+        this.pressedResId = pressedResId;
     }
 
     @Override
@@ -21,7 +28,7 @@ public class OnViewTouchListener implements View.OnTouchListener {
         int action = event.getAction();
 
         if (action == MotionEvent.ACTION_DOWN) {
-            v.setBackgroundColor(context.getResources().getColor(R.color.option_panel_pressed));
+            v.setBackgroundColor(context.getResources().getColor(pressedResId));
         } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
             v.setBackgroundColor(context.getResources().getColor(android.R.color.transparent));
         }

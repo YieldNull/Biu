@@ -2,22 +2,28 @@ package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.format.Formatter;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
-import com.bbbbiu.biu.lib.servlet.ManifestServlet;
-import com.bbbbiu.biu.lib.servlet.apple.DownloadServlet;
-import com.bbbbiu.biu.lib.servlet.apple.FileIconServlet;
-import com.bbbbiu.biu.lib.servlet.apple.FileServlet;
-import com.bbbbiu.biu.lib.servlet.apple.UploadServlet;
-import com.bbbbiu.biu.service.HttpdService;
+import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
@@ -48,9 +54,16 @@ public class ConnectingActivity extends AppCompatActivity {
     private String mAction;
 
 
-    @OnClick(R.id.cardView_web)
-    void scanQRCode() {
+    @Bind(R.id.recyclerView)
+    RecyclerView mRecyclerView;
 
+    @OnClick(R.id.cardView_scan)
+    void scanQRCode() {
+        if (mAction.equals(ACTION_RECEIVE)) {
+            QRCodeScanActivity.scanForDownload(this);
+        } else {
+            QRCodeScanActivity.scanForUpload(this);
+        }
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -75,18 +88,36 @@ public class ConnectingActivity extends AppCompatActivity {
 
         mAction = getIntent().getAction();
 
-        // 开HttpServer,注册servlet
-        HttpdService.startService(this);
+        final HintAdapter adapter = new HintAdapter();
+        mRecyclerView.setAdapter(adapter);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        if (mAction.equals(ACTION_RECEIVE)) {
-            ManifestServlet.register(this, false);
-            UploadServlet.register(this);
-        } else {
-            DownloadServlet.register(this);
-            FileServlet.register(this);
+        WifiManager manager = (WifiManager) getSystemService(WIFI_SERVICE);
+        WifiInfo info = manager.getConnectionInfo();
+
+
+        // 已连上路由器，则显示用路由器传
+        // 没有连接wifi则显示用热点传
+        boolean showHint = false;
+        if (info != null && Formatter.formatIpAddress(info.getIpAddress()).startsWith("192.168.")) {
+            adapter.router = true;
+            showHint = true;
+        } else if (manager.getWifiState() == WifiManager.WIFI_STATE_DISABLING
+                || manager.getWifiState() == WifiManager.WIFI_STATE_DISABLED) {
+
+            adapter.router = false;
+            showHint = true;
         }
 
-        FileIconServlet.register(this);
+        if (showHint) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.removed = false;
+                    adapter.notifyItemInserted(0);
+                }
+            }, 500);
+        }
     }
 
     @Override
@@ -96,5 +127,70 @@ public class ConnectingActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    class HintAdapter extends RecyclerView.Adapter<HintViewHolder> {
+
+        private boolean removed = true;
+        private boolean router = true;
+
+        @Override
+        public HintViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(ConnectingActivity.this);
+
+            int layout = router ? R.layout.hint_connpc_local : R.layout.hint_connpc_ap;
+            return new HintViewHolder(inflater.inflate(layout, parent, false));
+        }
+
+        @Override
+        public void onBindViewHolder(final HintViewHolder holder, int position) {
+
+            holder.cancel.setOnTouchListener(new OnViewTouchListener(ConnectingActivity.this, R.color.connpc_hint_divider));
+            holder.ok.setOnTouchListener(new OnViewTouchListener(ConnectingActivity.this, R.color.connpc_hint_divider));
+
+            holder.ok.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.ok.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+
+                    if (mAction.equals(ACTION_SEND)) {
+                        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForSending(ConnectingActivity.this, router);
+                    } else {
+                        com.bbbbiu.biu.gui.transfer.apple.ConnectingActivity.connectForReceiving(ConnectingActivity.this, router);
+                    }
+                }
+            });
+
+            holder.cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    holder.cancel.setBackgroundColor(getResources().getColor(android.R.color.transparent));
+
+                    removed = true;
+                    notifyItemRemoved(0);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return removed ? 0 : 1;
+        }
+    }
+
+    class HintViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.textView_cancel)
+        TextView cancel;
+
+        @Bind(R.id.textView_ok)
+        TextView ok;
+
+        public HintViewHolder(View itemView) {
+            super(itemView);
+
+            ButterKnife.bind(this, itemView);
+        }
     }
 }

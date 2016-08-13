@@ -54,6 +54,7 @@
                 android:textColor="@android:color/black" />
 
             <TextView
+                android:id="@+id/textView_wifi"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
@@ -94,6 +95,7 @@
                 android:textColor="@android:color/black" />
 
             <TextView
+                android:id="@+id/textView_home"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -118,7 +120,7 @@
                     android:id="@+id/imageView"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="10dp"
-                    android:src="@drawable/qrcode_placeholder"
+                    android:src="@drawable/ph_qrcode"
                     app:layout_aspectRatio="100%"
                     app:layout_widthPercent="75%" />
             </android.support.percent.PercentRelativeLayout>

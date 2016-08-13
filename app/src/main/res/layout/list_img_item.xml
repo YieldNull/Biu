@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:src="@drawable/img_placeholder" />
+        android:src="@drawable/ph_img" />
 
     <ImageView
         android:id="@+id/imageView_circle"

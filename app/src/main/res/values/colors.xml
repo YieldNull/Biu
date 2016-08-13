@@ -42,4 +42,5 @@
 
     <color name="history_tab_indicator">#90CAF9</color>
 
+    <color name="connpc_hint_divider">#4CAF50</color>
 </resources>
