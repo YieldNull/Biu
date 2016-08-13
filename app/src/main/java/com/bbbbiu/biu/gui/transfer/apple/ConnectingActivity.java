@@ -79,8 +79,6 @@ public class ConnectingActivity extends AppCompatActivity {
         Intent intent = new Intent(context, ConnectingActivity.class);
         intent.setAction(ACTION_RECEIVING);
 
-        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-
         intent.putExtra(EXTRA_USING_ROUTER, router);
         context.startActivity(intent);
     }
@@ -225,6 +223,8 @@ public class ConnectingActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+
         if (action.equals(ACTION_SENDING)) {
             HttpdService.stopService(this);
         }
@@ -233,6 +233,13 @@ public class ConnectingActivity extends AppCompatActivity {
             stopAp();
         }
         super.onDestroy();
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i(TAG, "onActivityResult");
+        finish();
     }
 
     @Override
