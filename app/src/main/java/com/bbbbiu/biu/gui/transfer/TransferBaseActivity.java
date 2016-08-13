@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui.transfer;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -117,7 +118,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     /**
      * 当前任务总量
      */
-    private long mCurrentTaskSize;
+    private long mCurrentTaskSize = -1;
 
     /**
      * 上一次更新前，当前任务的进度
@@ -129,7 +130,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
     /**
      * 上一次更新的时间
      */
-    private long mPreviousTime = System.currentTimeMillis();
+    private long mPreviousTime;
 
 
     /**
@@ -144,6 +145,11 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * @see #setReceiveTimeout()
      */
     private static final long RECEIVE_TIMEOUT = 5000;
+
+    /**
+     * 刷新网速，传输总量等数据的频率
+     */
+    private static final long MEASUREMENT_REFRESH_INTERVAL = 500;
 
     public TransferBaseActivity() {
     }
@@ -209,7 +215,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
 
                 mPreviousTime = System.currentTimeMillis();
                 mPreviousProgress = 0;
-                mCurrentTaskSize = 0;
+                mCurrentTaskSize = -1;
 
                 setReceiveTimeout();
 
@@ -217,11 +223,16 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
             case ProgressListenerImpl.RESULT_SUCCEEDED:
                 Log.i(TAG, "Task succeeded:" + fileUri);
 
+                // 强制刷新测量数据
+                if (mPreviousProgress != 100) {
+                    updateMeasurement(100, true);
+                }
+
                 mTransferAdapter.setTaskFinished();
 
                 mPreviousTime = System.currentTimeMillis();
                 mPreviousProgress = 0;
-                mCurrentTaskSize = 0;
+                mCurrentTaskSize = -1;
 
                 setReceiveTimeout();
 
@@ -230,39 +241,51 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                 int progress = resultData.getInt(ProgressListenerImpl.RESULT_EXTRA_PROGRESS);
                 mTransferAdapter.updateProgress(mRecyclerView, fileUri, progress);
 
-                if (mCurrentTaskSize == 0) {
-                    FileItem item = mTransferAdapter.getItem(fileUri);
-
-                    if (item != null) {
-                        mCurrentTaskSize = item.size;
-                    } else {
-                        break;
-                    }
-                }
-
-                long periodTime = System.currentTimeMillis() - mPreviousTime;
-                long periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
-
-
-                // TODO 总传输时间小于500ms
-                if (periodTime > 500) { // 每隔一段时间更新一下网速、下载总量
-                    // 计算传输总量
-                    mTransferTotal += periodBytes;
-                    mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
-
-                    // 计算网速
-                    long speed = periodBytes / periodTime * 1000;
-                    mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
-
-                    mPreviousProgress = progress;
-                    mPreviousTime = System.currentTimeMillis();
-                }
+                updateMeasurement(progress, false);
                 break;
             default:
                 break;
         }
     }
 
+    /**
+     * 更新网上，传输总量显示
+     *
+     * @param progress     进度
+     * @param forceRefresh 是否强制刷新,否则按照既定频率刷新
+     * @see #MEASUREMENT_REFRESH_INTERVAL
+     */
+    @SuppressLint("SetTextI18n")
+    private void updateMeasurement(int progress, boolean forceRefresh) {
+        long periodTime, periodBytes, speed;
+
+        if (mCurrentTaskSize < 0) {
+            FileItem item = mTransferAdapter.getCurrentItem();
+            if (item != null) {
+                mCurrentTaskSize = item.size;
+            } else {
+                return;
+            }
+        }
+
+        periodTime = System.currentTimeMillis() - mPreviousTime;
+        periodBytes = mCurrentTaskSize * (progress - mPreviousProgress) / 100;
+
+
+        // 每隔一段时间更新一下网速、下载总量,或强制刷新
+        if (periodTime > 0 && (forceRefresh || periodTime > MEASUREMENT_REFRESH_INTERVAL)) {
+            mPreviousProgress = progress;
+            mPreviousTime = System.currentTimeMillis();
+
+            // 计算传输总量
+            mTransferTotal += periodBytes;
+            mTransferTotalText.setText(StorageUtil.getReadableSize(mTransferTotal));
+
+            // 计算网速
+            speed = periodBytes * 1000 / periodTime;
+            mTransferSpeedText.setText(StorageUtil.getReadableSize(speed) + "/s");
+        }
+    }
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -319,6 +342,10 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
      * @param intent intent
      */
     protected void addTask(Intent intent) {
+        if (mPreviousTime == 0) {
+            mPreviousTime = System.currentTimeMillis();
+        }
+
         if (intent != null) {
             ArrayList<FileItem> fileItems = intent.getParcelableArrayListExtra(EXTRA_FILE_ITEM);
             addTask(fileItems);
