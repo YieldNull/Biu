@@ -162,7 +162,6 @@ public class HttpDaemon {
             LOGGER.w("Could not stop all connections", e);
         } finally {
             mServerSocket = null;
-            mRequestManager = null;
             mListenThread = null;
         }
     }
@@ -188,7 +187,7 @@ public class HttpDaemon {
      * @return 请求数
      */
     public int aliveRequests() {
-        return mRequestManager.aliveCount();
+        return mRequestManager == null ? 0 : mRequestManager.aliveCount();
     }
 
     /**

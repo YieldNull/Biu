@@ -112,6 +112,11 @@ body, html {
     display: inline-block;
 }
 
+img.circle {
+    width:48px;
+    height:48px;
+}
+
 .row-content {
     width: -webkit-calc(100% - 68px);
     width: calc(100% - 68px);

@@ -62,6 +62,6 @@ public class ManifestServlet extends HttpServlet {
         } else {
             com.bbbbiu.biu.gui.transfer.apple.ReceivingActivity.startReceiving(context, manifest);
         }
-        return HttpResponse.newResponse("");
+        return HttpResponse.newResponse(HttpResponse.Status.OK.getDescription());
     }
 }
