@@ -2,6 +2,8 @@ package com.bbbbiu.biu.gui.transfer.computer;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -102,11 +104,15 @@ public class ConnectingActivity extends AppCompatActivity {
         if (info != null && Formatter.formatIpAddress(info.getIpAddress()).startsWith("192.168.")) {
             adapter.router = true;
             showHint = true;
-        } else if (manager.getWifiState() == WifiManager.WIFI_STATE_DISABLING
-                || manager.getWifiState() == WifiManager.WIFI_STATE_DISABLED) {
+        } else {
+            ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+            NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            boolean wifiConnected = wifiInfo.getState() == NetworkInfo.State.CONNECTED;
 
-            adapter.router = false;
-            showHint = true;
+            if (!wifiConnected) {
+                adapter.router = false;
+                showHint = true;
+            }
         }
 
         if (showHint) {
