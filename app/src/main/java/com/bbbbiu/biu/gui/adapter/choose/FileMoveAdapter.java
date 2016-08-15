@@ -43,6 +43,10 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private List<File> mDirList = new ArrayList<>();
     private List<File> mFileList = new ArrayList<>();
 
+    private boolean hasExternal;
+    private File internal;
+    private File external;
+
     public FileMoveAdapter(Context context) {
         this.context = context;
         mChangeDirListener = (OnChangeDirListener) context;
@@ -98,12 +102,19 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private void init() {
         if (StorageUtil.hasRealExternal(context)) {
-            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL));
-            mDirList.add(StorageUtil.getRootDir(context, StorageUtil.STORAGE_EXTERNAL));
+            internal = StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL);
+            external = StorageUtil.getRootDir(context, StorageUtil.STORAGE_EXTERNAL);
+
+            mDirList.add(internal);
+            mDirList.add(external);
 
             mDataSet.addAll(mDirList);
+
+            hasExternal = true;
         } else {
             setCurrentDir(StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL));
+
+            hasExternal = false;
         }
     }
 
@@ -136,7 +147,19 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.CHINA);
             String modifyTime = dateFormat.format(new Date(file.lastModified()));
-            holder.nameText.setText(file.getName());
+
+            // 显示内外部储存
+            if (hasExternal && mDataSet.size() == 2) {
+                if (file.equals(internal)) {
+                    holder.nameText.setText(R.string.cate_storage);
+                } else if (file.equals(external)) {
+                    holder.nameText.setText(R.string.cate_sdcard);
+                } else {
+                    holder.nameText.setText(file.getName());
+                }
+            } else {
+                holder.nameText.setText(file.getName());
+            }
 
             if (file.isDirectory()) { // 目录
                 int itemCount = file.listFiles(new FileFilter() {

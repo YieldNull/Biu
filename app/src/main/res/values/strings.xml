@@ -50,8 +50,8 @@
     <string name="cate_apk">应用</string>
     <string name="cate_download">下载</string>
     <string name="cate_trash">回收站</string>
-    <string name="cate_storage">内存设备</string>
-    <string name="cate_sdcard">SD卡</string>
+    <string name="cate_storage">内部储存</string>
+    <string name="cate_sdcard">外部储存</string>
 
 
     <string name="fbtn_receive">接收文件从</string>
