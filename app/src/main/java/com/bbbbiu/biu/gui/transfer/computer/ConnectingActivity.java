@@ -13,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -101,7 +100,7 @@ public class ConnectingActivity extends AppCompatActivity {
         // 已连上路由器，则显示用路由器传
         // 没有连接wifi则显示用热点传
         boolean showHint = false;
-        if (info != null && Formatter.formatIpAddress(info.getIpAddress()).startsWith("192.168.")) {
+        if (info != null) {
             adapter.router = true;
             showHint = true;
         } else {
