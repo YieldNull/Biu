@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.URLDecoder;
 
 public final class Streams {
 
@@ -99,6 +100,7 @@ public final class Streams {
      * @return 处理后的文件名
      */
     public static String verifyFileName(String fileName) {
+        fileName = URLDecoder.decode(fileName);
         return fileName.replaceAll("[/\\|:?*<>\"]", "_");
     }
 
@@ -124,7 +126,8 @@ public final class Streams {
         builder.insert(insertIndex, String.format("(%s)", String.valueOf(version)));
 
         while (new File(repository, builder.toString()).exists()) {
-            builder.replace(insertIndex + 1, insertIndex + 2, String.valueOf(++version));
+            int endIndex = builder.lastIndexOf(")");
+            builder.replace(insertIndex + 1, endIndex, String.valueOf(++version));
         }
 
         return builder.toString();
