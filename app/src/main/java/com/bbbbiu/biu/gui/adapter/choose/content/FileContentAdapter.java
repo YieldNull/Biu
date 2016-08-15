@@ -16,6 +16,7 @@ import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
+import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
 
@@ -40,6 +41,9 @@ public class FileContentAdapter extends BaseContentAdapter {
     private static final String TAG = FileContentAdapter.class.getSimpleName();
 
     private OnChangeDirListener mOnChangeDirListener;
+
+    private OnLoadingDataListener mOnLoadingDataListener;
+
 
     /**
      * 当前目录下的文件或文件夹
@@ -72,6 +76,7 @@ public class FileContentAdapter extends BaseContentAdapter {
         mImgPicasso = Picasso.with(context);
 
         mOnChangeDirListener = (OnChangeDirListener) context;
+        mOnLoadingDataListener = context;
 
         setCurrentDir(rootDir);
     }
@@ -284,6 +289,12 @@ public class FileContentAdapter extends BaseContentAdapter {
         if (mSubFiles.length > 0) {
             mFileDataSet.add(null);
             Collections.addAll(mFileDataSet, mSubFiles);
+        }
+
+        if (mFileDataSet.size() == 0) {
+            mOnLoadingDataListener.onEmptyDataSet();
+        } else {
+            mOnLoadingDataListener.onNonEmptyDataSet();
         }
     }
 

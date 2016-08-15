@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
+import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
@@ -38,6 +39,7 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private Context context;
     private OnChangeDirListener mChangeDirListener;
+    private OnLoadingDataListener mLoadingDataListener;
 
     private List<File> mDataSet = new ArrayList<>();
     private List<File> mDirList = new ArrayList<>();
@@ -50,6 +52,7 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public FileMoveAdapter(Context context) {
         this.context = context;
         mChangeDirListener = (OnChangeDirListener) context;
+        mLoadingDataListener = (OnLoadingDataListener) context;
 
         init();
     }
@@ -98,6 +101,11 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
         }
 
+        if (mDataSet.size() == 0) {
+            mLoadingDataListener.onEmptyDataSet();
+        } else {
+            mLoadingDataListener.onNonEmptyDataSet();
+        }
     }
 
     private void init() {

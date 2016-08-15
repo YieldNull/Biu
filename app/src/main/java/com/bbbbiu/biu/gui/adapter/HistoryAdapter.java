@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.db.TransferRecord;
+import com.bbbbiu.biu.gui.HistoryActivity;
 import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
@@ -45,6 +46,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     private static final String PICASSO_TAG = "tag-img";
 
     private Activity context;
+    private HistoryActivity.PlaceholderFragment mFragment;
     private OnChoosingListener mOnChoosingListener;
 
 
@@ -57,10 +59,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private boolean mOnChoosing;
 
-    public HistoryAdapter(final Activity context, final boolean showReceived) {
+    public HistoryAdapter(final Activity context, HistoryActivity.PlaceholderFragment placeholderFragment, final boolean showReceived) {
         this.context = context;
         this.mOnChoosingListener = (OnChoosingListener) context;
-
+        this.mFragment = placeholderFragment;
 
         Picasso.Builder builder = new Picasso.Builder(context);
         builder.addRequestHandler(new VideoIconRequestHandler());
@@ -288,6 +290,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
                                     notifyItemRemoved(hd.getAdapterPosition());
 
+                                    mFragment.checkDataSetAmount();
 
                                     Log.i(TAG, "Delete file and record successfully: " + record.uri);
                                     Toast.makeText(context, R.string.hint_file_delete_succeeded, Toast.LENGTH_SHORT).show();

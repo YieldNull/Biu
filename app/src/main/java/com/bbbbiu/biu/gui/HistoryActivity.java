@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.webkit.MimeTypeMap;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
@@ -203,6 +204,9 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
                                             public void run() {
                                                 invalidateOptionsMenu();
                                                 refreshTitle();
+
+                                                PlaceholderFragment fragment = mPagerAdapter.getFragment(mViewPager.getCurrentItem());
+                                                fragment.checkDataSetAmount();
                                             }
                                         });
                                     }
@@ -431,6 +435,9 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
          */
         private HistoryAdapter adapter;
 
+        private TextView emptyText;
+
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -440,17 +447,28 @@ public class HistoryActivity extends AppCompatActivity implements OnChoosingList
 
             RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
 
-            adapter = new HistoryAdapter(getActivity(),
+            emptyText = (TextView) rootView.findViewById(R.id.textView_empty);
+
+            adapter = new HistoryAdapter(getActivity(), this,
                     getArguments().getInt(ARG_SECTION_NUMBER) == 0);
 
             recyclerView.setAdapter(adapter);
 
+            checkDataSetAmount();
 
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
             recyclerView.addItemDecoration(new HorizontalDividerItemDecoration
                     .Builder(getContext()).build());
 
             return rootView;
+        }
+
+        public void checkDataSetAmount() {
+            if (adapter.getItemCount() == 0) {
+                emptyText.setVisibility(View.VISIBLE);
+            } else {
+                emptyText.setVisibility(View.GONE);
+            }
         }
     }
 }

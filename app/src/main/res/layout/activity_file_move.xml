@@ -37,4 +37,6 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_fbtn_confirm" />
 
+    <include layout="@layout/empty_content" />
+
 </android.support.design.widget.CoordinatorLayout>

@@ -11,11 +11,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.FileMoveAdapter;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
+import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -25,9 +27,9 @@ import java.util.Stack;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class FileMoveActivity extends AppCompatActivity implements OnChangeDirListener {
+public class FileMoveActivity extends AppCompatActivity implements OnChangeDirListener, OnLoadingDataListener {
     public static final String EXTRA_DEST_DIR = "com.bbbbiu.biu.gui.choose.FileMoveActivity.extra_DEST_DIR";
-    
+
     public static final int REQUEST_MOVE = 1;
     public static final int REQUEST_COPY = 2;
 
@@ -36,6 +38,10 @@ public class FileMoveActivity extends AppCompatActivity implements OnChangeDirLi
 
     @Bind(R.id.recyclerView)
     protected RecyclerView mRecyclerView;
+
+
+    @Bind(R.id.textView_empty)
+    protected TextView mEmptyTextView;
 
     private FileMoveAdapter mAdapter;
     private Stack<File> mDirStack = new Stack<>();
@@ -122,11 +128,32 @@ public class FileMoveActivity extends AppCompatActivity implements OnChangeDirLi
         return super.onOptionsItemSelected(item);
     }
 
+
     private void sendResult(File file) {
         Intent intent = new Intent();
         intent.putExtra(EXTRA_DEST_DIR, file);
         setResult(RESULT_OK, intent);
 
         finish();
+    }
+
+    @Override
+    public void onStartLoadingData() {
+
+    }
+
+    @Override
+    public void onFinishLoadingData() {
+
+    }
+
+    @Override
+    public void onEmptyDataSet() {
+        mEmptyTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onNonEmptyDataSet() {
+        mEmptyTextView.setVisibility(View.GONE);
     }
 }

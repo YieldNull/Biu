@@ -114,6 +114,20 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
     /**
+     * 无任何对应的文件
+     */
+    public void notifyEmptyDataSet() {
+        mLoadingDataListener.onEmptyDataSet();
+    }
+
+    /**
+     * 无任何对应的文件
+     */
+    public void notifyNonEmptyDataSet() {
+        mLoadingDataListener.onNonEmptyDataSet();
+    }
+
+    /**
      * notify 文件被选
      * <p/>
      * 要在添加或删除文件之后进行notify

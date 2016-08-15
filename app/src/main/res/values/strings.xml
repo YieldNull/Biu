@@ -106,6 +106,8 @@
     <string name="hint_file_operation_background_running">正在后台执行操作</string>
     <string name="hint_file_operation_background_run">后台运行</string>
 
+    <string name="hint_file_none">无任何文件</string>
+
     <string name="hint_apk_delete_confirm">是否删除此应用程序安装文件</string>
     <string name="hint_apk_delete_failed">未知错误，卸载失败</string>
     <string name="hint_apk_delete_dismissed">卸载已取消</string>

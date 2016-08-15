@@ -50,7 +50,7 @@ public abstract class CommonContentAdapter extends BaseContentAdapter {
                         if (finalHasData) {
                             notifyDataSetChanged();
                         } else {
-                            // TODO 显示空界面
+                            notifyEmptyDataSet(); // 无任何文件
                         }
 
                     }

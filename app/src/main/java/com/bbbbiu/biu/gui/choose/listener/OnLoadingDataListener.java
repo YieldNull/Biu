@@ -7,4 +7,8 @@ public interface OnLoadingDataListener {
     void onStartLoadingData();
 
     void onFinishLoadingData();
+
+    void onEmptyDataSet();
+
+    void onNonEmptyDataSet();
 }

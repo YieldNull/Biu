@@ -93,6 +93,12 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
     public void updateDataSet() {
         readDataFromDB();
         notifyDataSetChanged();
+
+        if (mDirDataMap.size() == 0) {
+            notifyEmptyDataSet();
+        } else {
+            notifyNonEmptyDataSet();
+        }
     }
 
     @Override

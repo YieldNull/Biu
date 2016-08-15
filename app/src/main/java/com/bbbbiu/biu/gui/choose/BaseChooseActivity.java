@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
@@ -105,6 +106,9 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
         prepareSending(ACTION_SEND_COMPUTER);
     }
 
+
+    @Bind(R.id.textView_empty)
+    protected TextView mEmptyTextView;
 
     /**
      * 纪录滑动的位置，为隐藏、显示floating button用
@@ -479,6 +483,16 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
     @Override
     public void onFinishLoadingData() {
         mLoadingIndicatorView.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onEmptyDataSet() {
+        mEmptyTextView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onNonEmptyDataSet() {
+        mEmptyTextView.setVisibility(View.GONE);
     }
 
     /********************************************************************************************/

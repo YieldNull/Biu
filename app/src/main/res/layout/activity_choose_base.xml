@@ -48,6 +48,8 @@
             app:indicator="BallPulse"
             app:indicator_color="@color/loading_indicator" />
 
+        <include layout="@layout/empty_content" />
+
         <include layout="@layout/floating_button_send" />
 
     </android.support.design.widget.CoordinatorLayout>
