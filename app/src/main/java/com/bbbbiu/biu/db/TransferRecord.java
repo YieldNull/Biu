@@ -181,6 +181,24 @@ public class TransferRecord extends BaseModel {
                 .flowQueryList();
     }
 
+    /**
+     * 查询已下载或已发送纪录
+     *
+     * @param type   type 类型，{@link #TYPE_RECEIVED},{@link #TYPE_SENT}
+     * @param limits 限制数量
+     * @return 列表
+     */
+    public static FlowQueryList<TransferRecord> query(int type, int limits) {
+        return SQLite.select()
+                .distinct()
+                .from(TransferRecord.class)
+                .where(TransferRecord_Table.type.eq(type))
+                .orderBy(TransferRecord_Table.timestamp, false)
+                .groupBy(TransferRecord_Table.uri, TransferRecord_Table.size)
+                .limit(limits)
+                .flowQueryList();
+    }
+
 
     /**
      * 保存下载纪录,同时将文件加入MediaStore以及分类数据库

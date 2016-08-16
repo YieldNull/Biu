@@ -11,6 +11,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bbbbiu.biu.R;
+import com.bbbbiu.biu.db.TransferRecord;
+import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.ApkChooseActivity;
 import com.bbbbiu.biu.gui.choose.ArchiveChooseActivity;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
@@ -20,6 +22,7 @@ import com.bbbbiu.biu.gui.choose.ImgChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
 import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.raizlabs.android.dbflow.list.FlowQueryList;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,11 +35,15 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int TYPE_STORAGE = 0;
     private static final int TYPE_CATEGORY = 1;
-    private static final String TAG = MainAdapter.class.getSimpleName();
+    private static final int TYPE_HISTORY_HEADER = 2;
+    private static final int TYPE_HISTORY_ITEM = 3;
 
     private ArrayList<Integer[]> nameImgMap;
     private Context context;
 
+    private boolean hasExternal;
+    private int downloadsStart;
+    private FlowQueryList<TransferRecord> recentDownloads;
 
     public MainAdapter(Context context) {
         this.context = context;
@@ -53,12 +60,21 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         if (StorageUtil.hasRealExternal(context)) {
             nameImgMap.add(new Integer[]{R.string.cate_sdcard, R.drawable.ic_cate_sdcard});
+            hasExternal = true;
         }
     }
 
     public int getSpanSize(int position) {
-        int stringId = getStringId(position);
-        return stringId == R.string.cate_sdcard || stringId == R.string.cate_storage ? 2 : 1;
+        return position < 6 ? 1 : 2;
+    }
+
+
+    public void refreshRecentDownloads() {
+        recentDownloads = TransferRecord.query(TransferRecord.TYPE_RECEIVED, 3);
+
+        downloadsStart = hasExternal ? 9 : 8;
+
+        notifyDataSetChanged();
     }
 
     @Override
@@ -68,19 +84,26 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (viewType == TYPE_CATEGORY) {
             View itemView = inflater.inflate(R.layout.list_main_item_category, parent, false);
             return new CategoryHolder(itemView);
-        } else {
+        } else if (viewType == TYPE_STORAGE) {
             View itemView = inflater.inflate(R.layout.list_main_item_storage, parent, false);
             return new StorageHolder(itemView);
+        } else if (viewType == TYPE_HISTORY_HEADER) {
+            return HeaderViewHolder.build(inflater, parent);
+        } else {
+            View itemView = inflater.inflate(R.layout.list_recent_download, parent, false);
+            return new RecentDownloadsHolder(itemView);
         }
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
-        final int stringId = getStringId(position);
-        int imageId = nameImgMap.get(position)[1];
+        int viewType = getItemViewType(position);
 
-        if (getItemViewType(position) == TYPE_CATEGORY) {
+        if (viewType == TYPE_CATEGORY) {
+            final int stringId = getStringId(position);
+            int imageId = nameImgMap.get(position)[1];
             final CategoryHolder holder = (CategoryHolder) hd;
+
             holder.iconImage.setImageDrawable(context.getResources().getDrawable(imageId));
             holder.nameText.setText(context.getString(stringId));
 
@@ -115,26 +138,54 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     }
                 }
             });
-        } else {
+        } else if (viewType == TYPE_STORAGE) {
+            int stringId = getStringId(position);
+            int imageId = nameImgMap.get(position)[1];
+
             StorageHolder holder = (StorageHolder) hd;
             holder.iconImage.setImageDrawable(context.getResources().getDrawable(imageId));
             holder.nameText.setText(context.getString(stringId));
             holder.setPercentage(position);
+        } else if (viewType == TYPE_HISTORY_HEADER) {
+            HeaderViewHolder holder = (HeaderViewHolder) hd;
+            holder.itemView.setBackgroundDrawable(null);
+            holder.headerText.setText(R.string.cate_recent_downloads);
+        } else {
+            RecentDownloadsHolder holder = (RecentDownloadsHolder) hd;
+            final TransferRecord record = recentDownloads.get(position - downloadsStart);
+
+            holder.iconImage.setImageDrawable(StorageUtil.getFileIcon(context, record.getFileType()));
+
+            holder.nameText.setText(record.name);
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    StorageUtil.openFile(context, record.getUri(), record.name);
+                }
+            });
         }
     }
 
     @Override
     public int getItemCount() {
-        return nameImgMap.size();
+        if (recentDownloads == null || recentDownloads.size() == 0) {
+            return nameImgMap.size();
+        } else {
+            return nameImgMap.size() + 1 + recentDownloads.size();
+        }
     }
 
     @Override
     public int getItemViewType(int position) {
-        int stringId = getStringId(position);
-        if (stringId == R.string.cate_storage || stringId == R.string.cate_sdcard) {
-            return TYPE_STORAGE;
-        } else {
+        if (position < 6) {
             return TYPE_CATEGORY;
+        } else if (position == 6 || (hasExternal && position == 7)) {
+            return TYPE_STORAGE;
+        } else if (position == downloadsStart - 1) {
+            return TYPE_HISTORY_HEADER;
+        } else {
+            return TYPE_HISTORY_ITEM;
         }
     }
 
@@ -204,4 +255,17 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    class RecentDownloadsHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.imageView_icon)
+        ImageView iconImage;
+
+        @Bind(R.id.textView_name)
+        TextView nameText;
+
+        public RecentDownloadsHolder(View itemView) {
+            super(itemView);
+
+            ButterKnife.bind(this, itemView);
+        }
+    }
 }

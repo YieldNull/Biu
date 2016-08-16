@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         prepareReceiving(ACTION_RECEIVE_ANDROID);
     }
 
+    private MainAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +76,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        final MainAdapter adapter = new MainAdapter(this);
-        mRecyclerView.setAdapter(adapter);
+        mAdapter = new MainAdapter(this);
+        mRecyclerView.setAdapter(mAdapter);
 
         GridLayoutManager manager = new GridLayoutManager(this, MainAdapter.SPAN_COUNT);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return adapter.getSpanSize(position);
+                return mAdapter.getSpanSize(position);
             }
         });
         mRecyclerView.setLayoutManager(manager);
@@ -92,6 +93,13 @@ public class MainActivity extends AppCompatActivity {
         mActionMenu.setClosedOnTouchOutside(true);
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mAdapter.refreshRecentDownloads();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

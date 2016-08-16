@@ -52,7 +52,7 @@
     <string name="cate_trash">回收站</string>
     <string name="cate_storage">内部储存</string>
     <string name="cate_sdcard">外部储存</string>
-
+    <string name="cate_recent_downloads">最近下载</string>
 
     <string name="fbtn_receive">接收文件从</string>
     <string name="fbtn_send">发送文件到</string>
