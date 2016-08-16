@@ -26,7 +26,8 @@
         <div class="queueList">
             <div class="uploader-list" id="filelist">
                 {{#files }}
-                <div class="panel panel-default" onclick="download({{hashCode}})">
+                <div class="panel panel-default" onclick="download({{hashCode}})"
+                     style="cursor:pointer;">
                     <div class="panel-body">
                         <div class="row-picture"><img class="circle" src="/icon/{{name}}"
                                                       alt="icon"></div>
@@ -39,7 +40,6 @@
                 {{/files}}
             </div>
         </div>
-        >
     </div>
 </div>
 
