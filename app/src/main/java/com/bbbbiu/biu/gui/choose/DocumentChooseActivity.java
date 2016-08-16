@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.gui.choose;
 
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
@@ -17,9 +18,11 @@ import java.io.File;
 public class DocumentChooseActivity extends BaseChooseActivity {
     private static final String TAG = DocumentChooseActivity.class.getSimpleName();
 
+    private DocumentContentAdapter mDocumentAdapter;
+
     @Override
     protected int getNormalMenuId() {
-        return R.menu.common_normal;
+        return R.menu.doc_normal;
     }
 
     @Override
@@ -34,7 +37,9 @@ public class DocumentChooseActivity extends BaseChooseActivity {
 
     @Override
     protected BaseContentAdapter onCreateContentAdapter() {
-        return new DocumentContentAdapter(this);
+        mDocumentAdapter = new DocumentContentAdapter(this);
+
+        return mDocumentAdapter;
     }
 
     @Override
@@ -60,5 +65,21 @@ public class DocumentChooseActivity extends BaseChooseActivity {
     @Override
     protected void onPanelRecyclerViewUpdate(File file) {
 
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_by_folder:
+                mDocumentAdapter.sortByFolder();
+                return true;
+            case R.id.action_sort_by_type:
+                mDocumentAdapter.sortByType();
+                return true;
+            default:
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

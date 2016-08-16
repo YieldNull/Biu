@@ -15,7 +15,7 @@ public interface FileChooser {
      *
      * @return 数量
      */
-    public abstract int getChosenCount();
+    int getChosenCount();
 
 
     /**
@@ -23,7 +23,7 @@ public interface FileChooser {
      *
      * @return 绝对路径集
      */
-    public abstract Set<String> getChosenFiles();
+    Set<String> getChosenFiles();
 
 
     /**
@@ -32,17 +32,17 @@ public interface FileChooser {
      * @param file file
      * @return 是否选中
      */
-    public abstract boolean isFileChosen(File file);
+    boolean isFileChosen(File file);
 
 
     /**
      * 当前数据集全被选
      */
-    public abstract void setFileAllChosen();
+    void setFileAllChosen();
 
 
     /**
      * 清除所有已选项目
      */
-    public abstract void setFileAllDismissed();
+    void setFileAllDismissed();
 }

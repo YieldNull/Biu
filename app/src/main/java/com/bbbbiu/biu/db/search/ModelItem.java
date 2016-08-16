@@ -65,6 +65,17 @@ public abstract class ModelItem extends BaseModel {
      * @return {“Folder”:itemList}
      */
     public static Map<String, List<ModelItem>> queryItemToDir(int type) {
+        return sortItemWithDir(query(type));
+    }
+
+
+    /**
+     * 从数据库中读取指定类型的文件
+     *
+     * @param type type 类型
+     * @return 所有记录，剔除不存在的文件
+     */
+    public static List<ModelItem> query(int type) {
         List<ModelItem> allRecords = new ArrayList<>();
 
         if (type == StorageUtil.TYPE_MUSIC || type == StorageUtil.TYPE_VIDEO) {
@@ -94,7 +105,7 @@ public abstract class ModelItem extends BaseModel {
             allRecords.addAll(records);
         }
 
-        return sortItemWithDir(allRecords);
+        return allRecords;
     }
 
 
@@ -130,7 +141,7 @@ public abstract class ModelItem extends BaseModel {
      * @param items ModelItems
      * @param <T>   ModelItems
      */
-    public static <T extends ModelItem> void removeNotExisting(List<T> items) {
+    static <T extends ModelItem> void removeNotExisting(List<T> items) {
         List<T> itemsToDelete = new ArrayList<>();
 
         for (T t : items) {

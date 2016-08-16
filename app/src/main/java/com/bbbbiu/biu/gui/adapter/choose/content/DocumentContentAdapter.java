@@ -1,6 +1,7 @@
 package com.bbbbiu.biu.gui.adapter.choose.content;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +18,11 @@ import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -53,6 +56,87 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
     protected void updateDatabase() {
         SearchUtil.scanDocItem(context);
     }
+
+
+    private boolean byFolder = true;
+
+
+    @Override
+    public void updateDataSet() {
+        if (byFolder) {
+            sortByFolder(true);
+        } else {
+            sortByType(true);
+        }
+    }
+
+    /**
+     * 按文件夹排序
+     */
+    public void sortByFolder() {
+        sortByFolder(false);
+    }
+
+    /**
+     * 按类型排序
+     */
+    public void sortByType() {
+        sortByType(false);
+    }
+
+
+    /**
+     * 按文件夹排序
+     *
+     * @param force 是否强制刷新
+     */
+    private void sortByFolder(boolean force) {
+        Log.i(TAG, "Sort by folder");
+
+        if (force || !byFolder) {
+            super.updateDataSet();
+        }
+
+        byFolder = true;
+    }
+
+
+    /**
+     * 按类型排序
+     *
+     * @param force 是否强制刷新
+     */
+    private void sortByType(boolean force) {
+        Log.i(TAG, "Sort by type");
+
+        if (force || byFolder) {
+            List<ModelItem> items = FileItem.query(StorageUtil.TYPE_DOC);
+            Map<String, List<ModelItem>> sortedItems = new TreeMap<>();
+
+            for (ModelItem item : items) {
+                String ext = StorageUtil.getFileExtension(item.getPath());
+
+                List<ModelItem> list = sortedItems.get(ext);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    sortedItems.put(ext, list);
+                }
+                list.add(item);
+            }
+
+            setDataSet(sortedItems);
+            notifyDataSetChanged();
+
+            if (mDirDataMap.size() == 0) {
+                notifyEmptyDataSet();
+            } else {
+                notifyNonEmptyDataSet();
+            }
+        }
+
+        byFolder = false;
+    }
+
 
     @Override
     public void cancelPicassoTask() {
