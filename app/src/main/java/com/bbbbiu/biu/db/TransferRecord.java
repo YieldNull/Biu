@@ -15,6 +15,7 @@ import com.raizlabs.android.dbflow.annotation.Column;
 import com.raizlabs.android.dbflow.annotation.Database;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
+import com.raizlabs.android.dbflow.list.FlowCursorList;
 import com.raizlabs.android.dbflow.list.FlowQueryList;
 import com.raizlabs.android.dbflow.sql.language.SQLite;
 import com.raizlabs.android.dbflow.structure.BaseModel;
@@ -23,7 +24,9 @@ import com.yieldnull.httpd.Streams;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by YieldNull at 5/9/16
@@ -188,15 +191,31 @@ public class TransferRecord extends BaseModel {
      * @param limits 限制数量
      * @return 列表
      */
-    public static FlowQueryList<TransferRecord> query(int type, int limits) {
-        return SQLite.select()
+    public static List<TransferRecord> query(Context context, int type, int limits) {
+        FlowCursorList<TransferRecord> cursor = SQLite.select()
                 .distinct()
                 .from(TransferRecord.class)
                 .where(TransferRecord_Table.type.eq(type))
                 .orderBy(TransferRecord_Table.timestamp, false)
                 .groupBy(TransferRecord_Table.uri, TransferRecord_Table.size)
-                .limit(limits)
-                .flowQueryList();
+                .cursorList();
+
+        List<TransferRecord> records = new ArrayList<>();
+
+        for (TransferRecord record : cursor) {
+
+            if (record.fileExists(context)) {
+                records.add(record);
+            }
+
+            if (records.size() == limits) {
+                break;
+            }
+        }
+
+        cursor.close();
+
+        return records;
     }
 
 

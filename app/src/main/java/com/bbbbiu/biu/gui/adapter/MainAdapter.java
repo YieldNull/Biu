@@ -22,10 +22,10 @@ import com.bbbbiu.biu.gui.choose.ImgChooseActivity;
 import com.bbbbiu.biu.gui.choose.MusicChooseActivity;
 import com.bbbbiu.biu.gui.choose.VideoChooseActivity;
 import com.bbbbiu.biu.util.StorageUtil;
-import com.raizlabs.android.dbflow.list.FlowQueryList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -43,7 +43,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private boolean hasExternal;
     private int downloadsStart;
-    private FlowQueryList<TransferRecord> recentDownloads;
+    private List<TransferRecord> recentDownloads;
 
     public MainAdapter(Context context) {
         this.context = context;
@@ -70,7 +70,7 @@ public class MainAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
     public void refreshRecentDownloads() {
-        recentDownloads = TransferRecord.query(TransferRecord.TYPE_RECEIVED, 3);
+        recentDownloads = TransferRecord.query(context, TransferRecord.TYPE_RECEIVED, 3);
 
         downloadsStart = hasExternal ? 9 : 8;
 
