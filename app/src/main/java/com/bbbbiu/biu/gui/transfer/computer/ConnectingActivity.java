@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -93,36 +91,21 @@ public class ConnectingActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        WifiManager manager = (WifiManager) getSystemService(WIFI_SERVICE);
-        WifiInfo info = manager.getConnectionInfo();
-
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        boolean wifiConnected = wifiInfo.getState() == NetworkInfo.State.CONNECTED;
 
         // 已连上路由器，则显示用路由器传
         // 没有连接wifi则显示用热点传
-        boolean showHint = false;
-        if (info != null) {
-            adapter.router = true;
-            showHint = true;
-        } else {
-            ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-            NetworkInfo wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            boolean wifiConnected = wifiInfo.getState() == NetworkInfo.State.CONNECTED;
+        adapter.router = wifiConnected;
 
-            if (!wifiConnected) {
-                adapter.router = false;
-                showHint = true;
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                adapter.removed = false;
+                adapter.notifyItemInserted(0);
             }
-        }
-
-        if (showHint) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.removed = false;
-                    adapter.notifyItemInserted(0);
-                }
-            }, 500);
-        }
+        }, 500);
     }
 
     @Override
