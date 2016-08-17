@@ -7,7 +7,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -17,26 +16,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
-import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.content.FileContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
-import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 import com.bbbbiu.biu.gui.transfer.android.SendingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.util.NetworkUtil;
 import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.wang.avi.AVLoadingIndicatorView;
-import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.apache.commons.io.FileUtils;
 
@@ -57,13 +50,28 @@ import butterknife.OnClick;
  * 有五个抽象方法，提供相应实现即可
  */
 public abstract class BaseChooseActivity extends AppCompatActivity implements
-        OnChoosingListener, OptionPanelActionListener, OnLoadingDataListener {
+        OnChoosingListener, OnLoadingDataListener {
 
     private static final String TAG = BaseChooseActivity.class.getSimpleName();
 
     private static final String ACTION_SEND_ANDROID = "Android";
     private static final String ACTION_SEND_COMPUTER = "Computer";
     private static final String ACTION_SEND_APPLE = "Apple";
+
+
+    /**
+     * layout资源id,必须包括下面被bind的view
+     */
+    private int mLayoutId;
+
+    protected BaseChooseActivity() {
+        mLayoutId = R.layout.activity_choose_base;
+    }
+
+    protected BaseChooseActivity(int layoutId) {
+        mLayoutId = layoutId;
+    }
+
 
     /**
      * 开始选择，不保留Activity
@@ -73,24 +81,22 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
      */
     public static void startChoosing(Context context, Class<? extends BaseChooseActivity> theClass) {
         Intent intent = new Intent(context, theClass);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         context.startActivity(intent);
     }
 
-    @Bind(R.id.sliding_layout)
-    protected SlidingUpPanelLayout mSlidingUpPanelLayout;
 
     @Bind(R.id.recyclerView_content)
     protected RecyclerView mContentRecyclerView;
-
-    @Bind(R.id.recyclerView_panel)
-    protected RecyclerView mOptionRecyclerView;
 
     @Bind(R.id.float_action_menu)
     protected FloatingActionMenu mFloatingActionMenu;
 
     @Bind(R.id.loadingIndicatorView)
     protected AVLoadingIndicatorView mLoadingIndicatorView;
+
+    @Bind(R.id.textView_empty)
+    protected TextView mEmptyTextView;
+
 
     @OnClick(R.id.fbtn_send_android)
     protected void clickSendAndroid() {
@@ -108,32 +114,21 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
     }
 
 
-    @Bind(R.id.textView_empty)
-    protected TextView mEmptyTextView;
-
-    @Bind(R.id.scrollView)
-    protected HorizontalScrollView mHeaderScrollView;
-
-    @Bind(R.id.textView_dir)
-    protected TextView mHeaderDirText;
-
     /**
      * 纪录滑动的位置，为隐藏、显示floating button用
      */
     private int mPreviousVisibleItem;
 
 
-    private boolean mBottomPanelOpened;
-
     protected BaseContentAdapter mContentAdapter;
-    protected BaseOptionAdapter mPanelAdapter;
-    protected RecyclerView.LayoutManager mContentLayoutManager;
+    protected LinearLayoutManager mContentLayoutManager;
 
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_choose_base);
+        setContentView(mLayoutId);
         ButterKnife.bind(this);
 
         // Toolbar
@@ -157,34 +152,14 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
         // 主内容 RecyclerView
         mContentAdapter = onCreateContentAdapter();
-        if (mContentAdapter == null) {
-            throw new NullPointerException("Content adapter can not be null");
-        }
         mContentRecyclerView.setAdapter(mContentAdapter);
 
         mContentLayoutManager = onCreateContentLayoutManager();
-        if (!(mContentLayoutManager instanceof LinearContentLayoutManager) &&
-                !(mContentLayoutManager instanceof GridContentLayoutManager)) {
-            throw new RuntimeException(("You must use custom content LayoutManager"));
-        }
         mContentRecyclerView.setLayoutManager(mContentLayoutManager);
 
         RecyclerView.ItemDecoration itemDecoration = onCreateContentItemDecoration();
         if (itemDecoration != null) {
             mContentRecyclerView.addItemDecoration(itemDecoration);
-        }
-
-        // 底部滑出Panel的 RecyclerView
-        mPanelAdapter = onCreatePanelAdapter();
-
-        if (mPanelAdapter != null) {
-            mOptionRecyclerView.setAdapter(mPanelAdapter);
-            mOptionRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-            mOptionRecyclerView.addItemDecoration(new HorizontalDividerItemDecoration.Builder(this)
-                    .paintProvider(mPanelAdapter)
-                    .visibilityProvider(mPanelAdapter)
-                    .marginProvider(mPanelAdapter)
-                    .build());
         }
 
         // floating action menu
@@ -210,15 +185,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
         mContentRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                int firstPosition;
-
-                if (mContentLayoutManager instanceof LinearContentLayoutManager) {
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) mContentLayoutManager;
-                    firstPosition = layoutManager.findFirstVisibleItemPosition();
-                } else {
-                    GridContentLayoutManager layoutManager = (GridContentLayoutManager) mContentLayoutManager;
-                    firstPosition = layoutManager.findFirstVisibleItemPosition();
-                }
+                int firstPosition = mContentLayoutManager.findFirstVisibleItemPosition();
 
                 if (firstPosition > mPreviousVisibleItem) {
                     mFloatingActionMenu.hideMenu(true);
@@ -226,36 +193,6 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
                     mFloatingActionMenu.showMenu(true);
                 }
                 mPreviousVisibleItem = firstPosition;
-            }
-        });
-
-        // sliding up panel.点击 滑出Panel外部时，panel关闭
-        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-        mSlidingUpPanelLayout.setFadeOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeBottomPanel();
-            }
-        });
-
-        mSlidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-
-            }
-
-            @Override
-            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState,
-                                            SlidingUpPanelLayout.PanelState newState) {
-
-//                Log.d(TAG, "PanelState pre:" + String.valueOf(previousState));
-//                Log.d(TAG, "PanelState new:" + String.valueOf(newState));
-
-                if (previousState == SlidingUpPanelLayout.PanelState.DRAGGING
-                        && newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-
-                    onBottomPanelClose();
-                }
             }
         });
     }
@@ -306,33 +243,10 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
     /**
      * ContentRecyclerView对应的布局管理
-     * 必须使用本类中自定义的两种布局管理器
      *
-     * @return ContentLinearLayoutManager or ContentGridLayoutManager
-     * @see BaseChooseActivity.LinearContentLayoutManager
-     * @see BaseChooseActivity.GridContentLayoutManager
+     * @return 布局管理
      */
-    protected abstract RecyclerView.LayoutManager onCreateContentLayoutManager();
-
-
-    /**
-     * Create Adapter for PanelRecyclerView
-     * <p/>
-     * 当需要使用底部的滑出菜单时，创建相应的Adapter。
-     * Adapter必须继承PanelBaseAdapter
-     *
-     * @return adapter 可以为空，表示不使用底部的滑出菜单
-     * @see BaseOptionAdapter
-     */
-    protected abstract BaseOptionAdapter onCreatePanelAdapter();
-
-    /**
-     * 底部滑出菜单一般是每个文件都有的，当点击另一个文件的菜单时，
-     * 更新PanelRecyclerView的Adapter里面纪录的File即可。依具体实现而定
-     *
-     * @param file 滑出菜单对应的文件
-     */
-    protected abstract void onPanelRecyclerViewUpdate(File file);
+    protected abstract LinearLayoutManager onCreateContentLayoutManager();
 
     /********************************************************************************************/
 
@@ -381,22 +295,7 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                final Set<String> chosenFiles = mContentAdapter.getChosenFiles();
-                                setFileAllDismissed();
-
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        deleteChosenFile(chosenFiles);
-
-                                        BaseChooseActivity.this.runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                onOptionModifyContent();
-                                            }
-                                        });
-                                    }
-                                }).start();
+                                deleteChosenFile();
                             }
                         })
                         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -437,42 +336,6 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
     /********************************************************************************************/
 
-    /**************************{@link OptionPanelActionListener}***********************************/
-
-    /**
-     * 底部滑出菜单一般是每个文件都有的，点击时传入对应的File
-     * 然后更新PanelRecyclerView(更新对应的文件)
-     * <p/>
-     * 使用方法见 {@link FileContentAdapter}
-     *
-     * @param file 对应的文件
-     */
-    @Override
-    public void onOptionToggleClicked(File file) {
-        onPanelRecyclerViewUpdate(file);
-
-        // 展开底部panel
-        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
-
-        onBottomPanelOpen();
-    }
-
-    @Override
-    public void onOptionItemClicked(File file) {
-        closeBottomPanel();
-    }
-
-    @Override
-    public void onOptionModifyContent() {
-        mContentAdapter.updateDataSet();
-    }
-
-    @Override
-    public void onOptionDeleteFile(File file) {
-
-    }
-
-    /********************************************************************************************/
 
     /*********************************{@link OnLoadingDataListener}******************************/
 
@@ -504,6 +367,85 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
     /********************************************************************************************/
 
+    /**
+     * 更新title，显示选中数量
+     */
+    @SuppressWarnings("ConstantConditions")
+    protected void refreshTitle() {
+        if (mContentAdapter.getChosenCount() == 0) {
+            getSupportActionBar().setTitle(getNormalTitle());
+        } else {
+            getSupportActionBar().setTitle(getString(R.string.title_chosen_file_count,
+                    mContentAdapter.getChosenCount()));
+        }
+    }
+
+    /**
+     * 从Toolbar上面的菜单项选中当前所有显示的文件
+     */
+    protected void setFileAllChosen() {
+        mContentAdapter.setFileAllChosen();
+        invalidateOptionsMenu();
+        refreshTitle();
+    }
+
+    /**
+     * 从Toolbar上面的菜单项取消所有已选择的文件
+     */
+    protected void setFileAllDismissed() {
+        mContentAdapter.setFileAllDismissed();
+        invalidateOptionsMenu();
+        refreshTitle();
+    }
+
+    /**
+     * 从Toolbar上面的菜单项删除选中的文件
+     */
+    protected void deleteChosenFile() {
+        final Set<String> chosenFiles = mContentAdapter.getChosenFiles();
+        setFileAllDismissed();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean allSucceeded = true;
+                for (String path : chosenFiles) {
+                    if (!FileUtils.deleteQuietly(new File(path))) {
+                        allSucceeded = false;
+                    }
+                }
+
+                if (!allSucceeded) {
+                    showToastInUI(R.string.hint_file_delete_failed);
+                } else {
+                    showToastInUI(R.string.hint_file_delete_succeeded);
+                }
+
+                BaseChooseActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mContentAdapter.updateDataSet();
+                    }
+                });
+            }
+        }).start();
+    }
+
+
+    /**
+     * 在UI线程显示Toast
+     *
+     * @param stringId string resource id
+     */
+    protected void showToastInUI(final int stringId) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(BaseChooseActivity.this, stringId, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     /**
      * 点击发送按钮
@@ -518,12 +460,13 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
                     .setTitle(getString(R.string.dialog_vpn_title))
                     .setMessage(getString(R.string.dialog_vpn_message))
                     .setPositiveButton(getString(R.string.dialog_vpn_button_close), null)
-                    .setNegativeButton(getString(R.string.dialog_vpn_button_ignore), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            sendFile(action);
-                        }
-                    })
+                    .setNegativeButton(getString(R.string.dialog_vpn_button_ignore),
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    sendFile(action);
+                                }
+                            })
                     .show();
         } else {
             sendFile(action);
@@ -553,167 +496,5 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
         }
 
         Log.i(TAG, String.format("Sending files to %s. File Amount: %d", action, files.size()));
-    }
-
-    /**
-     * 更新title，显示选中数量
-     */
-    @SuppressWarnings("ConstantConditions")
-    protected void refreshTitle() {
-        if (mContentAdapter.getChosenCount() == 0) {
-            getSupportActionBar().setTitle(getNormalTitle());
-        } else {
-            getSupportActionBar().setTitle(getString(R.string.title_chosen_file_count,
-                    mContentAdapter.getChosenCount()));
-        }
-    }
-
-    /**
-     * 从 Toolbar 上面的菜单项删除选中的文件
-     *
-     * @param chosenFiles 已选中的文件的路径列表
-     */
-    protected void deleteChosenFile(Set<String> chosenFiles) {
-        boolean allSucceeded = true;
-        for (String path : chosenFiles) {
-            if (!FileUtils.deleteQuietly(new File(path))) {
-                allSucceeded = false;
-            }
-        }
-
-        if (!allSucceeded) {
-            showToastInUI(R.string.hint_file_delete_failed);
-        } else {
-            showToastInUI(R.string.hint_file_delete_succeeded);
-        }
-    }
-
-    /**
-     * 在UI线程显示Toast
-     *
-     * @param stringId string resource id
-     */
-    protected void showToastInUI(final int stringId) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(BaseChooseActivity.this, stringId, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    /**
-     * 选中当前所有显示的文件
-     */
-    protected void setFileAllChosen() {
-        mContentAdapter.setFileAllChosen();
-        invalidateOptionsMenu();
-        refreshTitle();
-    }
-
-    /**
-     * 取消所有已选择的文件
-     */
-    protected void setFileAllDismissed() {
-        mContentAdapter.setFileAllDismissed();
-        invalidateOptionsMenu();
-        refreshTitle();
-    }
-
-
-    /**
-     * 划出菜单是否已打开
-     *
-     * @return 是否打开
-     */
-    protected boolean isBottomPanelOpened() {
-        return mBottomPanelOpened;
-    }
-
-    /**
-     * 关闭底部滑出菜单
-     */
-    protected void closeBottomPanel() {
-        mSlidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
-
-        onBottomPanelClose();
-    }
-
-    /**
-     * 当底部滑出Panel关闭后，enable ContentRecyclerView
-     */
-    protected void onBottomPanelClose() {
-        mBottomPanelOpened = false;
-        if (mContentRecyclerView != null) {
-            mContentRecyclerView.setEnabled(true);
-        }
-        if (mContentLayoutManager != null) {
-            if (mContentLayoutManager instanceof LinearContentLayoutManager) {
-                ((LinearContentLayoutManager) mContentLayoutManager).setCanScroll(true);
-            } else {
-                ((GridContentLayoutManager) mContentLayoutManager).setCanScroll(true);
-            }
-        }
-    }
-
-    /**
-     * 当底部滑出Panel打开后，disable ContentRecyclerView
-     * 否则 SlidingUpLayout的FadeOnClickListener会与RecyclerView相应的监听器冲突
-     */
-    protected void onBottomPanelOpen() {
-        mBottomPanelOpened = true;
-        if (mContentRecyclerView != null) {
-            mContentRecyclerView.setEnabled(false);
-        }
-        if (mContentLayoutManager != null) {
-            if (mContentLayoutManager instanceof LinearContentLayoutManager) {
-                ((LinearContentLayoutManager) mContentLayoutManager).setCanScroll(false);
-            } else {
-                ((GridContentLayoutManager) mContentLayoutManager).setCanScroll(false);
-            }
-        }
-    }
-
-
-    /******************************** LayoutManager *************************************/
-
-    /**
-     * 自定义的LinearLayoutManager，实现canScrollVertically的管理
-     */
-    protected static class LinearContentLayoutManager extends LinearLayoutManager {
-        private boolean canScroll = true;
-
-        public void setCanScroll(boolean canScroll) {
-            this.canScroll = canScroll;
-        }
-
-        public LinearContentLayoutManager(Context context) {
-            super(context);
-        }
-
-        @Override
-        public boolean canScrollVertically() {
-            return canScroll;
-        }
-    }
-
-    /**
-     * 自定义的GridLayoutManager，实现canScrollVertically的管理
-     */
-    protected static class GridContentLayoutManager extends GridLayoutManager {
-        private boolean canScroll = true;
-
-        public void setCanScroll(boolean canScroll) {
-            this.canScroll = canScroll;
-        }
-
-        public GridContentLayoutManager(Context context, int spanCount) {
-            super(context, spanCount);
-        }
-
-        @Override
-        public boolean canScrollVertically() {
-            return canScroll;
-        }
     }
 }

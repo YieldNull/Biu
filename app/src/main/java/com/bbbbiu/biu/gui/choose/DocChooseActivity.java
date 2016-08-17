@@ -1,24 +1,23 @@
 package com.bbbbiu.biu.gui.choose;
 
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.content.DocumentContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
-import com.bbbbiu.biu.util.StorageUtil;
+import com.bbbbiu.biu.gui.adapter.choose.content.DocContentAdapter;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import java.io.File;
-
 /**
+ * 选择文档
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
-public class DocumentChooseActivity extends BaseChooseActivity {
-    private static final String TAG = DocumentChooseActivity.class.getSimpleName();
+public class DocChooseActivity extends BaseChooseActivity {
+    private static final String TAG = DocChooseActivity.class.getSimpleName();
 
-    private DocumentContentAdapter mDocumentAdapter;
+    private DocContentAdapter mDocumentAdapter;
 
     @Override
     protected int getNormalMenuId() {
@@ -37,14 +36,14 @@ public class DocumentChooseActivity extends BaseChooseActivity {
 
     @Override
     protected BaseContentAdapter onCreateContentAdapter() {
-        mDocumentAdapter = new DocumentContentAdapter(this);
+        mDocumentAdapter = new DocContentAdapter(this);
 
         return mDocumentAdapter;
     }
 
     @Override
-    public void onOptionToggleClicked(File file) {
-        StorageUtil.openFile(this, file);
+    protected LinearLayoutManager onCreateContentLayoutManager() {
+        return new LinearLayoutManager(this);
     }
 
     @Override
@@ -52,21 +51,7 @@ public class DocumentChooseActivity extends BaseChooseActivity {
         return new HorizontalDividerItemDecoration.Builder(this).build();
     }
 
-    @Override
-    protected RecyclerView.LayoutManager onCreateContentLayoutManager() {
-        return new LinearContentLayoutManager(this);
-    }
-
-    @Override
-    protected BaseOptionAdapter onCreatePanelAdapter() {
-        return null;
-    }
-
-    @Override
-    protected void onPanelRecyclerViewUpdate(File file) {
-
-    }
-
+    /****************************************************************************************/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

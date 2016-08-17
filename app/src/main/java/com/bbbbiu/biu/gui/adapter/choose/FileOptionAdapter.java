@@ -1,4 +1,4 @@
-package com.bbbbiu.biu.gui.adapter.choose.option;
+package com.bbbbiu.biu.gui.adapter.choose;
 
 import android.app.Activity;
 import android.content.Context;
@@ -21,6 +21,8 @@ import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.choose.FileMoveActivity;
 import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 import com.bbbbiu.biu.util.StorageUtil;
+import com.yqritc.recyclerviewflexibledivider.FlexibleDividerDecoration;
+import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import org.apache.commons.io.FileUtils;
 
@@ -31,16 +33,25 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class FileOptionAdapter extends BaseOptionAdapter {
-    private static final String TAG = FileOptionAdapter.class.getSimpleName();
+/**
+ * 文件底部滑出菜单
+ */
+public class FileOptionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+        implements FlexibleDividerDecoration.PaintProvider,
+        HorizontalDividerItemDecoration.MarginProvider,
+        FlexibleDividerDecoration.VisibilityProvider {
 
     private final int VIEW_TYPE_HEADER = 0;
     private final int VIEW_TYPE_ITEM = 1;
 
 
     private Context context;
-    private File mBoundFile;
     private OptionPanelActionListener mOptionPanelListener;
+
+    /**
+     * 与之关联的文件
+     */
+    private File mBoundFile;
 
     private List<Integer[]> mOptions = Arrays.asList(
             new Integer[]{R.string.file_option_info, R.drawable.ic_action_detail},
@@ -210,6 +221,9 @@ public class FileOptionAdapter extends BaseOptionAdapter {
         }
     }
 
+    /**
+     * 删除文件
+     */
     private void deleteFile() {
         new AlertDialog.Builder(context)
                 .setTitle(mBoundFile.getName())
@@ -244,16 +258,25 @@ public class FileOptionAdapter extends BaseOptionAdapter {
                 }).show();
     }
 
+    /**
+     * 复制文件
+     */
     private void copyFile() {
         ((Activity) context).startActivityForResult(
                 new Intent(context, FileMoveActivity.class), FileMoveActivity.REQUEST_COPY);
     }
 
+    /**
+     * 移动文件
+     */
     private void moveFile() {
         ((Activity) context).startActivityForResult(
                 new Intent(context, FileMoveActivity.class), FileMoveActivity.REQUEST_MOVE);
     }
 
+    /**
+     * 重命名文件
+     */
     private void renameFile() {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 

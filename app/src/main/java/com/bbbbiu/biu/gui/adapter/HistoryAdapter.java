@@ -20,6 +20,7 @@ import com.bbbbiu.biu.db.TransferRecord;
 import com.bbbbiu.biu.gui.HistoryActivity;
 import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
+import com.bbbbiu.biu.gui.choose.listener.FileChooser;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.raizlabs.android.dbflow.list.FlowQueryList;

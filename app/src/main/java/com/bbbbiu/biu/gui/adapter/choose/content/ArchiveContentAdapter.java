@@ -24,10 +24,11 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 选择压缩包
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
 public class ArchiveContentAdapter extends CommonSortedAdapter {
-    private static final String TAG = ArchiveContentAdapter.class.getSimpleName();
 
     public ArchiveContentAdapter(BaseChooseActivity context) {
         super(context);
@@ -87,7 +88,7 @@ public class ArchiveContentAdapter extends CommonSortedAdapter {
         holder.optionImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notifyOptionToggleClicked(item.getFile());
+                StorageUtil.openFile(context, item.getFile());
             }
         });
 

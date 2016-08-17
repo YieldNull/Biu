@@ -1,35 +1,18 @@
 package com.bbbbiu.biu.gui.choose;
 
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.MusicContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import java.io.File;
 
+/**
+ * 选择音乐文件
+ */
 public class MusicChooseActivity extends BaseChooseActivity {
-
-    public static String TAG = MusicChooseActivity.class.getSimpleName();
-
-    @Override
-    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
-        return new HorizontalDividerItemDecoration.Builder(this).build();
-    }
-
-    @Override
-    public void onOptionToggleClicked(File file) {
-
-        StorageUtil.openFile(this, file);
-    }
-
-    @Override
-    protected RecyclerView.LayoutManager onCreateContentLayoutManager() {
-        return new LinearContentLayoutManager(this);
-    }
 
     @Override
     protected int getNormalMenuId() {
@@ -52,12 +35,12 @@ public class MusicChooseActivity extends BaseChooseActivity {
     }
 
     @Override
-    protected void onPanelRecyclerViewUpdate(File file) {
-
+    protected LinearLayoutManager onCreateContentLayoutManager() {
+        return new LinearLayoutManager(this);
     }
 
     @Override
-    protected BaseOptionAdapter onCreatePanelAdapter() {
-        return null;
+    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
+        return new HorizontalDividerItemDecoration.Builder(this).build();
     }
 }

@@ -15,7 +15,7 @@ import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
  * <p/>
  * - 将数据显示（没有则显示空）
  * <p/>
- * - 要数据是从数据库中读取的，那么就后台再扫描一遍MediaStore，存入数据库 {@link CommonContentAdapter#updateDatabase()}
+ * - 要数据是直接从数据库中读取的，那么就后台再扫描一遍MediaStore，{@link CommonContentAdapter#updateDatabase()}。存入数据库
  * <p/>
  * - 然后更新数据集并显示，{@link CommonContentAdapter#updateDataSet()}
  * <p/>
@@ -92,7 +92,7 @@ public abstract class CommonContentAdapter extends BaseContentAdapter {
     protected abstract boolean readDataFromSys();
 
     /**
-     * 更新数据库
+     * 更新数据库,利用MediaStore扫描最新的文件
      */
     protected abstract void updateDatabase();
 

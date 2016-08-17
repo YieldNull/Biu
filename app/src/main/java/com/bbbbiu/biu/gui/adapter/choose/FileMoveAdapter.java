@@ -30,6 +30,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 移动文件
+ * <p/>
  * Created by YieldNull at 5/16/16
  */
 public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -41,12 +43,35 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private OnChangeDirListener mChangeDirListener;
     private OnLoadingDataListener mLoadingDataListener;
 
+
+    /**
+     * 数据集
+     */
     private List<File> mDataSet = new ArrayList<>();
+
+    /**
+     * 当前目录下的文件夹
+     */
     private List<File> mDirList = new ArrayList<>();
+
+    /**
+     * 当前目录下的文件
+     */
     private List<File> mFileList = new ArrayList<>();
 
+    /**
+     * 是否有外置存储卡
+     */
     private boolean hasExternal;
+
+    /**
+     * 内置文件系统根目录，非null
+     */
     private File internal;
+
+    /**
+     * 外置存储卡根目录，可为null
+     */
     private File external;
 
     public FileMoveAdapter(Context context) {
@@ -58,6 +83,11 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
 
+    /**
+     * 设置当前文件夹
+     *
+     * @param rootDir 文件夹
+     */
     public void setCurrentDir(File rootDir) {
         clear();
 
@@ -109,6 +139,12 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    /**
+     * 获取用于显示的根目录
+     * 若有外置存储卡，则返回null；没有则返回内置文件系统根目录
+     *
+     * @return 根目录
+     */
     public File getRootDir() {
         if (hasExternal) {
             return null;
@@ -117,6 +153,11 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    /**
+     * 用于显示的根目录路径
+     *
+     * @return 不管有没有外置存储卡，都显示为内置储存根目录的上级目录的路径
+     */
     public String getRootDirPath() {
         return internal.getParentFile().getAbsolutePath();
     }

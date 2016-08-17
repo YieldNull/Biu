@@ -1,21 +1,20 @@
 package com.bbbbiu.biu.gui.choose;
 
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.gui.adapter.choose.content.ArchiveContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
-import com.bbbbiu.biu.util.StorageUtil;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
-import java.io.File;
 
 /**
+ * 选择压缩文件
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
 public class ArchiveChooseActivity extends BaseChooseActivity {
-    private static final String TAG = ArchiveChooseActivity.class.getSimpleName();
 
     @Override
     protected int getNormalMenuId() {
@@ -38,28 +37,12 @@ public class ArchiveChooseActivity extends BaseChooseActivity {
     }
 
     @Override
-    public void onOptionToggleClicked(File file) {
-        StorageUtil.openFile(this, file);
+    protected LinearLayoutManager onCreateContentLayoutManager() {
+        return new LinearLayoutManager(this);
     }
-
 
     @Override
     protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
         return new HorizontalDividerItemDecoration.Builder(this).build();
-    }
-
-    @Override
-    protected RecyclerView.LayoutManager onCreateContentLayoutManager() {
-        return new LinearContentLayoutManager(this);
-    }
-
-    @Override
-    protected BaseOptionAdapter onCreatePanelAdapter() {
-        return null;
-    }
-
-    @Override
-    protected void onPanelRecyclerViewUpdate(File file) {
-
     }
 }

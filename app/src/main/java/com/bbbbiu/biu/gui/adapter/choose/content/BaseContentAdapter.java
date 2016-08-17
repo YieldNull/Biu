@@ -5,25 +5,20 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
-import com.bbbbiu.biu.gui.adapter.FileChooser;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.FileChooser;
 import com.bbbbiu.biu.gui.choose.listener.OnChoosingListener;
 import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.gui.choose.listener.OptionPanelActionListener;
 
-import java.io.File;
-
 /**
- * 选择文件时，显示数据的Adapter基类。定义了一些需要在Activity中使用的接口
+ * 选择文件时，显示数据的Adapter基类。定义了一些与Activity通讯的接口，见notify...
  * <p/>
  * Created by YieldNull at 5/17/16
  */
 public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements FileChooser {
-    private static final String TAG = BaseContentAdapter.class.getSimpleName();
-
     private OnLoadingDataListener mLoadingDataListener;
     private OnChoosingListener mOnChoosingListener;
-    private OptionPanelActionListener mOptionPanelListener;
 
     protected Context context;
 
@@ -41,7 +36,6 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
     public BaseContentAdapter(BaseChooseActivity context) {
         mLoadingDataListener = context;
         mOnChoosingListener = context;
-        mOptionPanelListener = context;
         this.context = context;
 
     }
@@ -86,7 +80,7 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
     /***************************************************************************************/
 
     /**
-     * 更新Adapter的数据集,别忘了调用 {@link RecyclerView.Adapter#notifyDataSetChanged()}
+     * 强制更新Adapter的数据集,别忘了调用 {@link RecyclerView.Adapter#notifyDataSetChanged()}
      */
     public abstract void updateDataSet();
 
@@ -114,14 +108,14 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
 
 
     /**
-     * 无任何对应的文件
+     * notify 数据集为空
      */
     public void notifyEmptyDataSet() {
         mLoadingDataListener.onEmptyDataSet();
     }
 
     /**
-     * 无任何对应的文件
+     * notify 数据集非空
      */
     public void notifyNonEmptyDataSet() {
         mLoadingDataListener.onNonEmptyDataSet();
@@ -145,14 +139,5 @@ public abstract class BaseContentAdapter extends RecyclerView.Adapter<RecyclerVi
      */
     public void notifyFileDismissed(String filePath) {
         mOnChoosingListener.onFileDismissed(filePath);
-    }
-
-    /**
-     * notify 文件选项菜单被点击
-     *
-     * @param file 文件
-     */
-    public void notifyOptionToggleClicked(File file) {
-        mOptionPanelListener.onOptionToggleClicked(file);
     }
 }

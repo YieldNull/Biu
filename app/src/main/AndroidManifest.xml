@@ -87,7 +87,7 @@
             android:label="@string/title_activity_choose_archive"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".gui.choose.DocumentChooseActivity"
+            android:name=".gui.choose.DocChooseActivity"
             android:label="@string/title_activity_choose_document"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity

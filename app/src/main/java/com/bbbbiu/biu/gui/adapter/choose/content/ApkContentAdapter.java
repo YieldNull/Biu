@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui.adapter.choose.content;
 
+import android.annotation.SuppressLint;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -14,6 +15,7 @@ import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.FileChooser;
 import com.bbbbiu.biu.util.SearchUtil;
 import com.bbbbiu.biu.util.StorageUtil;
 import com.squareup.picasso.Picasso;
@@ -31,6 +33,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 选择APK文件
+ * <p/>
  * Created by fangdongliang on 16/3/24.
  * <p/>
  * Update by YiledNull
@@ -38,17 +42,35 @@ import butterknife.ButterKnife;
 public class ApkContentAdapter extends CommonContentAdapter {
     private static final String TAG = ApkContentAdapter.class.getSimpleName();
 
+    /**
+     * RecyclerView数据集
+     */
     private List<ApkItem> mApkDataSet = new ArrayList<>();
 
+    /***
+     * 系统APK
+     */
     private List<ApkItem> mSystemApkList = new ArrayList<>();
+
+    /**
+     * 用户APK
+     */
     private List<ApkItem> mNormalApkList = new ArrayList<>();
+
+    /**
+     * APK安装包
+     */
     private List<ApkItem> mStandaloneApkList = new ArrayList<>();
 
+
+    /**
+     * 已选APK
+     */
     private List<ApkItem> mChosenApkList = new ArrayList<>();
 
-    private Picasso mPicasso;
-
-    // 默认升序排列
+    /**
+     * 默认排序方式
+     */
     private Comparator<ApkItem> mComparator = new Comparator<ApkItem>() {
         @Override
         public int compare(ApkItem lhs, ApkItem rhs) {
@@ -57,6 +79,11 @@ public class ApkContentAdapter extends CommonContentAdapter {
             return name1.compareTo(name2); //升序
         }
     };
+
+    /**
+     * 加载图片
+     */
+    private Picasso mPicasso;
 
 
     public ApkContentAdapter(final BaseChooseActivity context) {
@@ -81,41 +108,6 @@ public class ApkContentAdapter extends CommonContentAdapter {
     }
 
     @Override
-    public int getChosenCount() {
-        return mChosenApkList.size();
-    }
-
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> files = new HashSet<>();
-        for (ApkItem apkItem : mChosenApkList) {
-            files.add(apkItem.path);
-        }
-        return files;
-    }
-
-    @Override
-    public boolean isFileChosen(File file) {
-        return false;
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        for (ApkItem apkItem : mApkDataSet) {
-            if (apkItem != null) { // 去掉placeholder
-                mChosenApkList.add(apkItem);
-            }
-        }
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChosenApkList.clear();
-        notifyDataSetChanged();
-    }
-
-    @Override
     public void updateDataSet() {
         mApkDataSet.clear();
         readDataFromDB();
@@ -132,9 +124,8 @@ public class ApkContentAdapter extends CommonContentAdapter {
         return HeaderViewHolder.build(inflater, parent);
     }
 
-
     /********************************************************************************************
-     * ***************  ******{@link CommonContentAdapter}  *************************************
+     * ************************{@link CommonContentAdapter}  *************************************
      *********************************************************************************************/
 
     @Override
@@ -157,7 +148,6 @@ public class ApkContentAdapter extends CommonContentAdapter {
         SearchUtil.scanStandAloneApkItem(context);
     }
 
-
     /********************************************************************************************/
 
     @Override
@@ -165,6 +155,7 @@ public class ApkContentAdapter extends CommonContentAdapter {
         return mApkDataSet.size();
     }
 
+    @SuppressLint("RtlHardcoded")
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
         if (getItemViewType(position) == VIEW_TYPE_HEADER) {
@@ -212,10 +203,51 @@ public class ApkContentAdapter extends CommonContentAdapter {
         }
     }
 
+    /********************************************************************************************
+     * ********************{@link FileChooser}*************************
+     *********************************************************************************************/
+
+    @Override
+    public int getChosenCount() {
+        return mChosenApkList.size();
+    }
+
+    @Override
+    public Set<String> getChosenFiles() {
+        Set<String> files = new HashSet<>();
+        for (ApkItem apkItem : mChosenApkList) {
+            files.add(apkItem.path);
+        }
+        return files;
+    }
+
+    @Override
+    public boolean isFileChosen(File file) {
+        return false;
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        for (ApkItem apkItem : mApkDataSet) {
+            if (apkItem != null) { // 去掉placeholder
+                mChosenApkList.add(apkItem);
+            }
+        }
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+        mChosenApkList.clear();
+        notifyDataSetChanged();
+    }
+
     /********************************************************************************************/
 
     /**
-     * 由包管理器扫描已安装的APK，并显示
+     * 扫描已安装的APK
+     *
+     * @param fromDatabase 是否从数据库中读取，否则用包管理器扫描
      */
     private void scanInstalledApk(boolean fromDatabase) {
         Log.i(TAG, "Scanning installed APK from " + (fromDatabase ? "database" : "system"));
@@ -254,12 +286,13 @@ public class ApkContentAdapter extends CommonContentAdapter {
             mApkDataSet.addAll(mSystemApkList);
         }
 
-
         Log.i(TAG, "Installed APK amount: " + (mSystemApkList.size() + mNormalApkList.size()));
     }
 
     /**
-     * 从数据库中读取之前扫描的独立的APK列表
+     * 扫描APK安装包
+     *
+     * @param fromDatabase 是否从数据库中读取，否则用MediaStore扫描
      */
     private void scanStandaloneApk(boolean fromDatabase) {
         Log.i(TAG, "Scanning standalone APK from " + (fromDatabase ? "database" : "system"));
@@ -318,14 +351,18 @@ public class ApkContentAdapter extends CommonContentAdapter {
         notifyDataSetChanged();
     }
 
-
+    /**
+     * 获取数据集中指定位置的APKItem
+     *
+     * @param position 位置
+     * @return ApkItem
+     */
     private ApkItem getApkAt(int position) {
         return mApkDataSet.get(position);
     }
 
-
     /**
-     * APK 被点击
+     * APK被点击,选中或取消选中
      *
      * @param apkItem apk
      */
@@ -342,9 +379,6 @@ public class ApkContentAdapter extends CommonContentAdapter {
     }
 
 
-    /***
-     * APK item placeholder
-     */
     class ApkViewHolder extends RecyclerView.ViewHolder {
         @Bind(R.id.imageView)
         ImageView apkIconImage;

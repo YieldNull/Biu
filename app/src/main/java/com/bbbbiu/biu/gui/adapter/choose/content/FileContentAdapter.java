@@ -15,6 +15,8 @@ import com.bbbbiu.biu.gui.adapter.util.HeaderViewHolder;
 import com.bbbbiu.biu.gui.adapter.util.OnViewTouchListener;
 import com.bbbbiu.biu.gui.adapter.util.VideoIconRequestHandler;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.FileChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.FileChooser;
 import com.bbbbiu.biu.gui.choose.listener.OnChangeDirListener;
 import com.bbbbiu.biu.gui.choose.listener.OnLoadingDataListener;
 import com.bbbbiu.biu.util.StorageUtil;
@@ -36,14 +38,13 @@ import java.util.Set;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+/**
+ * 选文件
+ */
 public class FileContentAdapter extends BaseContentAdapter {
 
-    private static final String TAG = FileContentAdapter.class.getSimpleName();
-
     private OnChangeDirListener mOnChangeDirListener;
-
     private OnLoadingDataListener mOnLoadingDataListener;
-
 
     /**
      * 当前目录下的文件或文件夹
@@ -66,6 +67,7 @@ public class FileContentAdapter extends BaseContentAdapter {
 
     private Picasso mVideoPicasso;
     private Picasso mImgPicasso;
+    private FileChooseActivity mOptionPanelListener;
 
     public FileContentAdapter(BaseChooseActivity context, File rootDir) {
         super(context);
@@ -75,8 +77,9 @@ public class FileContentAdapter extends BaseContentAdapter {
         mVideoPicasso = builder.build();
         mImgPicasso = Picasso.with(context);
 
-        mOnChangeDirListener = (OnChangeDirListener) context;
         mOnLoadingDataListener = context;
+        mOnChangeDirListener = (OnChangeDirListener) context;
+        mOptionPanelListener = (FileChooseActivity) context;
 
         setCurrentDir(rootDir);
     }
@@ -112,41 +115,6 @@ public class FileContentAdapter extends BaseContentAdapter {
         return HeaderViewHolder.build(inflater, parent);
     }
 
-    @Override
-    public boolean isFileChosen(File file) {
-        return mChosenFiles.contains(file);
-    }
-
-
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> list = new HashSet<>();
-        for (File file : mChosenFiles) {
-            list.add(file.getAbsolutePath());
-        }
-        return list;
-    }
-
-    @Override
-    public int getChosenCount() {
-        return mChosenFiles.size();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChosenFiles.clear();
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        for (File file : mFileDataSet) {
-            if (file != null && file.isFile()) { // 禁止选文件夹
-                mChosenFiles.add(file);
-            }
-        }
-        notifyDataSetChanged();
-    }
 
     /********************************************************************************************/
 
@@ -213,7 +181,7 @@ public class FileContentAdapter extends BaseContentAdapter {
             holder.optionToggleImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyOptionToggleClicked(file);
+                    mOptionPanelListener.onOptionToggleClicked(file);
                 }
             });
 
@@ -236,6 +204,47 @@ public class FileContentAdapter extends BaseContentAdapter {
                 holder.iconImage.setClickable(false); // ViewHolder是复用的，千万要记得删掉监听啊
             }
         }
+    }
+
+
+    /********************************************************************************************
+     * ********************{@link FileChooser}*************************
+     *********************************************************************************************/
+
+    @Override
+    public boolean isFileChosen(File file) {
+        return mChosenFiles.contains(file);
+    }
+
+
+    @Override
+    public Set<String> getChosenFiles() {
+        Set<String> list = new HashSet<>();
+        for (File file : mChosenFiles) {
+            list.add(file.getAbsolutePath());
+        }
+        return list;
+    }
+
+    @Override
+    public int getChosenCount() {
+        return mChosenFiles.size();
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+        mChosenFiles.clear();
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        for (File file : mFileDataSet) {
+            if (file != null && file.isFile()) { // 禁止选文件夹
+                mChosenFiles.add(file);
+            }
+        }
+        notifyDataSetChanged();
     }
 
     /**************************************************************************************************/
@@ -261,7 +270,8 @@ public class FileContentAdapter extends BaseContentAdapter {
             @Override
             public boolean accept(File pathname) {
 
-                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory() && pathname.canExecute() && pathname.canRead();
+                return (showHidden || (!pathname.isHidden())) && pathname.isDirectory()
+                        && pathname.canExecute() && pathname.canRead();
             }
         });
 

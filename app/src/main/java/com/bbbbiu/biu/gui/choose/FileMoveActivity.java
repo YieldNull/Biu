@@ -29,6 +29,9 @@ import java.util.Stack;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+/**
+ * 移动文件，文件移动之后跳到目的文件夹，继续文件选择并发送
+ */
 public class FileMoveActivity extends AppCompatActivity implements OnChangeDirListener, OnLoadingDataListener {
     private static final String TAG = FileMoveActivity.class.getSimpleName();
 

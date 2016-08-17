@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -18,14 +19,13 @@ import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.gui.adapter.choose.content.ApkContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.BaseContentAdapter;
 import com.bbbbiu.biu.gui.adapter.choose.content.CommonContentAdapter;
-import com.bbbbiu.biu.gui.adapter.choose.option.BaseOptionAdapter;
 
 import java.io.File;
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
- * 传应用。实现卸载已装应用与删除未装独立安装包的功能
+ * 选择应用。实现卸载已装应用与删除未装独立安装包的功能
  * <p/>
  * 点击卸载按钮时，将已经选择的所有文件的路径分别加入已安装和未安装的队列中
  * 然后先从未安装的队列依次取出文件进行删除，再从已安装的队列中取。
@@ -67,6 +67,50 @@ public class ApkChooseActivity extends BaseChooseActivity {
         });
     }
 
+    /********************************************************************************************/
+
+    @Override
+    protected int getNormalMenuId() {
+        return R.menu.common_normal;
+    }
+
+    @Override
+    protected int getChosenMenuId() {
+        return R.menu.common_chosen;
+    }
+
+    @Override
+    protected String getNormalTitle() {
+        return getString(R.string.title_activity_choose_apk);
+    }
+
+
+    @Override
+    protected BaseContentAdapter onCreateContentAdapter() {
+        return new ApkContentAdapter(this);
+    }
+
+
+    @Override
+    protected LinearLayoutManager onCreateContentLayoutManager() {
+        final GridLayoutManager manager = new GridLayoutManager(this, 4);
+        manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return mApkAdapter.getItemViewType(position) == CommonContentAdapter.VIEW_TYPE_HEADER
+                        ? manager.getSpanCount() : 1;
+            }
+        });
+        return manager;
+    }
+
+    @Override
+    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
+        return null;
+    }
+
+
+    /********************************************************************************************/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -86,6 +130,39 @@ public class ApkChooseActivity extends BaseChooseActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+    /**
+     * 接收卸载应用的result
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_UNINSTALL) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_succeeded,
+                        Toast.LENGTH_SHORT).show();
+
+                onFinishDelete(mApkToUninstallQueue.remove());
+                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
+
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_dismissed,
+                        Toast.LENGTH_SHORT).show();
+
+                mApkToUninstallQueue.remove();
+                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
+            } else {
+                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_failed,
+                        Toast.LENGTH_SHORT).show();
+                mApkToUninstallQueue.remove();
+                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
+            }
+
+        }
+    }
+
 
     /**
      * 删除APK安装包
@@ -161,84 +238,5 @@ public class ApkChooseActivity extends BaseChooseActivity {
         if (mApkAdapter.getChosenCount() == 0) {
             invalidateOptionsMenu();
         }
-    }
-
-    /**
-     * 接收卸载应用的result
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_CODE_UNINSTALL) {
-            if (resultCode == RESULT_OK) {
-                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_succeeded,
-                        Toast.LENGTH_SHORT).show();
-
-                onFinishDelete(mApkToUninstallQueue.remove());
-                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
-
-            } else if (resultCode == RESULT_CANCELED) {
-                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_dismissed,
-                        Toast.LENGTH_SHORT).show();
-
-                mApkToUninstallQueue.remove();
-                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
-            } else {
-                Toast.makeText(ApkChooseActivity.this, R.string.hint_apk_delete_failed,
-                        Toast.LENGTH_SHORT).show();
-                mApkToUninstallQueue.remove();
-                mHandler.sendEmptyMessage(MSG_PERFORM_DELETE);
-            }
-
-        }
-    }
-
-
-    @Override
-    protected int getNormalMenuId() {
-        return R.menu.common_normal;
-    }
-
-    @Override
-    protected int getChosenMenuId() {
-        return R.menu.common_chosen;
-    }
-
-    @Override
-    protected String getNormalTitle() {
-        return getString(R.string.title_activity_choose_apk);
-    }
-
-    @Override
-    protected RecyclerView.ItemDecoration onCreateContentItemDecoration() {
-        return null;
-    }
-
-    @Override
-    protected RecyclerView.LayoutManager onCreateContentLayoutManager() {
-        final GridContentLayoutManager manager = new GridContentLayoutManager(this, 4);
-        manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                return mApkAdapter.getItemViewType(position) == CommonContentAdapter.VIEW_TYPE_HEADER
-                        ? manager.getSpanCount() : 1;
-            }
-        });
-        return manager;
-    }
-
-    @Override
-    protected BaseContentAdapter onCreateContentAdapter() {
-        return new ApkContentAdapter(this);
-    }
-
-    @Override
-    protected void onPanelRecyclerViewUpdate(File file) {
-    }
-
-    @Override
-    protected BaseOptionAdapter onCreatePanelAdapter() {
-        return null;
     }
 }

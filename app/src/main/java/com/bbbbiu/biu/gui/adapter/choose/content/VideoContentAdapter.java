@@ -28,6 +28,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 选视频
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
 public class VideoContentAdapter extends CommonSortedAdapter {
@@ -36,6 +38,9 @@ public class VideoContentAdapter extends CommonSortedAdapter {
     private Context context;
     private Picasso mPicasso;
 
+    /**
+     * 缩略图大小，根据layout决定的
+     */
     private static final int THUMB_SIZE = (int) SizeUtil.convertDpToPixel(24);
 
     public VideoContentAdapter(BaseChooseActivity context) {
@@ -116,7 +121,7 @@ public class VideoContentAdapter extends CommonSortedAdapter {
         holder.optionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notifyOptionToggleClicked(item.getFile());
+                StorageUtil.openFile(context, item.getFile());
             }
         });
 

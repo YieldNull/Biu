@@ -11,6 +11,7 @@ import android.widget.TextView;
 import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.db.search.ModelItem;
 import com.bbbbiu.biu.gui.choose.BaseChooseActivity;
+import com.bbbbiu.biu.gui.choose.listener.FileChooser;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,13 +27,11 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
- * 实现了将读取到的数据按文件夹分类,的CommonAdapter
+ * 实现了将读取到的数据按文件夹分类的CommonAdapter。并可以按文件夹进行折叠
  * <p/>
  * Created by YieldNull at 5/18/16
  */
 public abstract class CommonSortedAdapter extends CommonContentAdapter {
-    private static final String TAG = CommonSortedAdapter.class.getSimpleName();
-
 
     /**
      * 数据集，用于显示
@@ -44,9 +43,14 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
      */
     protected List<ModelItem> mChosenItems = new ArrayList<>();
 
-    protected List<String> mCollapsedFolderList = new ArrayList<>();
     /**
-     * 文件夹：数据
+     * 已经折叠的文件夹
+     */
+    protected List<String> mCollapsedFolderList = new ArrayList<>();
+
+
+    /**
+     * 文件夹：数据 map。按文件夹名排序
      */
     protected Map<String, List<ModelItem>> mDirDataMap = new TreeMap<>(new Comparator<String>() {
         @Override
@@ -55,6 +59,10 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
         }
     });
 
+
+    /**
+     * 文件夹内默认排序
+     */
     private Comparator<ModelItem> mDefaultItemComparator = new Comparator<ModelItem>() {
         @Override
         public int compare(ModelItem lhs, ModelItem rhs) {
@@ -62,12 +70,18 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
         }
     };
 
-    public abstract Comparator<ModelItem> getItemComparator();
 
     public CommonSortedAdapter(BaseChooseActivity context) {
         super(context);
     }
 
+
+    /**
+     * 设置排序方式，例如图片要依据修改日期排序，文档依据文件名排序等
+     *
+     * @return 排序方式
+     */
+    public abstract Comparator<ModelItem> getItemComparator();
 
     /***********************************************************************************
      * ***************实现 {@link CommonContentAdapter}中的抽象方法   *********************
@@ -85,6 +99,7 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
     protected abstract Map<String, List<ModelItem>> readSortedDataFromDB();
 
     protected abstract Map<String, List<ModelItem>> readSortedDataFromSys();
+
 
     /***********************************************************************************
      * ***************实现 {@link BaseContentAdapter}中的抽象方法   *********************
@@ -107,58 +122,18 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
     }
 
     @Override
-    public int getItemCount() {
-        return mDataSetItems.size();
-    }
-
-    @Override
-    public int getChosenCount() {
-        return mChosenItems.size();
-    }
-
-
-    @Override
-    public Set<String> getChosenFiles() {
-        Set<String> set = new HashSet<>();
-        for (ModelItem item : mChosenItems) {
-            set.add(item.getPath());
-        }
-        return set;
-    }
-
-
-    @Override
-    public boolean isFileChosen(File file) {
-        return getChosenFiles().contains(file.getAbsolutePath());
-    }
-
-    @Override
-    public void setFileAllChosen() {
-        mChosenItems.clear();
-
-        for (ModelItem item : mDataSetItems) {
-            if (!(item instanceof HeaderPlaceHolderItem)) {
-                mChosenItems.add(item);
-            }
-        }
-
-        notifyDataSetChanged();
-    }
-
-    @Override
-    public void setFileAllDismissed() {
-        mChosenItems.clear();
-        notifyDataSetChanged();
-    }
-
-    /***********************************************************************************/
-
-
-    @Override
     public RecyclerView.ViewHolder onCreateHeaderViewHolder(LayoutInflater inflater, ViewGroup parent) {
         View itemView = inflater.inflate(R.layout.list_header_sorted, parent, false);
         return new ExpandableHeaderViewHolder(itemView);
     }
+
+    /***********************************************************************************/
+
+    @Override
+    public int getItemCount() {
+        return mDataSetItems.size();
+    }
+
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder hd, int position) {
@@ -210,10 +185,97 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
         }
     }
 
+    /**
+     * 绑定数据项
+     *
+     * @param holder   holder
+     * @param position position
+     */
     public abstract void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position);
 
 
-    /***********************************************************************************/
+    /***************************************************************************************
+     * ***************************{@link FileChooser }***************************************
+     ***********************************************************************************/
+
+
+    @Override
+    public int getChosenCount() {
+        return mChosenItems.size();
+    }
+
+
+    @Override
+    public Set<String> getChosenFiles() {
+        Set<String> set = new HashSet<>();
+        for (ModelItem item : mChosenItems) {
+            set.add(item.getPath());
+        }
+        return set;
+    }
+
+
+    @Override
+    public boolean isFileChosen(File file) {
+        return getChosenFiles().contains(file.getAbsolutePath());
+    }
+
+    @Override
+    public void setFileAllChosen() {
+        mChosenItems.clear();
+
+        for (ModelItem item : mDataSetItems) {
+            if (!(item instanceof HeaderPlaceHolderItem)) {
+                mChosenItems.add(item);
+            }
+        }
+
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public void setFileAllDismissed() {
+        mChosenItems.clear();
+        notifyDataSetChanged();
+    }
+
+
+    /**
+     * 设置数据集，先清空再设置
+     *
+     * @param sortedItems 已经按文件夹分好类的数据
+     * @return 设置完成后数据集是否为空
+     */
+    protected boolean setDataSet(Map<String, List<ModelItem>> sortedItems) {
+        mDirDataMap.clear();
+        mDirDataMap.putAll(sortedItems);
+
+        // 剔除已收起的，其余全展开
+        Set<String> keySet = sortedItems.keySet();
+        List<String> toRemove = new ArrayList<>();
+
+        for (String folder : mCollapsedFolderList) {
+            if (!keySet.contains(folder)) {
+                toRemove.add(folder); // 已经不存在了
+            }
+        }
+
+        mCollapsedFolderList.removeAll(toRemove);
+
+        onItemRangeChanged();
+
+        return mDataSetItems.size() != 0;
+    }
+
+    /**
+     * 获取默认排序
+     *
+     * @return 默认按名称升序
+     */
+    protected Comparator<ModelItem> getDefaultItemComparator() {
+        return mDefaultItemComparator;
+    }
+
 
     /**
      * 获取数据集中position处的项
@@ -250,42 +312,6 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
             notifyFileDismissed(item.getPath());
         }
         notifyDataSetChanged();
-    }
-
-    /**
-     * 设置数据集，先清空再设置
-     *
-     * @param sortedItems 已经按文件夹分好类的数据
-     * @return 设置完成后数据集是否为空
-     */
-    protected boolean setDataSet(Map<String, List<ModelItem>> sortedItems) {
-        mDirDataMap.clear();
-        mDirDataMap.putAll(sortedItems);
-
-        // 剔除已收起的，其余全展开
-        Set<String> keySet = sortedItems.keySet();
-        List<String> toRemove = new ArrayList<>();
-
-        for (String folder : mCollapsedFolderList) {
-            if (!keySet.contains(folder)) {
-                toRemove.add(folder); // 已经不存在了
-            }
-        }
-
-        mCollapsedFolderList.removeAll(toRemove);
-
-        onItemRangeChanged();
-
-        return mDataSetItems.size() != 0;
-    }
-
-    /**
-     * 获取默认排序
-     *
-     * @return 默认按名称升序
-     */
-    protected Comparator<ModelItem> getDefaultItemComparator() {
-        return mDefaultItemComparator;
     }
 
     /**
@@ -327,7 +353,6 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
             }
         }
     }
-
 
     /***********************************************************************************/
 

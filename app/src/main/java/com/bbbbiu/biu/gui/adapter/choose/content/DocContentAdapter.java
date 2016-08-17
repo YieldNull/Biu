@@ -28,18 +28,17 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 选文档，实现按文件类型分类
+ * <p/>
  * Created by YieldNull at 4/18/16
  */
-public class DocumentContentAdapter extends CommonSortedAdapter {
-    private static final String TAG = DocumentContentAdapter.class.getSimpleName();
+public class DocContentAdapter extends CommonSortedAdapter {
+    private static final String TAG = DocContentAdapter.class.getSimpleName();
+    private boolean byFolder = true;
 
-    public DocumentContentAdapter(BaseChooseActivity context) {
+
+    public DocContentAdapter(BaseChooseActivity context) {
         super(context);
-    }
-
-    @Override
-    public Comparator<ModelItem> getItemComparator() {
-        return getDefaultItemComparator();
     }
 
     @Override
@@ -58,9 +57,6 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
     }
 
 
-    private boolean byFolder = true;
-
-
     @Override
     public void updateDataSet() {
         if (byFolder) {
@@ -70,15 +66,64 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
         }
     }
 
+    @Override
+    public void cancelPicassoTask() {
+    }
+
+
+    @Override
+    public Comparator<ModelItem> getItemComparator() {
+        return getDefaultItemComparator();
+    }
+
+
+    @Override
+    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
+        return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
+    }
+
+
+    @Override
+    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
+        DocumentViewHolder holder = (DocumentViewHolder) hd;
+        final FileItem item = (FileItem) getItemAt(position);
+
+        holder.nameText.setText(item.getFile().getName());
+        holder.infoText.setText(item.getSize());
+
+        if (isItemChosen(position)) {
+            holder.setItemStyleChosen();
+        } else {
+            holder.setItemStyleChoosing(item.getFile());
+        }
+
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setItemChosen(item);
+            }
+        });
+        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
+        holder.optionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                StorageUtil.openFile(context, item.getFile());
+            }
+        });
+
+        holder.optionButton.setOnTouchListener(new OnViewTouchListener(context));
+    }
+
+
     /**
-     * 按文件夹排序
+     * 按文件夹排序，toolbar调用
      */
     public void sortByFolder() {
         sortByFolder(false);
     }
 
     /**
-     * 按类型排序
+     * 按类型排序，toolbar调用
      */
     public void sortByType() {
         sortByType(false);
@@ -137,50 +182,6 @@ public class DocumentContentAdapter extends CommonSortedAdapter {
         byFolder = false;
     }
 
-
-    @Override
-    public void cancelPicassoTask() {
-
-    }
-
-
-    @Override
-    public RecyclerView.ViewHolder onCreateItemViewHolder(LayoutInflater inflater, ViewGroup parent) {
-        return new DocumentViewHolder(inflater.inflate(R.layout.list_document_item, parent, false));
-    }
-
-
-    @Override
-    public void onBindItemViewHolder(RecyclerView.ViewHolder hd, int position) {
-        DocumentViewHolder holder = (DocumentViewHolder) hd;
-        final FileItem item = (FileItem) getItemAt(position);
-
-        holder.nameText.setText(item.getFile().getName());
-        holder.infoText.setText(item.getSize());
-
-        if (isItemChosen(position)) {
-            holder.setItemStyleChosen();
-        } else {
-            holder.setItemStyleChoosing(item.getFile());
-        }
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setItemChosen(item);
-            }
-        });
-        holder.itemView.setOnTouchListener(new OnViewTouchListener(context));
-        holder.optionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                notifyOptionToggleClicked(item.getFile());
-            }
-        });
-
-        holder.optionButton.setOnTouchListener(new OnViewTouchListener(context));
-
-    }
 
     class DocumentViewHolder extends RecyclerView.ViewHolder {
 

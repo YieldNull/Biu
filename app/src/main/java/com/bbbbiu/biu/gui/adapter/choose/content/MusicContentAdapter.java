@@ -24,13 +24,13 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 /**
+ * 选音乐
+ * <p/>
  * Created by fangdongliang on 16/3/26.
  * <p/>
  * Updated by YieldNull
  */
 public class MusicContentAdapter extends CommonSortedAdapter {
-    private static final String TAG = MusicContentAdapter.class.getSimpleName();
-
 
     public MusicContentAdapter(final BaseChooseActivity context) {
         super(context);
@@ -101,7 +101,7 @@ public class MusicContentAdapter extends CommonSortedAdapter {
         holder.optionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                notifyOptionToggleClicked(item.getFile());
+                StorageUtil.openFile(context, item.getFile());
             }
         });
 

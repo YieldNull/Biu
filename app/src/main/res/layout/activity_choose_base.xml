@@ -1,67 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:sothree="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/sliding_layout"
+    android:id="@+id/coordinatorLayout_choosing"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="bottom"
-    sothree:umanoOverlay="true"
-    sothree:umanoPanelHeight="0dp"
-    sothree:umanoShadowHeight="8dp">
+    android:layout_height="match_parent">
 
-    <android.support.design.widget.CoordinatorLayout
-        android:id="@+id/coordinatorLayout_choosing"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar_choosing"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:fitsSystemWindows="true"
-            android:theme="@style/AppTheme.AppBarOverlay">
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@color/colorPrimary"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
-            <!--app:layout_scrollFlags="scroll|enterAlways|snap"-->
-
-            <include
-                layout="@layout/list_header_dir"
-                android:visibility="gone" />
-
-        </android.support.design.widget.AppBarLayout>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recyclerView_content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
-
-        <com.wang.avi.AVLoadingIndicatorView
-            android:id="@+id/loadingIndicatorView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            app:indicator="BallPulse"
-            app:indicator_color="@color/loading_indicator" />
-
-        <include layout="@layout/empty_content" />
-
-        <include layout="@layout/floating_button_send" />
-
-    </android.support.design.widget.CoordinatorLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView_panel"
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar_choosing"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/option_panel_bkgd" />
-</com.sothree.slidinguppanel.SlidingUpPanelLayout>
+        android:fitsSystemWindows="true"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+        <!--app:layout_scrollFlags="scroll|enterAlways|snap"-->
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <com.wang.avi.AVLoadingIndicatorView
+        android:id="@+id/loadingIndicatorView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:indicator="BallPulse"
+        app:indicator_color="@color/loading_indicator" />
+
+    <include layout="@layout/empty_content" />
+
+    <include layout="@layout/floating_button_send" />
+
+</android.support.design.widget.CoordinatorLayout>
