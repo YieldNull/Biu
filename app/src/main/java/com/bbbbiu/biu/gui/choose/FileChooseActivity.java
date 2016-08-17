@@ -4,9 +4,12 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.Toast;
 
 import com.bbbbiu.biu.R;
@@ -40,6 +43,8 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
     private Stack<File> mDirStack = new Stack<>();
     private Parcelable mRecyclerViewState;
 
+    private Handler mHandler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +53,8 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
         mOptionAdapter = (FileOptionAdapter) mPanelAdapter;
         mDirStack.add(mFileAdapter.getCurrentDir());
 
+        mHeaderScrollView.setVisibility(View.VISIBLE);
+        mHeaderDirText.setText(mFileAdapter.getCurrentDir().getAbsolutePath());
     }
 
 
@@ -119,6 +126,12 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
 
         setFileAllDismissed();
 
+        mHeaderDirText.setText(dir.getAbsolutePath());
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                mHeaderScrollView.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+            }
+        }, 100L);
     }
 
 
@@ -136,6 +149,13 @@ public class FileChooseActivity extends BaseChooseActivity implements OnChangeDi
             mContentRecyclerView.getLayoutManager().onRestoreInstanceState(mRecyclerViewState);
         }
         mRecyclerViewState = null;
+
+        mHeaderDirText.setText(mDirStack.peek().getAbsolutePath());
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                mHeaderScrollView.fullScroll(HorizontalScrollView.FOCUS_LEFT);
+            }
+        }, 100L);
     }
 
     @Override

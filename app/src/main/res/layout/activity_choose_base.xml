@@ -30,6 +30,11 @@
                 android:background="@color/colorPrimary"
                 app:popupTheme="@style/AppTheme.PopupOverlay" />
             <!--app:layout_scrollFlags="scroll|enterAlways|snap"-->
+
+            <include
+                layout="@layout/list_header_dir"
+                android:visibility="gone" />
+
         </android.support.design.widget.AppBarLayout>
 
         <android.support.v7.widget.RecyclerView

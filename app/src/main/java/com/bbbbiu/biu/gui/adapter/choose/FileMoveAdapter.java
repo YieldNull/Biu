@@ -57,6 +57,7 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         init();
     }
 
+
     public void setCurrentDir(File rootDir) {
         clear();
 
@@ -108,9 +109,23 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
+    public File getRootDir() {
+        if (hasExternal) {
+            return null;
+        } else {
+            return internal;
+        }
+    }
+
+    public String getRootDirPath() {
+        return internal.getParentFile().getAbsolutePath();
+    }
+
+
     private void init() {
+        internal = StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL);
+
         if (StorageUtil.hasRealExternal(context)) {
-            internal = StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL);
             external = StorageUtil.getRootDir(context, StorageUtil.STORAGE_EXTERNAL);
 
             mDirList.add(internal);
@@ -121,7 +136,6 @@ public class FileMoveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             hasExternal = true;
         } else {
             setCurrentDir(StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL));
-
             hasExternal = false;
         }
     }

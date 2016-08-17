@@ -19,6 +19,8 @@
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+        <include layout="@layout/list_header_dir" />
+
     </android.support.design.widget.AppBarLayout>
 
 

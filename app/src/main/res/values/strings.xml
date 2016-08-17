@@ -40,6 +40,8 @@
     <string name="action_delete">删除</string>
     <string name="action_about">关于</string>
     <string name="action_share">分享</string>
+
+    <string name="action_sort">排序方式</string>
     <string name="action_sort_by_folder">按文件夹</string>
     <string name="action_sort_by_type">按文件类型</string>
 
@@ -82,6 +84,7 @@
 
 
     <string name="hint_choose_file_required">请先选择文件</string>
+    <string name="hint_choose_dir_required">请先选择文件夹</string>
 
     <string name="hint_file_delete_dismissed">删除已取消</string>
     <string name="hint_file_delete_failed">删除失败，请用系统文件管理器删除</string>
@@ -90,15 +93,15 @@
     <string name="hint_file_delete_partly_succeeded">部分文件无法删除，请用系统文件管理器删除</string>
 
     <string name="hitn_file_rename_succeeded">重命名成功</string>
-    <string name="hitn_file_rename_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+    <string name="hitn_file_rename_failed">重命名失败，请用系统文件管理器操作</string>
 
     <string name="hint_file_move_running">正在移动</string>
     <string name="hint_file_move_succeeded">已成功移动文件</string>
-    <string name="hint_file_move_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+    <string name="hint_file_move_failed">移动失败，请用系统文件管理器操作</string>
 
     <string name="hint_file_copy_running">正在复制</string>
     <string name="hint_file_copy_succeeded">已成功复制文件</string>
-    <string name="hint_file_copy_failed">Android 4.4+不能修改外置储存卡中的文件，请用系统文件管理器操作</string>
+    <string name="hint_file_copy_failed">复制失败，请用系统文件管理器操作</string>
 
     <string name="hint_file_exists_folder">操作失败，文件夹已存在</string>
     <string name="hint_file_exists_file">操作失败，文件已存在</string>
@@ -168,6 +171,4 @@
     <string name="connpc_button_ap">开启热点</string>
     <string name="connpc_button_local">开始传输</string>
     <string name="connpc_button_web">开始连接</string>
-    <string name="action_sort">排序方式</string>
-
 </resources>

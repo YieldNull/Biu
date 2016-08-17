@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
+import android.widget.HorizontalScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -109,6 +110,12 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
 
     @Bind(R.id.textView_empty)
     protected TextView mEmptyTextView;
+
+    @Bind(R.id.scrollView)
+    protected HorizontalScrollView mHeaderScrollView;
+
+    @Bind(R.id.textView_dir)
+    protected TextView mHeaderDirText;
 
     /**
      * 纪录滑动的位置，为隐藏、显示floating button用
@@ -551,11 +558,13 @@ public abstract class BaseChooseActivity extends AppCompatActivity implements
     /**
      * 更新title，显示选中数量
      */
+    @SuppressWarnings("ConstantConditions")
     protected void refreshTitle() {
         if (mContentAdapter.getChosenCount() == 0) {
             getSupportActionBar().setTitle(getNormalTitle());
         } else {
-            getSupportActionBar().setTitle(String.valueOf(mContentAdapter.getChosenCount()));
+            getSupportActionBar().setTitle(getString(R.string.title_chosen_file_count,
+                    mContentAdapter.getChosenCount()));
         }
     }
 
