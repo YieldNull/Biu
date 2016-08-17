@@ -193,23 +193,6 @@ public class FileChooseActivity extends BaseChooseActivity implements
             return;
         }
 
-        // 把File以及其所有父文件夹加入文件夹栈中
-        String internalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_INTERNAL).getAbsolutePath();
-        String externalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_EXTERNAL).getAbsolutePath();
-
-        String root = destDir.getAbsolutePath().contains(internalRoot) ? internalRoot : externalRoot;
-
-        mDirStack.clear();
-        File parent = destDir.getAbsoluteFile();
-        mDirStack.push(parent);
-        while (!parent.getAbsolutePath().equals(root)) {
-            parent = parent.getParentFile();
-            mDirStack.push(parent);
-        }
-        Collections.reverse(mDirStack);
-
-        mFileAdapter.setCurrentDir(destDir);
-        mContentRecyclerView.swapAdapter(mFileAdapter, true);
 
         // 开线程移动文件
         final boolean isCopy = requestCode == FileMoveActivity.REQUEST_COPY;
@@ -225,7 +208,7 @@ public class FileChooseActivity extends BaseChooseActivity implements
                     FileChooseActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            onOptionModifyContent();
+                            jumpToDir(finalDestDir);
                         }
                     });
                 }
@@ -440,6 +423,33 @@ public class FileChooseActivity extends BaseChooseActivity implements
         return true;
     }
 
+    /**
+     * 跳转到文件夹
+     *
+     * @param destDir 目的文件夹
+     */
+    private void jumpToDir(File destDir) {
+        // 把File以及其所有父文件夹加入文件夹栈中
+        String internalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_INTERNAL).getAbsolutePath();
+        String externalRoot = StorageUtil.getRootDir(this, StorageUtil.STORAGE_EXTERNAL).getAbsolutePath();
+
+        String root = destDir.getAbsolutePath().contains(internalRoot) ? internalRoot : externalRoot;
+
+        mDirStack.clear();
+        File parent = destDir.getAbsoluteFile();
+        mDirStack.push(parent);
+        while (!parent.getAbsolutePath().equals(root)) {
+            parent = parent.getParentFile();
+            mDirStack.push(parent);
+        }
+        Collections.reverse(mDirStack);
+
+        mFileAdapter.setCurrentDir(destDir);
+        mContentRecyclerView.swapAdapter(mFileAdapter, true);
+
+        mHeaderDirText.setText(destDir.getAbsolutePath());
+        onOptionModifyContent();
+    }
 
     /******************************** LayoutManager *************************************/
 
