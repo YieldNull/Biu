@@ -23,6 +23,7 @@
     <string name="title_activity_upload">正在上传</string>
     <string name="title_activity_file_move">选择文件夹</string>
     <string name="title_activity_share">比鼬文件快传</string>
+    <string name="title_activity_help">使用帮助</string>
 
 
     <string name="title_chosen_file_count">已选择%d项</string>
@@ -38,7 +39,7 @@
     <string name="action_select_all">全选</string>
     <string name="action_choosing_dismiss">清除选择</string>
     <string name="action_delete">删除</string>
-    <string name="action_about">关于</string>
+    <string name="action_help">帮助</string>
     <string name="action_share">分享</string>
 
     <string name="action_sort">排序方式</string>

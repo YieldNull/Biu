@@ -8,9 +8,9 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_help"
         android:orderInCategory="100"
-        android:title="@string/action_about"
+        android:title="@string/action_help"
         app:showAsAction="never" />
 </menu>
 

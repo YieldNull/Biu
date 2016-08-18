@@ -115,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_history:
                 startActivity(new Intent(this, HistoryActivity.class));
                 break;
+            case R.id.action_help:
+                startActivity(new Intent(this, HelpActivity.class));
+                break;
             default:
                 break;
         }
