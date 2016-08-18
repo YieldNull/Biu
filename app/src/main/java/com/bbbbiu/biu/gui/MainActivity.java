@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,6 +19,7 @@ import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.util.NetworkUtil;
+import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
@@ -91,6 +93,16 @@ public class MainActivity extends AppCompatActivity {
 
         mActionMenu.setIconAnimated(false);
         mActionMenu.setClosedOnTouchOutside(true);
+
+        // 首次启动跳到帮助界面
+        if (PreferenceUtil.isFirstRun(this)) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    startActivity(new Intent(MainActivity.this, HelpActivity.class));
+                }
+            }, 1000);
+        }
     }
 
 

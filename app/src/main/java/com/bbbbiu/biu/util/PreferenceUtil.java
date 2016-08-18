@@ -22,6 +22,29 @@ public class PreferenceUtil {
 
     private static final String SCHEMA_HELPER = "Helper";
     private static final String KEY_FILE_URIS_TO_SEND = "FILE_TO_SEND";
+    private static final String KEY_FIRST_RUN = "FIRST_RUN";
+
+    /**
+     * 是否第一次启动
+     *
+     * @param context context
+     * @return 是否第一次启动
+     */
+    public static boolean isFirstRun(Context context) {
+        SharedPreferences preferences = context.getSharedPreferences(SCHEMA_HELPER, Context.MODE_PRIVATE);
+
+        if (preferences.getBoolean(KEY_FIRST_RUN, true)) { // 首次运行时，返回默认值true
+
+            // 设置为false
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putBoolean(KEY_FIRST_RUN, false);
+            editor.apply();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * 因为发送文件到电脑要经过三个Activity，懒得传，因此就先持久化
