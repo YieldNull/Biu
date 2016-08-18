@@ -5,17 +5,23 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.XmlResourceParser;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.bbbbiu.biu.R;
 import com.bbbbiu.biu.db.search.ApkItem;
 import com.bbbbiu.biu.db.search.FileItem;
 import com.bbbbiu.biu.db.search.MediaItem;
 import com.bbbbiu.biu.db.search.ModelItem;
 
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +45,6 @@ import java.util.Set;
  */
 public class SearchUtil {
     private static final String TAG = SearchUtil.class.getSimpleName();
-
 
     /**
      * 利用包管理器，获取已安装的APK列表。
@@ -329,6 +334,8 @@ public class SearchUtil {
 
     /**
      * 从MediaStore读取相应后缀名的文件路径,剔除不存在的文件
+     * <p/>
+     * 注意，若在使用过程中添加规则文件，要注意将exclude中的条目从数据库中删除。因为search时不会删除原有条目
      *
      * @param context    context
      * @param extensions 后缀名列表
@@ -369,12 +376,13 @@ public class SearchUtil {
             return resultSet;
         }
 
+        ConfParser parser = new ConfParser(context);
         while (cursor.moveToNext()) {
             String path = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
 
             File file = new File(path);
 
-            if (file.exists()) {
+            if (file.exists() && canInclude(parser, file.getAbsolutePath())) {
                 resultSet.add(path);
             }
         }
@@ -404,5 +412,109 @@ public class SearchUtil {
         }
 
         return mediaItemList;
+    }
+
+
+    /**
+     * 根据预定义的搜索规则判断是否能把文件加入分类数据库
+     *
+     * @param parser ConfParser
+     * @param path   文件绝对路径
+     * @return 是否能加入
+     */
+    private static boolean canInclude(ConfParser parser, String path) {
+        for (String dir : parser.includes) {
+            if (path.startsWith(dir)) {
+                return true;
+            }
+        }
+
+        for (String dir : parser.excludes) {
+            if (path.startsWith(dir)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    /**
+     * 解析预定义的搜索规则
+     */
+    static class ConfParser {
+        Context context;
+
+        List<String> includes = new ArrayList<>();
+        List<String> excludes = new ArrayList<>();
+
+        private File internal;
+
+        ConfParser(Context context) {
+            this.context = context;
+            internal = StorageUtil.getRootDir(context, StorageUtil.STORAGE_INTERNAL);
+
+            parse();
+        }
+
+        private void parse() {
+            XmlResourceParser parser = context.getResources().getXml(R.xml.search);
+
+            Log.i(TAG, "Parsing predefined searching rules");
+
+            try {
+                int eventType = parser.getEventType();
+
+                while (eventType != XmlPullParser.END_DOCUMENT) {
+                    if (eventType == XmlPullParser.START_TAG) {
+                        if (parser.getName().equals("item")) {
+                            parseItem(parser);
+                        }
+                    }
+                    eventType = parser.next();
+                }
+            } catch (XmlPullParserException | IOException e) {
+                Log.w(TAG, e.getMessage());
+            }
+        }
+
+        private void parseItem(XmlResourceParser parser) throws XmlPullParserException, IOException {
+            int eventType = parser.getEventType();
+
+            String type = null, path = null;
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    String name = parser.getName();
+                    switch (name) {
+                        case "type":
+                            type = parser.nextText();
+                            break;
+                        case "path":
+                            path = parser.nextText();
+                            break;
+                        default:
+                            break;
+                    }
+                } else if (eventType == XmlPullParser.END_TAG) {
+                    if (parser.getName().equals("item")) {
+                        break;
+                    }
+                }
+                eventType = parser.next();
+            }
+
+
+            if (type != null && path != null) {
+                path = new File(internal, path).getAbsolutePath();
+
+                if (type.equals("include")) {
+                    includes.add(path);
+                    Log.d(TAG, String.format("%s  %s", type, path));
+                } else if (type.equals("exclude")) {
+                    excludes.add(path);
+                    Log.d(TAG, String.format("%s  %s", type, path));
+                }
+            }
+        }
     }
 }

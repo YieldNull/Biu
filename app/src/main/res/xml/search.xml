@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+    <item>
+        <type>exclude</type>
+        <path>tencent</path>
+    </item>
+    <item>
+        <type>include</type>
+        <path>tencent/MicroMsg/Weixin</path>
+    </item>
+    <item>
+        <type>include</type>
+        <path>tencent/QQ_Images</path>
+    </item>
+    <item>
+        <type>include</type>
+        <path>tencent/QQfile_recv</path>
+    </item>
+
+    <item>
+        <type>exclude</type>
+        <path>sina/weibo</path>
+    </item>
+    <item>
+        <type>include</type>
+        <path>sina/weibo/weibo</path>
+    </item>
+
+    <item>
+        <type>exclude</type>
+        <path>Android/data</path>
+    </item>
+    <item>
+        <type>include</type>
+        <path>Android/data/com.bbbbiu.biu</path>
+    </item>
+</search>

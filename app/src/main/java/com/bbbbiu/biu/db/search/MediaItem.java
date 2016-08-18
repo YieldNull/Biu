@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 
 import com.bbbbiu.biu.util.StorageUtil;
 import com.raizlabs.android.dbflow.annotation.Column;
-import com.raizlabs.android.dbflow.annotation.Database;
 import com.raizlabs.android.dbflow.annotation.Index;
 import com.raizlabs.android.dbflow.annotation.PrimaryKey;
 import com.raizlabs.android.dbflow.annotation.Table;
@@ -21,15 +20,8 @@ import java.io.File;
  * Created by YieldNull at 4/18/16
  */
 
-@Table(database = MediaItem.MyDatabase.class)
+@Table(database = Database.class)
 public class MediaItem extends ModelItem {
-    @Database(name = MyDatabase.NAME, version = MyDatabase.VERSION)
-    public class MyDatabase {
-
-        public static final String NAME = "media";
-
-        public static final int VERSION = 1;
-    }
 
     @PrimaryKey
     @Index

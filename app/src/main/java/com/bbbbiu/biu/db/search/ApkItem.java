@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * APK。将应用图标缓存到磁盘中
  */
-@Table(database = FileItem.MyDatabase.class)
+@Table(database = Database.class)
 public class ApkItem extends ModelItem {
 
     public static final int TYPE_APK_STANDALONE = 0;

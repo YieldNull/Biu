@@ -40,7 +40,7 @@ public class TransferRecord extends BaseModel {
     @Database(name = MyDatabase.NAME, version = MyDatabase.VERSION)
     public class MyDatabase {
 
-        public static final String NAME = "history";
+        public static final String NAME = "transfer_history";
 
         public static final int VERSION = 1;
     }
