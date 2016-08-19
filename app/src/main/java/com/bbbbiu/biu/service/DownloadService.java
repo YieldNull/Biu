@@ -121,7 +121,7 @@ public class DownloadService extends Service {
     public static void stopService(Context context) {
         Log.i(TAG, "Stopping Service");
 
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, DownloadService.class);
 
         context.stopService(intent);
     }
