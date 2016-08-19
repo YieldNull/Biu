@@ -22,6 +22,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -96,12 +97,19 @@ public class ImgContentAdapter extends CommonContentAdapter {
 
     private boolean setDataSet(Map<String, List<ModelItem>> dirDataMap) {
         mDirDataMap.clear();
-        mDirDataMap.putAll(dirDataMap);
-
-
         mAlbums.clear();
-        for (String dir : new ArrayList<>(mDirDataMap.keySet())) {
-            mAlbums.add(new File(dir));
+
+        for (Map.Entry<String, List<ModelItem>> entry : dirDataMap.entrySet()) {
+            mAlbums.add(new File(entry.getKey()));
+
+            List<ModelItem> items = entry.getValue();
+            Collections.sort(items, new Comparator<ModelItem>() {  // 按时间降序排列
+                @Override
+                public int compare(ModelItem lhs, ModelItem rhs) {
+                    return Long.valueOf(rhs.getFile().lastModified()).compareTo(lhs.getFile().lastModified());
+                }
+            });
+            mDirDataMap.put(entry.getKey(), items);
         }
 
         return mAlbums.size() > 0;
