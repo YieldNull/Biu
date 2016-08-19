@@ -203,6 +203,6 @@ public class ReceivingActivity extends TransferBaseActivity {
 
     @Override
     protected void onTransferFinished() {
-        HttpdService.stopService(this);
+        // 啥都别干，HttpdService会在Destroy时关的
     }
 }

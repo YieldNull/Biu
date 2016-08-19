@@ -150,7 +150,9 @@ public class HttpDaemon {
      */
     public void stop() {
         try {
-            mServerSocket.close();
+            if (mServerSocket != null) {
+                mServerSocket.close();
+            }
             mRequestManager.closeAll();
             if (mListenThread != null) {
                 mListenThread.join();

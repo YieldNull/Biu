@@ -225,9 +225,7 @@ public class ConnectingActivity extends AppCompatActivity {
     protected void onDestroy() {
         Log.i(TAG, "onDestroy");
 
-        if (action.equals(ACTION_SENDING)) {
-            HttpdService.stopService(this);
-        }
+        HttpdService.stopService(this);
 
         if (!usingRouter) {
             stopAp();

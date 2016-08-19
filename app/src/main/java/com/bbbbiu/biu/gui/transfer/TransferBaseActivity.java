@@ -435,6 +435,7 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            Log.i(TAG, "Transfer canceled");
                             onTransferCanceled();
                             TransferBaseActivity.super.onBackPressed();
                         }
@@ -447,7 +448,8 @@ public abstract class TransferBaseActivity extends AppCompatActivity {
                     })
                     .show();
         } else {
-            onTransferCanceled();
+            Log.i(TAG, "Transfer finished");
+            onTransferFinished();
             super.onBackPressed();
         }
     }

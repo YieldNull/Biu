@@ -9,7 +9,6 @@ import android.util.Log;
 
 import com.bbbbiu.biu.gui.transfer.FileItem;
 import com.bbbbiu.biu.gui.transfer.TransferBaseActivity;
-import com.bbbbiu.biu.service.HttpdService;
 
 import java.util.ArrayList;
 
@@ -72,6 +71,6 @@ public class ReceivingActivity extends TransferBaseActivity {
 
     @Override
     protected void onTransferFinished() {
-        HttpdService.stopService(this);
+        // 啥都别干,ConnectingActivity会关掉HttpdService
     }
 }
