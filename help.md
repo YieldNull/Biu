@@ -1,3 +1,20 @@
+# 使用方法
+
+本应用为Android文件传输应用，实现功能
+
+1. 文件选择
+	- 将各类文件分类
+	- 提供文件操作的基本功能
+2. 文件传输
+	- Android与Android设备互传文件
+	- Android与PC端互传文件
+	- Android与IOS等其他设备互传文件
+3. 传输历史
+	- 管理传输历史记录：实现打开，删除，发送，分享等操作。
+4. 文件分享
+	- 接收从其他应用分享的文件，用以发送
+	- 将已传输的文件分享给其他应用
+
 ## 1.选择文件
 
 ![](app/src/main/assets/help/imgs/choose_file.png)
@@ -83,5 +100,8 @@
 - [YieldNull](https://github.com/YieldNull)
 - [kmyfoer](https://github.com/kmyfoer)
 - [WaterDemo](https://github.com/WaterDemo)
+
+
+服务器端程序，见[BiuWeb](https://github.com/YieldNull/BiuWeb)
 
 [![](app/src/main/assets/help/imgs/github.png)](https://github.com/YieldNull/Biu)
