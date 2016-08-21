@@ -102,8 +102,6 @@ public class ImgContentAdapter extends CommonContentAdapter {
         mAlbums.clear();
 
         for (Map.Entry<String, List<ModelItem>> entry : dirDataMap.entrySet()) {
-            mAlbums.add(new File(entry.getKey()));
-
             List<ModelItem> items = entry.getValue();
             Collections.sort(items, new Comparator<ModelItem>() {  // 按时间降序排列
                 @Override
@@ -112,6 +110,10 @@ public class ImgContentAdapter extends CommonContentAdapter {
                 }
             });
             mDirDataMap.put(entry.getKey(), items);
+        }
+
+        for (String dir : mDirDataMap.keySet()) {
+            mAlbums.add(new File(dir));
         }
 
         return mAlbums.size() > 0;
