@@ -55,7 +55,9 @@ public abstract class CommonSortedAdapter extends CommonContentAdapter {
     protected Map<String, List<ModelItem>> mDirDataMap = new TreeMap<>(new Comparator<String>() {
         @Override
         public int compare(String lhs, String rhs) {
-            return ((new File(lhs)).getName()).compareTo(new File(rhs).getName());
+            int result = ((new File(lhs)).getName()).compareTo(new File(rhs).getName());
+
+            return result == 0 ? lhs.compareTo(rhs) : result;
         }
     });
 
