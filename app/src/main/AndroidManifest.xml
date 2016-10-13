@@ -62,10 +62,6 @@
         </activity>
 
         <activity
-            android:name=".gui.HelpActivity"
-            android:label="@string/title_activity_help"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
             android:name=".gui.choose.FileChooseActivity"
             android:label="@string/title_activity_choose_file"
             android:theme="@style/AppTheme.NoActionBar"

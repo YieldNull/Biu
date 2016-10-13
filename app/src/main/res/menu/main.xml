@@ -6,11 +6,5 @@
         android:icon="@drawable/ic_action_history"
         android:title="@string/action_history"
         app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_help"
-        android:orderInCategory="100"
-        android:title="@string/action_help"
-        app:showAsAction="never" />
 </menu>
 
