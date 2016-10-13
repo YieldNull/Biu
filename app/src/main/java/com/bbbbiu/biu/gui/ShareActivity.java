@@ -1,5 +1,6 @@
 package com.bbbbiu.biu.gui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -8,6 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,10 +36,17 @@ import java.util.Set;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
 /**
  * 接收其它应用分享的文件
  */
+@RuntimePermissions
 public class ShareActivity extends Activity {
 
     private static final String TAG = ShareActivity.class.getSimpleName();
@@ -69,6 +79,80 @@ public class ShareActivity extends Activity {
         mListView.setItemsCanFocus(false);
         mListView.setAdapter(new TargetArrayAdapter(this, dataSet));
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        ShareActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    /**
+     * 检查VPN连接，并发送
+     */
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void prepareSending(final int resId) {
+        if (NetworkUtil.isVpnEnabled()) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.dialog_vpn_title))
+                    .setMessage(getString(R.string.dialog_vpn_message))
+                    .setPositiveButton(getString(R.string.dialog_vpn_button_close), null)
+                    .setNegativeButton(getString(R.string.dialog_vpn_button_ignore), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            sendFile(resId);
+                        }
+                    })
+                    .show();
+        } else {
+            sendFile(resId);
+        }
+    }
+
+    @OnPermissionDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void onPermissionDenied() {
+        finish();
+    }
+
+    @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void onShowRationale(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_request, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_storage)
+                .show();
+
+    }
+
+    @OnNeverAskAgain(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    void onNeverAskAgain() {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_settings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+                        intent.setData(Uri.parse("package:" + ShareActivity.this.getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY
+                                | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+                        startActivity(intent);
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_storage_denied)
+                .show();
     }
 
 
@@ -146,28 +230,6 @@ public class ShareActivity extends Activity {
         return false;
     }
 
-
-    /**
-     * 检查VPN连接，并发送
-     */
-    private void prepareSending(final int resId) {
-        if (NetworkUtil.isVpnEnabled()) {
-            new AlertDialog.Builder(this)
-                    .setTitle(getString(R.string.dialog_vpn_title))
-                    .setMessage(getString(R.string.dialog_vpn_message))
-                    .setPositiveButton(getString(R.string.dialog_vpn_button_close), null)
-                    .setNegativeButton(getString(R.string.dialog_vpn_button_ignore), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            sendFile(resId);
-                        }
-                    })
-                    .show();
-        } else {
-            sendFile(resId);
-        }
-    }
-
     /**
      * 发送文件
      */
@@ -198,7 +260,7 @@ public class ShareActivity extends Activity {
         int drawableId;
         int stringId;
 
-        public TargetItem(int drawableId, int stringId) {
+        TargetItem(int drawableId, int stringId) {
             this.drawableId = drawableId;
             this.stringId = stringId;
         }
@@ -210,12 +272,13 @@ public class ShareActivity extends Activity {
      */
     private class TargetArrayAdapter extends ArrayAdapter<TargetItem> {
 
-        public TargetArrayAdapter(Context context, List<TargetItem> objects) {
+        TargetArrayAdapter(Context context, List<TargetItem> objects) {
             super(context, 0, objects);
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View view, ViewGroup parent) {
+        public View getView(int position, View view, @NonNull ViewGroup parent) {
             final TargetItem item = getItem(position);
 
             if (view == null) {
@@ -234,7 +297,7 @@ public class ShareActivity extends Activity {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    prepareSending(item.drawableId);
+                    ShareActivityPermissionsDispatcher.prepareSendingWithCheck(ShareActivity.this, item.drawableId);
                 }
             });
 

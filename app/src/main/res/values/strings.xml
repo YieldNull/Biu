@@ -172,4 +172,14 @@
     <string name="connpc_button_ap">开启热点</string>
     <string name="connpc_button_local">开始传输</string>
     <string name="connpc_button_web">开始连接</string>
+
+    <string name="permission_go_request">去允许</string>
+    <string name="permission_go_settings">去设置</string>
+    <string name="permission_dialog_title">请求权限</string>
+    <string name="permission_request_storage">需要获得管理存储空间权限以传递文件，请允许</string>
+    <string name="permission_request_storage_denied">未取得管理存储空间权限，无法发送文件，请在权限设置中打开权限：“存储空间”</string>
+    <string name="permission_request_camera">需要相机权限以扫描二维码，请允许</string>
+    <string name="permission_request_camera_denied">未取得相机权限，无法扫描二维码，请在权限设置中打开权限：“相机”</string>
+    <string name="permission_request_necessary">需要“电话”权限，用来获取手机信息以识别用户；需要“存储空间”权限用来读取文件以传递文件。请允许</string>
+    <string name="permission_request_necessary_denied">未取得所需权限，应用无法正常使用，请在权限设置中打开权限：“存储空间”，“电话”</string>
 </resources>

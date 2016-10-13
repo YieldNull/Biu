@@ -1,10 +1,16 @@
 package com.bbbbiu.biu.gui.transfer.computer;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,6 +29,12 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
 /**
  * 扫描二维码连接服务器。
@@ -34,6 +46,7 @@ import okhttp3.ResponseBody;
  * Created by YieldNull at 3/22/16
  */
 
+@RuntimePermissions
 public class QRCodeScanActivity extends AppCompatActivity implements ZXingScannerView.ResultHandler {
     private static final String TAG = QRCodeScanActivity.class.getSimpleName();
 
@@ -123,14 +136,16 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mScannerView.startCamera();
+    protected void onStart() {
+        super.onStart();
+
+        Log.i(TAG, "onStart");
+        QRCodeScanActivityPermissionsDispatcher.startCameraWithCheck(this);
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onStop() {
+        super.onStop();
         mScannerView.stopCamera();
     }
 
@@ -149,6 +164,63 @@ public class QRCodeScanActivity extends AppCompatActivity implements ZXingScanne
         }).start();
     }
 
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        QRCodeScanActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @NeedsPermission(Manifest.permission.CAMERA)
+    void startCamera() {
+        mScannerView.startCamera();
+    }
+
+    @OnPermissionDenied(Manifest.permission.CAMERA)
+    void onPermissionDenied() {
+        finish();
+    }
+
+    @OnShowRationale(Manifest.permission.CAMERA)
+    void onShowRationale(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_request, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_camera)
+                .show();
+
+    }
+
+    @OnNeverAskAgain(Manifest.permission.CAMERA)
+    void onNeverAskAgain() {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_settings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+                        intent.setData(Uri.parse("package:" + QRCodeScanActivity.this.getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY
+                                | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+                        startActivity(intent);
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_camera_denied)
+                .show();
+    }
 
     /**
      * 尝试连接服务器，重试一定次数之后就报错

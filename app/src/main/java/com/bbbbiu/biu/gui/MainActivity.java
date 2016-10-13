@@ -1,10 +1,13 @@
 package com.bbbbiu.biu.gui;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -19,15 +22,20 @@ import com.bbbbiu.biu.gui.adapter.MainAdapter;
 import com.bbbbiu.biu.gui.transfer.android.ReceivingActivity;
 import com.bbbbiu.biu.gui.transfer.computer.ConnectingActivity;
 import com.bbbbiu.biu.util.NetworkUtil;
-import com.bbbbiu.biu.util.PreferenceUtil;
 import com.github.clans.fab.FloatingActionMenu;
 import com.readystatesoftware.systembartint.SystemBarTintManager;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
-
+@RuntimePermissions
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -93,18 +101,15 @@ public class MainActivity extends AppCompatActivity {
 
         mActionMenu.setIconAnimated(false);
         mActionMenu.setClosedOnTouchOutside(true);
-
-        // 首次启动跳到帮助界面
-        if (PreferenceUtil.isFirstRun(this)) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startActivity(new Intent(MainActivity.this, HelpActivity.class));
-                }
-            }, 1000);
-        }
     }
 
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        MainActivityPermissionsDispatcher.requestPermissionWithCheck(MainActivity.this);
+    }
 
     @Override
     protected void onResume() {
@@ -136,6 +141,62 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
+    @NeedsPermission({Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void requestPermission() {
+    }
+
+
+    @OnPermissionDenied({Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onPermissionDenied() {
+        MainActivityPermissionsDispatcher.requestPermissionWithCheck(MainActivity.this);
+    }
+
+    @OnShowRationale({Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onShowRationale(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_request, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_necessary)
+                .show();
+
+    }
+
+    @OnNeverAskAgain({Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    void onNeverAskAgain() {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.permission_go_settings, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.addCategory(Intent.CATEGORY_DEFAULT);
+                        intent.setData(Uri.parse("package:" + MainActivity.this.getPackageName()));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY
+                                | Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+
+                        startActivity(intent);
+                    }
+                })
+                .setCancelable(false)
+                .setTitle(R.string.permission_dialog_title)
+                .setMessage(R.string.permission_request_necessary_denied)
+                .show();
+    }
 
     /**
      * 检查是否开了VPN
