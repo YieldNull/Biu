@@ -1,6 +1,4 @@
-# 使用方法
-
-本应用为Android文件传输应用，实现功能
+本应用为Android文件传输应用，[查看演示](http://yieldnull.github.io/Biu/index.html)。实现功能：
 
 1. 文件选择
 	- 将各类文件分类
@@ -105,3 +103,7 @@
 服务器端程序，见[BiuWeb](https://github.com/YieldNull/BiuWeb)
 
 [![](app/src/main/assets/help/imgs/github.png)](https://github.com/YieldNull/Biu)
+
+## 8. LICENSE
+
+GNU General Public License v2.0
